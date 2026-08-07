@@ -1,16 +1,28 @@
-# React + Vite
+# ⚡ Synapse — AI-Powered Spaced Repetition Study Engine
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**CUTC Transform Hackathon 2026 Submission**
 
-Currently, two official plugins are available:
+Live Application: [https://AniketT0008.github.io/adaptive-study-engine/](https://AniketT0008.github.io/adaptive-study-engine/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 👥 Contributors & Authors
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **AniketT0008** ([@AniketT0008](https://github.com/AniketT0008))
+- **jeevanpartapsingh21-a11y** ([@jeevanpartapsingh21-a11y](https://github.com/jeevanpartapsingh21-a11y))
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## ✨ Key Features
+
+- **🎓 Interactive Teacher Mode**: Learn material step-by-step with AI explanations before taking quizzes.
+- **⚡ Adaptive Spaced Repetition**: Powered by the SuperMemo-2 (SM-2) algorithm.
+- **📄 Multimodal AI Material Import**: Paste course notes or upload PDFs/Images to generate flashcards automatically.
+- **📊 Real-Time Analytics**: Compare targeted study vs random review with Monte Carlo retention charts.
+- **📜 Recall History**: View past session timelines and accuracy metrics.
+
+---
+
+## 🛠️ Built With
+
+- React 18, Vite 6, Tailwind CSS v4, Recharts, React Router v6, Web Audio API, Gemini 2.0 Flash

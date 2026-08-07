@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "homepage": "https://AniketT0008.github.io/adaptive-study-engine",
+  "contributors": [
+    "AniketT0008",
+    "jeevanpartapsingh21-a11y"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
