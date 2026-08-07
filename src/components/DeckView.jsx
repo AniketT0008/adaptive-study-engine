@@ -11,14 +11,24 @@ function getMasteryColor(mastery) {
   return '#55efc4';
 }
 
-function getRelativeTime(dateStr) {
-  if (!dateStr) return 'N/A';
-  const diff = new Date(dateStr) - new Date();
+function getRelativeTime(concept) {
+  if (!concept.nextReviewDate) return 'N/A';
+  // If never reviewed, show friendly label
+  if (!concept.history || concept.history.length === 0) return 'Ready to study';
+  const diff = new Date(concept.nextReviewDate) - new Date();
   if (diff <= 0) return 'Due now';
   const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return 'Due soon';
   if (hours < 24) return `In ${hours}h`;
   const days = Math.floor(hours / 24);
   return `In ${days}d`;
+}
+
+function getRelativeTimeBadgeClass(concept) {
+  if (!concept.history || concept.history.length === 0) return 'bg-[rgba(108,92,231,0.15)] text-[var(--color-accent-light)]';
+  const diff = new Date(concept.nextReviewDate) - new Date();
+  if (diff <= 0) return 'bg-[rgba(253,203,110,0.15)] text-[var(--color-warning)]';
+  return 'bg-[var(--color-surface-3)] text-[var(--color-text-muted)]';
 }
 
 export default function DeckView() {
@@ -42,7 +52,6 @@ export default function DeckView() {
   const handleStartReview = () => {
     playSound('click');
     if (dueConcepts.length === 0 && deck?.concepts) {
-      // If caught up, reset nextReviewDate to now so user can practice anytime
       const now = new Date().toISOString();
       const updatedDeck = {
         ...deck,
@@ -71,12 +80,8 @@ export default function DeckView() {
 
   return (
     <div className="animate-fade-in">
-      {/* Back button */}
       <button
-        onClick={() => {
-          playSound('click');
-          navigate('/');
-        }}
+        onClick={() => { playSound('click'); navigate('/'); }}
         className="mb-6 flex items-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors text-sm"
       >
         <span className="mr-2">←</span> Back to Home
@@ -118,40 +123,34 @@ export default function DeckView() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-            <div className="flex flex-col items-center">
-              <button
-                onClick={handleStartReview}
-                className="btn-primary px-8 py-4 text-lg font-bold flex items-center gap-2 glow-accent animate-pulse-glow"
-              >
-                {dueConcepts.length === 0 ? '▶ Practice All Concepts' : '▶ Start Review'}
-              </button>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => { playSound('click'); navigate(`/learn/${deck.id}`); }}
+              className="btn-secondary px-8 py-4 text-lg font-bold flex items-center gap-2"
+            >
+              📖 Learn First
+            </button>
 
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => {
-                  playSound('click');
-                  navigate(`/review/${deck.id}?focus=true`);
-                }}
-                className="btn-focus px-8 py-4 text-lg font-bold flex items-center gap-2 glow-success"
-              >
-                🎯 Focus Mode
-              </button>
-              <span className="text-xs text-[var(--color-text-muted)] mt-2">Target your weakest concepts first</span>
-            </div>
+            <button
+              onClick={handleStartReview}
+              className="btn-primary px-8 py-4 text-lg font-bold flex items-center gap-2 glow-accent animate-pulse-glow"
+            >
+              {dueConcepts.length === 0 ? '▶ Practice All' : '▶ Start Review'}
+            </button>
 
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => {
-                  playSound('click');
-                  navigate(`/dashboard/${deck.id}`);
-                }}
-                className="btn-secondary px-8 py-4 text-lg font-bold flex items-center gap-2"
-              >
-                📊 Dashboard
-              </button>
-            </div>
+            <button
+              onClick={() => { playSound('click'); navigate(`/review/${deck.id}?focus=true`); }}
+              className="btn-focus px-8 py-4 text-lg font-bold flex items-center gap-2 glow-success"
+            >
+              🎯 Focus Mode
+            </button>
+
+            <button
+              onClick={() => { playSound('click'); navigate(`/dashboard/${deck.id}`); }}
+              className="btn-secondary px-8 py-4 text-lg font-bold flex items-center gap-2"
+            >
+              📊 Dashboard
+            </button>
           </div>
         </div>
       </div>
@@ -167,20 +166,19 @@ export default function DeckView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {deck.concepts?.map((concept, index) => {
           const isDue = new Date(concept.nextReviewDate) <= new Date();
+          const neverReviewed = !concept.history || concept.history.length === 0;
           return (
             <div
               key={concept.id}
               className={`glass p-5 rounded-xl transition-all duration-300 animate-slide-up hover:scale-[1.02] hover:border-[var(--color-accent)]/30 cursor-default ${
-                isDue ? 'border-l-2 border-l-[var(--color-warning)]' : ''
+                isDue && !neverReviewed ? 'border-l-2 border-l-[var(--color-warning)]' : ''
               }`}
               style={{ animationDelay: `${index * 40}ms` }}
             >
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-bold text-[var(--color-text)] text-base">{concept.label}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                  isDue ? 'bg-[rgba(253,203,110,0.15)] text-[var(--color-warning)]' : 'bg-[var(--color-surface-3)] text-[var(--color-text-muted)]'
-                }`}>
-                  {getRelativeTime(concept.nextReviewDate)}
+                <span className={`text-xs px-2 py-0.5 rounded font-medium ${getRelativeTimeBadgeClass(concept)}`}>
+                  {getRelativeTime(concept)}
                 </span>
               </div>
 

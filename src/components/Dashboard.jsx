@@ -5,12 +5,13 @@ import MasteryChart from './charts/MasteryChart.jsx';
 import AccuracyTrend from './charts/AccuracyTrend.jsx';
 import ComparisonChart from './charts/ComparisonChart.jsx';
 import SM2Sandbox from './SM2Sandbox.jsx';
+import RecallHistory from './RecallHistory.jsx';
 
 export default function Dashboard() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sandbox'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'history' | 'sandbox'
 
   useEffect(() => {
     if (id) {
@@ -75,6 +76,14 @@ export default function Dashboard() {
               Overview
             </button>
             <button
+              onClick={() => setActiveTab('history')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                activeTab === 'history' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-text-muted)] hover:text-white'
+              }`}
+            >
+              📜 Recall History
+            </button>
+            <button
               onClick={() => setActiveTab('sandbox')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 activeTab === 'sandbox' ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-text-muted)] hover:text-white'
@@ -101,6 +110,8 @@ export default function Dashboard() {
 
       {activeTab === 'sandbox' ? (
         <SM2Sandbox />
+      ) : activeTab === 'history' ? (
+        <RecallHistory sessionLogs={sessionLogs} concepts={deck.concepts} />
       ) : (
         <>
           {/* Stats Row */}

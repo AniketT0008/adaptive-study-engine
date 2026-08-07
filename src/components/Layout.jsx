@@ -17,9 +17,9 @@ export default function Layout({ children }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <a href="#/" className="flex items-center gap-2.5 text-white no-underline transition-opacity hover:opacity-80">
             <span className="text-2xl">⚡</span>
-            <span className="text-lg font-bold tracking-tight">Adaptive Study Engine</span>
+            <span className="text-lg font-bold tracking-tight">Synapse</span>
             <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest text-[var(--color-accent-light)] bg-[rgba(108,92,231,0.2)] px-2 py-0.5 rounded border border-[var(--color-accent)]/30">
-              Transform Hackathon
+              CUTC Transform
             </span>
           </a>
           
@@ -46,7 +46,7 @@ export default function Layout({ children }) {
       </main>
       
       <footer className="border-t border-white/[0.04] py-4 text-center text-xs text-[#8b8da3]">
-        CUTC Transform Hackathon 2026 Entry • Built with SM-2 Spaced Repetition Algorithm &amp; Gemini AI
+        CUTC Transform Hackathon 2026 • Synapse — Powered by SM-2 Spaced Repetition & Gemini AI
       </footer>
     </>
   );

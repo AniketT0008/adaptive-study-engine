@@ -121,3 +121,49 @@ Return a JSON array of question objects. Mix question types and difficulties acr
     ...q
   }));
 }
+
+export async function extractTextFromFile(file, apiKey) {
+  // Convert file to base64
+  const reader = new FileReader();
+  const base64Promise = new Promise((resolve, reject) => {
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const base64Data = await base64Promise;
+  
+  const mimeType = file.type || 'application/octet-stream';
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  
+  try {
+    const response = await fetch(`${API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { inlineData: { mimeType, data: base64Data } },
+            { text: 'Extract all the text content from this document or image. Return the extracted text as a plain string, preserving paragraph structure. Do not add any commentary or formatting — just the raw text content.' }
+          ]
+        }],
+        generationConfig: { temperature: 0.1 }
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.error('Gemini file extraction error:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch (e) {
+    clearTimeout(timeoutId);
+    console.error('File extraction failed:', e);
+    return null;
+  }
+}

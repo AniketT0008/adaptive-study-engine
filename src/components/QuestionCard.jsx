@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { playSound } from '../utils/audio.js';
 
+const typeLabels = { mcq: 'Multiple Choice', short: 'Short Answer', cloze: 'Fill in the Blank' };
+const diffLabels = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+
 export default function QuestionCard({ question, concept, onAnswer }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -93,10 +96,10 @@ export default function QuestionCard({ question, concept, onAnswer }) {
             {concept?.label || 'Concept'}
           </span>
           <span className={`badge ${diffBadgeClass}`}>
-            {question.difficulty}
+            {diffLabels[question.difficulty] || question.difficulty}
           </span>
           <span className={`badge ${typeBadgeClass}`}>
-            {question.type}
+            {typeLabels[question.type] || question.type}
           </span>
         </div>
         

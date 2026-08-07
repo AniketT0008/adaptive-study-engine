@@ -1,336 +1,1124 @@
-export const EXAMPLE_DECK = {
-  id: 'example-cs-101',
-  title: 'Intro to Computer Science',
-  createdAt: new Date().toISOString(),
-  streak: 0,
-  longestStreak: 0,
-  sessionLogs: [],
-  concepts: [
+export const EXAMPLE_DECKS = [
+{
+  "id": "example-cs-101",
+  "title": "Intro to Computer Science",
+  "description": "Variables, loops, algorithms, and Big-O notation",
+  "emoji": "\ud83d\udcbb",
+  "createdAt": new Date().toISOString(),
+  "streak": 0,
+  "longestStreak": 0,
+  "sessionLogs": [],
+  "concepts": [
     {
-      id: 'binary-numbers',
-      label: 'Binary Numbers',
-      sourceSnippet: 'Binary (base-2) is the language of computers, using only 0s and 1s to represent all data and instructions. Each 0 or 1 is called a bit, and eight bits make a byte. By combining these simple on/off states, computers can encode complex information like numbers, text, and images.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "binary-numbers",
+      "label": "Binary Numbers",
+      "sourceSnippet": "Binary (base-2) is the language of computers, using only 0s and 1s to represent all data and instructions. Each 0 or 1 is called a bit, and eight bits make a byte. By combining these simple on/off states, computers can encode complex information like numbers, text, and images.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'variables',
-      label: 'Variables',
-      sourceSnippet: 'A variable is a named storage location in memory used to hold data that can be modified during program execution. Think of it as a container with a label that stores a specific value. When you use the variable name in your code, the computer looks up and uses the stored value.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "variables",
+      "label": "Variables",
+      "sourceSnippet": "A variable is a named storage location in memory used to hold data that can be modified during program execution. Think of it as a container with a label that stores a specific value. When you use the variable name in your code, the computer looks up and uses the stored value.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'data-types',
-      label: 'Data Types',
-      sourceSnippet: 'Data types classify the kind of value a variable can hold, determining what operations can be performed on it. Common types include integers (whole numbers), floats (decimals), strings (text), and booleans (true/false). Using the correct data type ensures operations like addition or string concatenation behave as expected.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "data-types",
+      "label": "Data Types",
+      "sourceSnippet": "Data types classify the kind of value a variable can hold, determining what operations can be performed on it. Common types include integers (whole numbers), floats (decimals), strings (text), and booleans (true/false). Using the correct data type ensures operations like addition or string concatenation behave as expected.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'conditionals',
-      label: 'Conditionals',
-      sourceSnippet: 'Conditional statements (if/else) let programs make decisions based on conditions. They evaluate boolean expressions to true or false, executing different blocks of code depending on the result. This allows programs to adapt their behavior based on user input or program state.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "conditionals",
+      "label": "Conditionals",
+      "sourceSnippet": "Conditionals are programming constructs that execute different code paths depending on whether a specific condition is true or false. If-else statements are the most common form.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'loops',
-      label: 'Loops',
-      sourceSnippet: 'Loops (for, while) repeat a block of code multiple times as long as a specified condition is met. A "for" loop is typically used when the number of iterations is known, while a "while" loop continues until its condition evaluates to false. They are essential for processing collections of data or automating repetitive tasks.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "loops",
+      "label": "Loops",
+      "sourceSnippet": "Loops repeat a sequence of instructions until a certain condition is met. For loops iterate a specific number of times, while while loops execute as long as a condition remains true.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'functions',
-      label: 'Functions',
-      sourceSnippet: 'A function is a reusable block of code that performs a specific task. It can take input parameters, execute operations, and return a result. Functions help organize code into logical, manageable pieces, promoting code reuse and reducing redundancy.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "functions",
+      "label": "Functions",
+      "sourceSnippet": "Functions are reusable blocks of code designed to perform a specific task. They take inputs (parameters), perform operations, and often return an output.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'arrays',
-      label: 'Arrays',
-      sourceSnippet: 'An array is an ordered collection of elements accessed by index, typically starting at zero. They store multiple values in a single variable, making it easy to group related data. Because elements are stored contiguously in memory, arrays offer fast access to elements at a known index.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "arrays",
+      "label": "Arrays",
+      "sourceSnippet": "An array is a data structure consisting of a collection of elements, typically of the same data type, stored at contiguous memory locations.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'algorithms',
-      label: 'Algorithms',
-      sourceSnippet: 'An algorithm is a step-by-step procedure for solving a problem or performing a computation. It provides a clear, unambiguous set of instructions that transform an input into a desired output. Well-designed algorithms are essential for writing efficient and reliable software.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "algorithms",
+      "label": "Algorithms",
+      "sourceSnippet": "An algorithm is a finite sequence of well-defined, computer-implementable instructions to solve a class of problems or perform a computation.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'big-o',
-      label: 'Big-O Notation',
-      sourceSnippet: 'Big-O notation describes how an algorithm\'s time or space grows with input size. It focuses on the worst-case scenario and ignores constant factors to provide a high-level understanding of an algorithm\'s efficiency. For example, O(n) means time increases linearly, while O(1) means time is constant.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "big-o",
+      "label": "Big-O Notation",
+      "sourceSnippet": "Big-O notation characterizes functions according to their growth rates, used to classify algorithms based on how their run time or space requirements grow as input size grows.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'recursion',
-      label: 'Recursion',
-      sourceSnippet: 'Recursion is when a function calls itself to solve smaller instances of the same problem. A recursive function must have a base case to terminate the calls and prevent infinite loops. It is particularly useful for tasks that can naturally be divided into similar subproblems, like traversing trees or sorting arrays.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "recursion",
+      "label": "Recursion",
+      "sourceSnippet": "Recursion is a method of solving a computational problem where the solution depends on solutions to smaller instances of the same problem. A recursive function calls itself.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'boolean-logic',
-      label: 'Boolean Logic',
-      sourceSnippet: 'Boolean logic uses AND, OR, and NOT operators to combine or invert true/false values. AND requires both conditions to be true, OR requires at least one to be true, and NOT reverses the value. These fundamental logic gates form the foundation of digital circuits and decision-making in software.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "boolean-logic",
+      "label": "Boolean Logic",
+      "sourceSnippet": "Boolean logic is a form of algebra in which all values are reduced to either TRUE or FALSE, using operations like AND, OR, and NOT.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     },
     {
-      id: 'debugging',
-      label: 'Debugging',
-      sourceSnippet: 'Debugging is the process of finding and fixing errors (bugs) in code. It involves identifying the symptom, isolating the cause, and implementing a solution. Techniques include printing variable values, using a debugger tool to step through code, and writing automated tests to catch regressions.',
-      mastery: 0, easinessFactor: 2.5, interval: 1, repetitions: 0, nextReviewDate: new Date().toISOString(), history: []
+      "id": "debugging",
+      "label": "Debugging",
+      "sourceSnippet": "Debugging is the process of finding and resolving bugs (errors or abnormalities) within computer programs or software to prevent incorrect operation.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
     }
   ],
-  questions: [
+  "questions": [
     {
-      id: 'q-binary-1', conceptId: 'binary-numbers', type: 'mcq', difficulty: 'easy',
-      prompt: 'What base is the binary number system?',
-      options: ['Base-10', 'Base-2', 'Base-16', 'Base-8'],
-      answer: 'Base-2',
-      explanation: 'Binary only uses two digits, 0 and 1, so it is a base-2 system.'
+      "id": "q-binary-1",
+      "conceptId": "binary-numbers",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What base is the binary number system?",
+      "options": [
+        "Base-10",
+        "Base-2",
+        "Base-16",
+        "Base-8"
+      ],
+      "answer": "Base-2",
+      "explanation": "Binary only uses two digits, 0 and 1, so it is a base-2 system."
     },
     {
-      id: 'q-binary-2', conceptId: 'binary-numbers', type: 'cloze', difficulty: 'medium',
-      prompt: 'Eight bits make a ___.',
-      options: null,
-      answer: 'byte',
-      explanation: 'A byte is the standard unit of digital data, consisting of 8 bits.'
+      "id": "q-binary-2",
+      "conceptId": "binary-numbers",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Eight bits make a ___.",
+      "options": null,
+      "answer": "byte",
+      "explanation": "A byte is the standard unit of digital data, consisting of 8 bits."
     },
     {
-      id: 'q-binary-3', conceptId: 'binary-numbers', type: 'short', difficulty: 'hard',
-      prompt: 'What are the two digits used in binary?',
-      options: null,
-      answer: '0 and 1',
-      explanation: 'Binary represents the on/off states of computer hardware using 0 and 1.'
+      "id": "q-binary-3",
+      "conceptId": "binary-numbers",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What are the two digits used in binary?",
+      "options": null,
+      "answer": "0 and 1",
+      "explanation": "Binary represents the on/off states of computer hardware using 0 and 1."
     },
     {
-      id: 'q-variables-1', conceptId: 'variables', type: 'mcq', difficulty: 'easy',
-      prompt: 'What is a variable in programming?',
-      options: ['A static value', 'A named storage location in memory', 'A type of error', 'A function call'],
-      answer: 'A named storage location in memory',
-      explanation: 'Variables act as containers with names that store data during program execution.'
+      "id": "q-variables-1",
+      "conceptId": "variables",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is a variable in programming?",
+      "options": [
+        "A static value",
+        "A named storage location in memory",
+        "A type of error",
+        "A function call"
+      ],
+      "answer": "A named storage location in memory",
+      "explanation": "Variables act as containers with names that store data during program execution."
     },
     {
-      id: 'q-variables-2', conceptId: 'variables', type: 'cloze', difficulty: 'medium',
-      prompt: 'When you use a variable name, the computer looks up its stored ___.',
-      options: null,
-      answer: 'value',
-      explanation: 'The name refers to the location, which holds the actual value stored there.'
+      "id": "q-variables-2",
+      "conceptId": "variables",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "When you use a variable name, the computer looks up its stored ___.",
+      "options": null,
+      "answer": "value",
+      "explanation": "The name refers to the location, which holds the actual value stored there."
     },
     {
-      id: 'q-variables-3', conceptId: 'variables', type: 'short', difficulty: 'medium',
-      prompt: 'Can a variable\'s value be modified during program execution?',
-      options: null,
-      answer: 'Yes',
-      explanation: 'Variables are typically mutable, meaning their stored values can be updated.'
+      "id": "q-variables-3",
+      "conceptId": "variables",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Can a variable's value be modified during program execution?",
+      "options": null,
+      "answer": "Yes",
+      "explanation": "Variables are typically mutable, meaning their stored values can be updated."
     },
     {
-      id: 'q-datatypes-1', conceptId: 'data-types', type: 'mcq', difficulty: 'easy',
-      prompt: 'Which data type is used for whole numbers?',
-      options: ['Float', 'String', 'Boolean', 'Integer'],
-      answer: 'Integer',
-      explanation: 'Integers represent whole numbers without fractional parts.'
+      "id": "q-datatypes-1",
+      "conceptId": "data-types",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Which data type is used for whole numbers?",
+      "options": [
+        "Float",
+        "String",
+        "Boolean",
+        "Integer"
+      ],
+      "answer": "Integer",
+      "explanation": "Integers represent whole numbers without fractional parts."
     },
     {
-      id: 'q-datatypes-2', conceptId: 'data-types', type: 'cloze', difficulty: 'medium',
-      prompt: 'Text is stored using the ___ data type.',
-      options: null,
-      answer: 'string',
-      explanation: 'Strings are sequences of characters used to represent text.'
+      "id": "q-datatypes-2",
+      "conceptId": "data-types",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Text is stored using the ___ data type.",
+      "options": null,
+      "answer": "string",
+      "explanation": "Strings are sequences of characters used to represent text."
     },
     {
-      id: 'q-datatypes-3', conceptId: 'data-types', type: 'short', difficulty: 'hard',
-      prompt: 'What type of value evaluates to true or false?',
-      options: null,
-      answer: 'Boolean',
-      explanation: 'Booleans represent one of two truth values: true or false.'
+      "id": "q-datatypes-3",
+      "conceptId": "data-types",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What type of value evaluates to true or false?",
+      "options": null,
+      "answer": "Boolean",
+      "explanation": "Booleans represent one of two truth values: true or false."
     },
     {
-      id: 'q-conditionals-1', conceptId: 'conditionals', type: 'mcq', difficulty: 'easy',
-      prompt: 'What kind of statements let programs make decisions?',
-      options: ['Loops', 'Conditionals', 'Variables', 'Arrays'],
-      answer: 'Conditionals',
-      explanation: 'Conditionals (like if/else) branch the execution based on true/false conditions.'
+      "id": "q-cond-1",
+      "conceptId": "conditionals",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Which statement is commonly used for conditionals?",
+      "options": [
+        "for",
+        "while",
+        "if-else",
+        "def"
+      ],
+      "answer": "if-else",
+      "explanation": "If-else statements are the most common form of conditionals."
     },
     {
-      id: 'q-conditionals-2', conceptId: 'conditionals', type: 'cloze', difficulty: 'medium',
-      prompt: 'Conditionals evaluate ___ expressions to determine which code block to execute.',
-      options: null,
-      answer: 'boolean',
-      explanation: 'The condition in an if statement must evaluate to a boolean (true or false).'
+      "id": "q-cond-2",
+      "conceptId": "conditionals",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Conditionals execute different code paths depending on whether a specific condition is ___ or false.",
+      "options": null,
+      "answer": "true",
+      "explanation": "Conditionals rely on boolean logic evaluation."
     },
     {
-      id: 'q-conditionals-3', conceptId: 'conditionals', type: 'short', difficulty: 'medium',
-      prompt: 'What keyword often follows an "if" statement to handle the false condition?',
-      options: null,
-      answer: 'else',
-      explanation: 'The "else" block executes when the "if" condition evaluates to false.'
+      "id": "q-cond-3",
+      "conceptId": "conditionals",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What kind of constructs execute different code paths based on a condition?",
+      "options": null,
+      "answer": "Conditionals",
+      "explanation": "Conditionals allow for branching logic."
     },
     {
-      id: 'q-loops-1', conceptId: 'loops', type: 'mcq', difficulty: 'easy',
-      prompt: 'What is the primary purpose of a loop?',
-      options: ['To store data', 'To make decisions', 'To repeat a block of code', 'To define a function'],
-      answer: 'To repeat a block of code',
-      explanation: 'Loops automate repetitive tasks by executing code multiple times.'
+      "id": "q-loops-1",
+      "conceptId": "loops",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What do loops do in programming?",
+      "options": [
+        "Make decisions",
+        "Repeat instructions",
+        "Store data",
+        "Define classes"
+      ],
+      "answer": "Repeat instructions",
+      "explanation": "Loops execute a block of code multiple times."
     },
     {
-      id: 'q-loops-2', conceptId: 'loops', type: 'cloze', difficulty: 'medium',
-      prompt: 'A ___ loop continues until its condition evaluates to false.',
-      options: null,
-      answer: 'while',
-      explanation: 'While loops check their condition before each iteration and stop when it is false.'
+      "id": "q-loops-2",
+      "conceptId": "loops",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "___ loops iterate a specific number of times.",
+      "options": null,
+      "answer": "For",
+      "explanation": "For loops are used when the number of iterations is known."
     },
     {
-      id: 'q-loops-3', conceptId: 'loops', type: 'short', difficulty: 'hard',
-      prompt: 'Which loop is typically used when the number of iterations is known?',
-      options: null,
-      answer: 'for',
-      explanation: 'A "for" loop often initializes a counter and runs a specific number of times.'
+      "id": "q-loops-3",
+      "conceptId": "loops",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Which type of loop executes as long as a condition remains true?",
+      "options": null,
+      "answer": "While loop",
+      "explanation": "While loops depend on an ongoing true condition."
     },
     {
-      id: 'q-functions-1', conceptId: 'functions', type: 'mcq', difficulty: 'easy',
-      prompt: 'What is a function?',
-      options: ['A reusable block of code', 'A single variable', 'A true/false value', 'An infinite loop'],
-      answer: 'A reusable block of code',
-      explanation: 'Functions encapsulate logic so it can be invoked multiple times without rewriting code.'
+      "id": "q-func-1",
+      "conceptId": "functions",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is a function in programming?",
+      "options": [
+        "A data type",
+        "A reusable block of code",
+        "A conditional statement",
+        "A loop"
+      ],
+      "answer": "A reusable block of code",
+      "explanation": "Functions group code to perform specific tasks so it can be reused."
     },
     {
-      id: 'q-functions-2', conceptId: 'functions', type: 'cloze', difficulty: 'medium',
-      prompt: 'Functions can take input variables called ___.',
-      options: null,
-      answer: 'parameters',
-      explanation: 'Parameters allow you to pass specific data into the function when you call it.'
+      "id": "q-func-2",
+      "conceptId": "functions",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Functions take inputs called ___.",
+      "options": null,
+      "answer": "parameters",
+      "explanation": "Parameters are passed to functions as inputs."
     },
     {
-      id: 'q-functions-3', conceptId: 'functions', type: 'short', difficulty: 'medium',
-      prompt: 'What does a function use to send a result back to the caller?',
-      options: null,
-      answer: 'return',
-      explanation: 'The return statement exits the function and provides a final output value.'
+      "id": "q-func-3",
+      "conceptId": "functions",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What do functions often do after performing operations?",
+      "options": null,
+      "answer": "Return an output",
+      "explanation": "Functions frequently return a value based on their computations."
     },
     {
-      id: 'q-arrays-1', conceptId: 'arrays', type: 'mcq', difficulty: 'easy',
-      prompt: 'How are elements accessed in an array?',
-      options: ['By name', 'By index', 'By value', 'By size'],
-      answer: 'By index',
-      explanation: 'Arrays use numerical indices to reference specific elements in the collection.'
+      "id": "q-arr-1",
+      "conceptId": "arrays",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is an array?",
+      "options": [
+        "A single value",
+        "A loop",
+        "A collection of elements",
+        "A function"
+      ],
+      "answer": "A collection of elements",
+      "explanation": "Arrays store multiple items in a single variable."
     },
     {
-      id: 'q-arrays-2', conceptId: 'arrays', type: 'cloze', difficulty: 'medium',
-      prompt: 'In most programming languages, array indices start at ___.',
-      options: null,
-      answer: 'zero',
-      explanation: 'Zero-based indexing is standard; the first element is at index 0.'
+      "id": "q-arr-2",
+      "conceptId": "arrays",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Elements in an array are stored at ___ memory locations.",
+      "options": null,
+      "answer": "contiguous",
+      "explanation": "Arrays are typically stored consecutively in memory."
     },
     {
-      id: 'q-arrays-3', conceptId: 'arrays', type: 'short', difficulty: 'hard',
-      prompt: 'Are array elements typically stored contiguously or non-contiguously in memory?',
-      options: null,
-      answer: 'contiguously',
-      explanation: 'Arrays allocate a single block of memory, allowing fast index-based access.'
+      "id": "q-arr-3",
+      "conceptId": "arrays",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Do arrays usually hold elements of the same or different data types?",
+      "options": null,
+      "answer": "Same data type",
+      "explanation": "Traditional arrays contain elements of the same type."
     },
     {
-      id: 'q-algorithms-1', conceptId: 'algorithms', type: 'mcq', difficulty: 'easy',
-      prompt: 'What is an algorithm?',
-      options: ['A type of variable', 'A hardware component', 'A step-by-step procedure', 'A syntax error'],
-      answer: 'A step-by-step procedure',
-      explanation: 'Algorithms are a sequence of instructions used to solve a specific problem.'
+      "id": "q-alg-1",
+      "conceptId": "algorithms",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is an algorithm?",
+      "options": [
+        "A programming language",
+        "A sequence of instructions",
+        "A hardware component",
+        "A variable"
+      ],
+      "answer": "A sequence of instructions",
+      "explanation": "Algorithms are step-by-step procedures for calculations."
     },
     {
-      id: 'q-algorithms-2', conceptId: 'algorithms', type: 'cloze', difficulty: 'medium',
-      prompt: 'Algorithms transform an ___ into a desired output.',
-      options: null,
-      answer: 'input',
-      explanation: 'An algorithm takes initial data (input) and processes it to produce a result.'
+      "id": "q-alg-2",
+      "conceptId": "algorithms",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Algorithms are designed to ___ a class of problems.",
+      "options": null,
+      "answer": "solve",
+      "explanation": "The purpose of an algorithm is problem solving."
     },
     {
-      id: 'q-algorithms-3', conceptId: 'algorithms', type: 'short', difficulty: 'medium',
-      prompt: 'Why must algorithm instructions be unambiguous?',
-      options: null,
-      answer: 'So the computer executes them predictably',
-      explanation: 'Computers cannot interpret intent; they need clear, precise steps.'
+      "id": "q-alg-3",
+      "conceptId": "algorithms",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Must an algorithm be a finite or infinite sequence?",
+      "options": null,
+      "answer": "Finite",
+      "explanation": "An algorithm must eventually terminate."
     },
     {
-      id: 'q-bigo-1', conceptId: 'big-o', type: 'mcq', difficulty: 'medium',
-      prompt: 'What does Big-O notation describe?',
-      options: ['Exact runtime in seconds', 'How efficiency scales with input size', 'The amount of memory installed', 'The number of lines of code'],
-      answer: 'How efficiency scales with input size',
-      explanation: 'Big-O focuses on asymptotic growth rate, ignoring hardware and constant factors.'
+      "id": "q-bigo-1",
+      "conceptId": "big-o",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What does Big-O notation characterize?",
+      "options": [
+        "Syntax errors",
+        "Function growth rates",
+        "Memory addresses",
+        "Network speed"
+      ],
+      "answer": "Function growth rates",
+      "explanation": "It describes how algorithm performance scales with input size."
     },
     {
-      id: 'q-bigo-2', conceptId: 'big-o', type: 'cloze', difficulty: 'hard',
-      prompt: 'O(1) means the time required is ___, regardless of input size.',
-      options: null,
-      answer: 'constant',
-      explanation: 'Constant time algorithms take the same amount of time no matter how large the input is.'
+      "id": "q-bigo-2",
+      "conceptId": "big-o",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Big-O is used to classify algorithms based on run time or ___ requirements.",
+      "options": null,
+      "answer": "space",
+      "explanation": "Big-O analyzes both time and space complexity."
     },
     {
-      id: 'q-bigo-3', conceptId: 'big-o', type: 'short', difficulty: 'hard',
-      prompt: 'Which scenario does Big-O primarily focus on?',
-      options: null,
-      answer: 'The worst-case scenario',
-      explanation: 'Big-O represents the upper bound of complexity to guarantee performance limits.'
+      "id": "q-bigo-3",
+      "conceptId": "big-o",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What happens to the input size when analyzing Big-O?",
+      "options": null,
+      "answer": "It grows",
+      "explanation": "Big-O looks at asymptotic behavior as input size tends to infinity."
     },
     {
-      id: 'q-recursion-1', conceptId: 'recursion', type: 'mcq', difficulty: 'medium',
-      prompt: 'What defines a recursive function?',
-      options: ['It never returns', 'It calls another function', 'It calls itself', 'It loops infinitely'],
-      answer: 'It calls itself',
-      explanation: 'Recursion happens when a function includes a call to its own definition.'
+      "id": "q-rec-1",
+      "conceptId": "recursion",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is recursion?",
+      "options": [
+        "A loop",
+        "A function calling itself",
+        "An error",
+        "A data type"
+      ],
+      "answer": "A function calling itself",
+      "explanation": "Recursion occurs when a function invokes itself."
     },
     {
-      id: 'q-recursion-2', conceptId: 'recursion', type: 'cloze', difficulty: 'hard',
-      prompt: 'A recursive function must have a ___ case to terminate.',
-      options: null,
-      answer: 'base',
-      explanation: 'The base case provides an exit condition so the function stops calling itself.'
+      "id": "q-rec-2",
+      "conceptId": "recursion",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Recursion breaks problems into ___ instances of the same problem.",
+      "options": null,
+      "answer": "smaller",
+      "explanation": "Recursive solutions depend on solving smaller subproblems."
     },
     {
-      id: 'q-recursion-3', conceptId: 'recursion', type: 'short', difficulty: 'medium',
-      prompt: 'What kind of problems are good candidates for recursion?',
-      options: null,
-      answer: 'Problems that can be divided into similar subproblems',
-      explanation: 'Recursion solves the main problem by solving smaller instances of the same problem.'
+      "id": "q-rec-3",
+      "conceptId": "recursion",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What must a recursive function eventually reach to stop calling itself?",
+      "options": null,
+      "answer": "Base case",
+      "explanation": "A base case prevents infinite recursion."
     },
     {
-      id: 'q-booleanlogic-1', conceptId: 'boolean-logic', type: 'mcq', difficulty: 'medium',
-      prompt: 'Which operator requires BOTH conditions to be true?',
-      options: ['OR', 'NOT', 'XOR', 'AND'],
-      answer: 'AND',
-      explanation: 'The AND operator only evaluates to true if every operand is true.'
+      "id": "q-bool-1",
+      "conceptId": "boolean-logic",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Boolean logic reduces values to what?",
+      "options": [
+        "0 to 9",
+        "TRUE or FALSE",
+        "Positive and negative",
+        "Strings"
+      ],
+      "answer": "TRUE or FALSE",
+      "explanation": "Boolean algebra works with truth values."
     },
     {
-      id: 'q-booleanlogic-2', conceptId: 'boolean-logic', type: 'cloze', difficulty: 'medium',
-      prompt: 'The ___ operator reverses a boolean value.',
-      options: null,
-      answer: 'NOT',
-      explanation: 'NOT turns true to false, and false to true.'
+      "id": "q-bool-2",
+      "conceptId": "boolean-logic",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Boolean logic uses operations like AND, OR, and ___.",
+      "options": null,
+      "answer": "NOT",
+      "explanation": "These are the fundamental boolean operators."
     },
     {
-      id: 'q-booleanlogic-3', conceptId: 'boolean-logic', type: 'short', difficulty: 'hard',
-      prompt: 'What does the OR operator require to evaluate to true?',
-      options: null,
-      answer: 'At least one condition to be true',
-      explanation: 'OR evaluates to true if any single operand is true.'
+      "id": "q-bool-3",
+      "conceptId": "boolean-logic",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What type of algebra is Boolean logic a form of?",
+      "options": null,
+      "answer": "Algebra",
+      "explanation": "It is a mathematical framework for logical operations."
     },
     {
-      id: 'q-debugging-1', conceptId: 'debugging', type: 'mcq', difficulty: 'easy',
-      prompt: 'What is the goal of debugging?',
-      options: ['To add new features', 'To find and fix errors', 'To rewrite code', 'To compile the program'],
-      answer: 'To find and fix errors',
-      explanation: 'Debugging is the process of resolving bugs that cause incorrect behavior.'
+      "id": "q-debug-1",
+      "conceptId": "debugging",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is debugging?",
+      "options": [
+        "Writing code",
+        "Finding and resolving bugs",
+        "Compiling",
+        "Designing UX"
+      ],
+      "answer": "Finding and resolving bugs",
+      "explanation": "It is the process of fixing software errors."
     },
     {
-      id: 'q-debugging-2', conceptId: 'debugging', type: 'cloze', difficulty: 'medium',
-      prompt: 'Using a ___ tool allows you to step through code execution line by line.',
-      options: null,
-      answer: 'debugger',
-      explanation: 'Debuggers pause execution so you can inspect program state at specific moments.'
+      "id": "q-debug-2",
+      "conceptId": "debugging",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Debugging prevents ___ operation of software.",
+      "options": null,
+      "answer": "incorrect",
+      "explanation": "Removing bugs ensures the program works as intended."
     },
     {
-      id: 'q-debugging-3', conceptId: 'debugging', type: 'short', difficulty: 'medium',
-      prompt: 'What kind of tests can catch bugs when old code is modified?',
-      options: null,
-      answer: 'Automated tests',
-      explanation: 'Automated tests ensure that changes do not break existing, working features (regressions).'
+      "id": "q-debug-3",
+      "conceptId": "debugging",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What is another word for errors or abnormalities in a program?",
+      "options": null,
+      "answer": "Bugs",
+      "explanation": "Software defects are commonly called bugs."
     }
   ]
-};
+},
+{
+  "id": "example-bio-101",
+  "title": "Cellular Biology",
+  "description": "Cell organelles, mitosis, and DNA replication",
+  "emoji": "\ud83e\uddec",
+  "createdAt": new Date().toISOString(),
+  "streak": 0,
+  "longestStreak": 0,
+  "sessionLogs": [],
+  "concepts": [
+    {
+      "id": "cell-membrane",
+      "label": "Cell Membrane",
+      "sourceSnippet": "The cell membrane (plasma membrane) is a biological membrane that separates and protects the interior of all cells from the outside environment. It is selectively permeable to ions and organic molecules and controls the movement of substances in and out of cells.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "mitochondria",
+      "label": "Mitochondria",
+      "sourceSnippet": "Mitochondria are often referred to as the powerhouses of the cell. They are organelles that act like a digestive system which takes in nutrients, breaks them down, and creates energy rich molecules for the cell. The biochemical processes of the cell are known as cellular respiration.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "nucleus",
+      "label": "Nucleus",
+      "sourceSnippet": "The nucleus is a highly specialized organelle that serves as the information processing and administrative center of the cell. This organelle has two major functions: it stores the cell's hereditary material, or DNA, and it coordinates the cell's activities, which include growth, intermediary metabolism, protein synthesis, and reproduction.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "ribosomes",
+      "label": "Ribosomes",
+      "sourceSnippet": "Ribosomes are the protein builders or the protein synthesizers of the cell. They are like construction guys who connect one amino acid at a time and build long chains. Ribosomes are special because they are found in both prokaryotes and eukaryotes.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "dna-replication",
+      "label": "DNA Replication",
+      "sourceSnippet": "DNA replication is the biological process of producing two identical replicas of DNA from one original DNA molecule. This process occurs in all living organisms and is the basis for biological inheritance.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "mitosis",
+      "label": "Mitosis",
+      "sourceSnippet": "Mitosis is a part of the cell cycle in which replicated chromosomes are separated into two new nuclei. Cell division gives rise to genetically identical cells in which the total number of chromosomes is maintained.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-mem-1",
+      "conceptId": "cell-membrane",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What separates the interior of the cell from the outside environment?",
+      "options": [
+        "Nucleus",
+        "Ribosome",
+        "Cell Membrane",
+        "Mitochondria"
+      ],
+      "answer": "Cell Membrane",
+      "explanation": "The cell membrane acts as a protective barrier."
+    },
+    {
+      "id": "q-mem-2",
+      "conceptId": "cell-membrane",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "The cell membrane is selectively ___ to ions and organic molecules.",
+      "options": null,
+      "answer": "permeable",
+      "explanation": "It controls what enters and exits the cell."
+    },
+    {
+      "id": "q-mem-3",
+      "conceptId": "cell-membrane",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What controls the movement of substances in and out of cells?",
+      "options": null,
+      "answer": "Cell Membrane",
+      "explanation": "The cell membrane regulates molecular transport."
+    },
+    {
+      "id": "q-mito-1",
+      "conceptId": "mitochondria",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Mitochondria are often referred to as the ___ of the cell.",
+      "options": [
+        "Brain",
+        "Powerhouse",
+        "Garbage disposal",
+        "Skeleton"
+      ],
+      "answer": "Powerhouse",
+      "explanation": "Mitochondria generate most of the chemical energy needed to power the cell."
+    },
+    {
+      "id": "q-mito-2",
+      "conceptId": "mitochondria",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "The biochemical processes of the cell are known as ___ respiration.",
+      "options": null,
+      "answer": "cellular",
+      "explanation": "Cellular respiration happens in the mitochondria."
+    },
+    {
+      "id": "q-mito-3",
+      "conceptId": "mitochondria",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What organelle takes in nutrients, breaks them down, and creates energy rich molecules?",
+      "options": null,
+      "answer": "Mitochondria",
+      "explanation": "This is the primary function of mitochondria."
+    },
+    {
+      "id": "q-nuc-1",
+      "conceptId": "nucleus",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Which organelle stores the cell's DNA?",
+      "options": [
+        "Ribosome",
+        "Mitochondria",
+        "Nucleus",
+        "Golgi apparatus"
+      ],
+      "answer": "Nucleus",
+      "explanation": "The nucleus stores the hereditary material (DNA)."
+    },
+    {
+      "id": "q-nuc-2",
+      "conceptId": "nucleus",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "The nucleus serves as the information processing and ___ center of the cell.",
+      "options": null,
+      "answer": "administrative",
+      "explanation": "It coordinates cell activities."
+    },
+    {
+      "id": "q-nuc-3",
+      "conceptId": "nucleus",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Name one of the two major functions of the nucleus.",
+      "options": null,
+      "answer": "Stores DNA",
+      "explanation": "It stores DNA and coordinates cell activities."
+    },
+    {
+      "id": "q-ribo-1",
+      "conceptId": "ribosomes",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What do ribosomes synthesize?",
+      "options": [
+        "Lipids",
+        "Proteins",
+        "Carbohydrates",
+        "DNA"
+      ],
+      "answer": "Proteins",
+      "explanation": "Ribosomes are the protein builders of the cell."
+    },
+    {
+      "id": "q-ribo-2",
+      "conceptId": "ribosomes",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Ribosomes connect one ___ at a time to build long chains.",
+      "options": null,
+      "answer": "amino acid",
+      "explanation": "Proteins are built from amino acid chains."
+    },
+    {
+      "id": "q-ribo-3",
+      "conceptId": "ribosomes",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Are ribosomes found in prokaryotes or eukaryotes?",
+      "options": null,
+      "answer": "Both",
+      "explanation": "Ribosomes are found in both cell types."
+    },
+    {
+      "id": "q-dna-1",
+      "conceptId": "dna-replication",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is the process of producing two identical replicas of DNA?",
+      "options": [
+        "Translation",
+        "Transcription",
+        "DNA Replication",
+        "Mitosis"
+      ],
+      "answer": "DNA Replication",
+      "explanation": "Replication copies the genetic information."
+    },
+    {
+      "id": "q-dna-2",
+      "conceptId": "dna-replication",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "DNA replication produces two identical ___ of DNA from one original molecule.",
+      "options": null,
+      "answer": "replicas",
+      "explanation": "It duplicates the DNA molecule."
+    },
+    {
+      "id": "q-dna-3",
+      "conceptId": "dna-replication",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What process is the basis for biological inheritance?",
+      "options": null,
+      "answer": "DNA Replication",
+      "explanation": "It allows traits to be passed to offspring."
+    },
+    {
+      "id": "q-mitosis-1",
+      "conceptId": "mitosis",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What does mitosis separate into two new nuclei?",
+      "options": [
+        "Ribosomes",
+        "Replicated chromosomes",
+        "Mitochondria",
+        "Cell membranes"
+      ],
+      "answer": "Replicated chromosomes",
+      "explanation": "Mitosis divides the genetic material equally."
+    },
+    {
+      "id": "q-mitosis-2",
+      "conceptId": "mitosis",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Cell division gives rise to genetically ___ cells.",
+      "options": null,
+      "answer": "identical",
+      "explanation": "Mitosis creates exact copies."
+    },
+    {
+      "id": "q-mitosis-3",
+      "conceptId": "mitosis",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Does mitosis change the total number of chromosomes?",
+      "options": null,
+      "answer": "No",
+      "explanation": "The chromosome number is maintained."
+    }
+  ]
+},
+{
+  "id": "example-psych-101",
+  "title": "Intro to Psychology",
+  "description": "Classical conditioning, memory, and cognitive biases",
+  "emoji": "\ud83e\udde0",
+  "createdAt": new Date().toISOString(),
+  "streak": 0,
+  "longestStreak": 0,
+  "sessionLogs": [],
+  "concepts": [
+    {
+      "id": "classical-conditioning",
+      "label": "Classical Conditioning",
+      "sourceSnippet": "Classical conditioning is a learning procedure in which a biologically potent stimulus (e.g. food) is paired with a previously neutral stimulus (e.g. a bell). It refers to the learning process that results from this pairing.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "operant-conditioning",
+      "label": "Operant Conditioning",
+      "sourceSnippet": "Operant conditioning, also known as instrumental conditioning, is a method of learning normally attributed to B.F. Skinner, where the consequences of a response determine the probability of it being repeated.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "short-term-memory",
+      "label": "Short-term Memory",
+      "sourceSnippet": "Short-term memory is the capacity for holding a small amount of information in an active, readily available state for a short interval. For example, short-term memory holds a phone number that has just been recited.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "long-term-memory",
+      "label": "Long-term Memory",
+      "sourceSnippet": "Long-term memory is the stage of the Atkinson-Shiffrin memory model where informative knowledge is held indefinitely. It is defined in contrast to short-term and working memory, which persist for only about 18 to 30 seconds.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "cognitive-biases",
+      "label": "Cognitive Biases",
+      "sourceSnippet": "A cognitive bias is a systematic pattern of deviation from norm or rationality in judgment. Individuals create their own subjective reality from their perception of the input.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    },
+    {
+      "id": "maslows-hierarchy",
+      "label": "Maslow's Hierarchy",
+      "sourceSnippet": "Maslow's hierarchy of needs is an idea in psychology proposed by Abraham Maslow in his 1943 paper. It is a motivational theory comprising a five-tier model of human needs, often depicted as hierarchical levels within a pyramid.",
+      "mastery": 0,
+      "easinessFactor": 2.5,
+      "interval": 1,
+      "repetitions": 0, "nextReviewDate": new Date().toISOString(),
+      "history": []
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-class-1",
+      "conceptId": "classical-conditioning",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is paired with a neutral stimulus in classical conditioning?",
+      "options": [
+        "A biological potent stimulus",
+        "A neutral response",
+        "Punishment",
+        "A cognitive bias"
+      ],
+      "answer": "A biological potent stimulus",
+      "explanation": "It pairs a natural reflex with a new trigger."
+    },
+    {
+      "id": "q-class-2",
+      "conceptId": "classical-conditioning",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Classical conditioning is a ___ procedure.",
+      "options": null,
+      "answer": "learning",
+      "explanation": "It's a fundamental type of learning."
+    },
+    {
+      "id": "q-class-3",
+      "conceptId": "classical-conditioning",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Give an example of a previously neutral stimulus commonly used to explain this concept.",
+      "options": null,
+      "answer": "A bell",
+      "explanation": "Pavlov famously used a bell (or metronome) in his experiments."
+    },
+    {
+      "id": "q-operant-1",
+      "conceptId": "operant-conditioning",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "Who is normally attributed with operant conditioning?",
+      "options": [
+        "Sigmund Freud",
+        "B.F. Skinner",
+        "Ivan Pavlov",
+        "Abraham Maslow"
+      ],
+      "answer": "B.F. Skinner",
+      "explanation": "Skinner is the father of operant conditioning."
+    },
+    {
+      "id": "q-operant-2",
+      "conceptId": "operant-conditioning",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "The consequences of a response determine the ___ of it being repeated.",
+      "options": null,
+      "answer": "probability",
+      "explanation": "Reinforcement increases probability, punishment decreases it."
+    },
+    {
+      "id": "q-operant-3",
+      "conceptId": "operant-conditioning",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "What is another name for operant conditioning?",
+      "options": null,
+      "answer": "Instrumental conditioning",
+      "explanation": "It is also known as instrumental conditioning."
+    },
+    {
+      "id": "q-stm-1",
+      "conceptId": "short-term-memory",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "How much information can short-term memory hold?",
+      "options": [
+        "Unlimited",
+        "A large amount",
+        "A small amount",
+        "None"
+      ],
+      "answer": "A small amount",
+      "explanation": "STM has a very limited capacity."
+    },
+    {
+      "id": "q-stm-2",
+      "conceptId": "short-term-memory",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Short-term memory holds information in an active, readily ___ state.",
+      "options": null,
+      "answer": "available",
+      "explanation": "The information is immediately accessible."
+    },
+    {
+      "id": "q-stm-3",
+      "conceptId": "short-term-memory",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Give an example of something held in short-term memory.",
+      "options": null,
+      "answer": "A phone number",
+      "explanation": "A just-recited phone number is a classic example."
+    },
+    {
+      "id": "q-ltm-1",
+      "conceptId": "long-term-memory",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "How long is knowledge held in long-term memory?",
+      "options": [
+        "18 to 30 seconds",
+        "A few hours",
+        "Indefinitely",
+        "A few days"
+      ],
+      "answer": "Indefinitely",
+      "explanation": "LTM has a potentially limitless duration."
+    },
+    {
+      "id": "q-ltm-2",
+      "conceptId": "long-term-memory",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Long-term memory is defined in contrast to ___ and working memory.",
+      "options": null,
+      "answer": "short-term",
+      "explanation": "It's a different stage in the memory model."
+    },
+    {
+      "id": "q-ltm-3",
+      "conceptId": "long-term-memory",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Which memory model includes long-term memory as a stage?",
+      "options": null,
+      "answer": "Atkinson-Shiffrin",
+      "explanation": "This model proposed sensory, short-term, and long-term memory."
+    },
+    {
+      "id": "q-bias-1",
+      "conceptId": "cognitive-biases",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "What is a cognitive bias?",
+      "options": [
+        "A mental illness",
+        "A perfect rational judgment",
+        "A systematic deviation from rationality",
+        "A memory technique"
+      ],
+      "answer": "A systematic deviation from rationality",
+      "explanation": "It describes flawed patterns of thinking."
+    },
+    {
+      "id": "q-bias-2",
+      "conceptId": "cognitive-biases",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Individuals create their own ___ reality from their perception of the input.",
+      "options": null,
+      "answer": "subjective",
+      "explanation": "Biases color how we see the world."
+    },
+    {
+      "id": "q-bias-3",
+      "conceptId": "cognitive-biases",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "Do cognitive biases represent a deviation from the norm?",
+      "options": null,
+      "answer": "Yes",
+      "explanation": "They are systematic deviations from rational judgment."
+    },
+    {
+      "id": "q-maslow-1",
+      "conceptId": "maslows-hierarchy",
+      "type": "mcq",
+      "difficulty": "easy",
+      "prompt": "How many tiers are in Maslow's model of human needs?",
+      "options": [
+        "Three",
+        "Five",
+        "Seven",
+        "Ten"
+      ],
+      "answer": "Five",
+      "explanation": "It is a five-tier model."
+    },
+    {
+      "id": "q-maslow-2",
+      "conceptId": "maslows-hierarchy",
+      "type": "cloze",
+      "difficulty": "medium",
+      "prompt": "Maslow's hierarchy of needs is often depicted as hierarchical levels within a ___.",
+      "options": null,
+      "answer": "pyramid",
+      "explanation": "The pyramid shape is standard for this model."
+    },
+    {
+      "id": "q-maslow-3",
+      "conceptId": "maslows-hierarchy",
+      "type": "short",
+      "difficulty": "hard",
+      "prompt": "In what year did Abraham Maslow propose this idea?",
+      "options": null,
+      "answer": "1943",
+      "explanation": "He proposed it in his 1943 paper."
+    }
+  ]
+}
+];
