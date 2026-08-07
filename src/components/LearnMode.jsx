@@ -73,7 +73,6 @@ export default function LearnMode() {
       newReviewed.add(currentConcept.id);
       playSound('correct');
       
-      // Update nextReviewDate to now so it's ready for quiz
       const updatedConcepts = deck.concepts.map(c => 
         c.id === currentConcept.id ? { ...c, nextReviewDate: now } : c
       );
@@ -84,7 +83,7 @@ export default function LearnMode() {
     setReviewedConcepts(newReviewed);
   };
 
-  // Generate key points from sourceSnippet
+  // Extract key points
   const keyPoints = currentConcept?.sourceSnippet
     ? currentConcept.sourceSnippet.split('. ').filter(s => s.trim().length > 10).slice(0, 3)
     : [];
@@ -102,7 +101,7 @@ export default function LearnMode() {
         {/* Step Indicator Header */}
         <div className="flex items-center gap-2 bg-white/[0.04] p-1.5 rounded-full border border-white/[0.08] text-xs font-semibold">
           <span className="bg-[var(--color-accent)] text-white px-3 py-1 rounded-full">
-            📖 Step 1: Learn Material
+            🎓 Step 1: Teacher Mode
           </span>
           <span className="text-[var(--color-text-muted)] px-2">→</span>
           <span className="text-[var(--color-text-muted)] px-2">
@@ -113,7 +112,7 @@ export default function LearnMode() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-extrabold text-[var(--color-text)] flex items-center gap-2">
-          <span>🎓</span> Interactive Teacher Mode
+          <span>🎓</span> Interactive AI Teacher
         </h2>
         <span className="badge bg-white/[0.05] text-[var(--color-accent-light)] font-mono">
           Concept {currentIndex + 1} of {concepts.length}
@@ -124,7 +123,7 @@ export default function LearnMode() {
       <div className="glass-strong p-8 rounded-2xl relative space-y-6 border border-white/[0.08]">
         <div className="flex items-center justify-between">
           <span className="text-xs uppercase tracking-wider text-[var(--color-accent-light)] font-bold bg-[rgba(108,92,231,0.2)] px-3 py-1 rounded-full">
-            Teaching Material
+            Core Explanation
           </span>
           <button
             onClick={() => setShowSimplified(!showSimplified)}
@@ -150,6 +149,22 @@ export default function LearnMode() {
             <p>{currentConcept?.sourceSnippet}</p>
           </div>
         )}
+
+        {/* Worked Example / Mathematical Formula Box */}
+        <div className="space-y-2 pt-1">
+          <h4 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-success)] flex items-center gap-2">
+            <span>📌</span> Worked Example / Mathematical Application:
+          </h4>
+          <div className="bg-[#12151e] p-5 rounded-xl border border-[var(--color-success)]/30 text-sm font-mono text-white leading-relaxed space-y-2 shadow-lg">
+            {currentConcept?.example ? (
+              <p className="whitespace-pre-wrap">{currentConcept.example}</p>
+            ) : (
+              <p className="text-[var(--color-text-muted)] italic">
+                Example: Application of {currentConcept?.label} in problem solving.
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Key Takeaways */}
         {keyPoints.length > 0 && (

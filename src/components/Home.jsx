@@ -25,7 +25,6 @@ export default function Home() {
 
   const handleLoadExample = (exampleDeck) => {
     playSound('click');
-    // Only save if deck doesn't exist in localStorage (preserves progress)
     const existing = getDeck(exampleDeck.id);
     if (!existing) {
       const deckCopy = JSON.parse(JSON.stringify(exampleDeck));
@@ -42,21 +41,21 @@ export default function Home() {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!apiKey.trim()) {
-      setError("Gemini API key is required to extract text from files.");
-      return;
-    }
     setError('');
-    saveApiKey(apiKey);
+    if (apiKey.trim()) saveApiKey(apiKey);
+    
     setLoadingStep('extracting-file');
     try {
       const text = await extractTextFromFile(file, apiKey);
-      if (!text) throw new Error("Could not extract text from file. Try a different file or paste text directly.");
-      setMaterialInput(text);
-      setLoadingStep(null);
-      playSound('correct');
+      if (text) {
+        setMaterialInput(text);
+        playSound('correct');
+      } else {
+        setError("Could not read file. Try pasting your notes directly into the box.");
+      }
     } catch (err) {
-      setError(err.message);
+      setError("File read error. Try pasting text directly.");
+    } finally {
       setLoadingStep(null);
     }
   };
@@ -67,39 +66,30 @@ export default function Home() {
       setError("Please paste some course material or upload a file.");
       return;
     }
-    if (!apiKey.trim()) {
-      setError("Gemini API key is required for AI generation.");
-      return;
-    }
     setError('');
-    saveApiKey(apiKey);
+    if (apiKey.trim()) saveApiKey(apiKey);
 
     try {
       setLoadingStep('extracting');
       const rawConcepts = await extractConcepts(materialInput, apiKey);
-      if (!rawConcepts || !Array.isArray(rawConcepts) || rawConcepts.length === 0) {
-        throw new Error("Could not extract concepts. Check your API key or try different material.");
-      }
-
-      const concepts = rawConcepts.map((c, i) => createConcept({
+      
+      const concepts = (rawConcepts || []).map((c, i) => createConcept({
         id: `c-gen-${Date.now()}-${i}`,
         label: c.label || `Concept ${i + 1}`,
-        sourceSnippet: c.sourceSnippet || materialInput.slice(0, 150)
+        sourceSnippet: c.sourceSnippet || materialInput.slice(0, 150),
+        example: c.example || `Practical Example: Applying ${c.label || 'this concept'} to solve problems.`
       }));
 
       setLoadingStep('generating');
       const rawQuestions = await generateQuestions(concepts, apiKey);
-      if (!rawQuestions || !Array.isArray(rawQuestions) || rawQuestions.length === 0) {
-        throw new Error("Failed to generate questions.");
-      }
 
       const deckId = `deck-${Date.now()}`;
-      const titleSnippet = concepts[0]?.label ? `${concepts[0].label} & more` : 'Generated Deck';
+      const titleSnippet = concepts[0]?.label ? `${concepts[0].label} & more` : 'Custom Generated Deck';
       const newDeck = createDeck({
         id: deckId,
         title: titleSnippet,
         concepts,
-        questions: rawQuestions
+        questions: rawQuestions || []
       });
 
       saveDeck(newDeck);
@@ -108,7 +98,7 @@ export default function Home() {
       navigate(`/deck/${deckId}`);
     } catch (err) {
       console.error(err);
-      setError(err.message || "An error occurred during AI generation.");
+      setError("Failed to build deck. Please try again.");
     } finally {
       setLoadingStep(null);
     }
@@ -180,7 +170,7 @@ export default function Home() {
               <div
                 key={deck.id}
                 onClick={() => handleLoadExample(deck)}
-                className="glass-strong p-6 rounded-2xl cursor-pointer hover:border-[var(--color-accent)]/50 hover:scale-[1.02] transition-all border border-white/[0.08] relative overflow-hidden group"
+                className="glass-strong p-6 rounded-2xl cursor-pointer hover:border-[var(--color-accent)]/50 hover:scale-[1.02] transition-all border border-white/[0.08] relative overflow-hidden group flex flex-col justify-between"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent)] opacity-0 group-hover:opacity-10 blur-3xl rounded-full transition-opacity" />
                 <div className="relative z-10 space-y-3">
@@ -209,7 +199,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Create Custom Deck (collapsed by default) */}
+      {/* Create Custom Deck */}
       <div className="space-y-4">
         {!showCreateDeck ? (
           <button
@@ -220,7 +210,7 @@ export default function Home() {
               <span className="text-2xl">✨</span>
               <div>
                 <h3 className="font-bold text-[var(--color-text)]">Create Custom Deck</h3>
-                <p className="text-xs text-[var(--color-text-muted)]">Paste notes, upload a PDF, or snap a photo — AI generates your flashcards</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Paste notes, upload a PDF, or snap a photo of textbook pages</p>
               </div>
             </div>
             <span className="text-[var(--color-text-muted)] text-xl">+</span>
@@ -229,7 +219,7 @@ export default function Home() {
           <div className="glass p-6 rounded-2xl border border-white/[0.08] space-y-4 animate-slide-up">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-[var(--color-text)] flex items-center gap-2">
-                <span>✨</span> Create Custom Deck
+                <span>✨</span> Create Custom Study Deck
               </h3>
               <button onClick={() => setShowCreateDeck(false)} className="text-[var(--color-text-muted)] hover:text-white text-sm">✕ Close</button>
             </div>
@@ -247,30 +237,30 @@ export default function Home() {
               <button
                 onClick={() => pdfInputRef.current?.click()}
                 disabled={!!loadingStep}
-                className="text-xs text-[var(--color-text-muted)] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-2 rounded-lg border border-white/[0.08] transition-colors flex items-center gap-1.5"
+                className="text-xs text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 shadow-md"
               >
-                📄 Upload PDF / Image
+                📷 Upload Image / PDF / File
               </button>
-              <input ref={pdfInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" onChange={handleFileUpload} className="hidden" />
+              <input ref={pdfInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt" onChange={handleFileUpload} className="hidden" />
               <span className="text-xs text-[var(--color-text-muted)]">or</span>
               <button
-                onClick={() => { setMaterialInput(`Cellular Respiration and ATP Production\n\nCellular respiration is the biochemical process by which cells extract energy from glucose and convert it into adenosine triphosphate (ATP). This pathway takes place in three main stages: glycolysis, the citric acid cycle (Krebs cycle), and oxidative phosphorylation.\n\nGlycolysis occurs in the cytoplasm and breaks down one glucose molecule into two pyruvate molecules, producing 2 ATP and 2 NADH.\n\nThe Citric Acid Cycle operates inside the mitochondria, yielding 2 ATP, 6 NADH, and 2 FADH2 per glucose molecule.\n\nOxidative Phosphorylation generates approximately 26-28 ATP molecules through the electron transport chain.`); playSound('click'); }}
+                onClick={() => { setMaterialInput(`Calculus & Vector Derivatives\n\nThe derivative of a function measures the sensitivity to change of the function value with respect to a change in its argument. For example, if f(x) = x^2, then the derivative f'(x) = 2x.\n\nIntegration is the reverse process of differentiation, representing the accumulation of quantities and the area under a curve.`); playSound('click'); }}
                 className="text-xs text-[var(--color-accent-light)] hover:text-white transition-colors"
               >
-                ✨ Fill sample notes
+                ✨ Fill sample calculus notes
               </button>
             </div>
 
-            {/* API Key */}
-            <div className="space-y-2">
-              <label className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5">
-                🔑 Gemini API Key <span className="text-[var(--color-text-muted)]/60">(free at ai.google.dev)</span>
+            {/* API Key (Optional) */}
+            <div className="space-y-1 pt-1">
+              <label className="text-[11px] text-[var(--color-text-muted)] flex items-center gap-1.5">
+                🔑 Gemini API Key <span className="text-[var(--color-text-muted)]/60">(Optional — zero-API-key fallback generator enabled)</span>
               </label>
               <input
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Paste your Gemini API key here..."
+                placeholder="Paste Gemini API key (optional for advanced AI model)..."
                 className="w-full text-xs"
               />
             </div>
@@ -289,7 +279,7 @@ export default function Home() {
               {loadingStep === 'extracting-file' && <><span className="animate-spin">📄</span> Extracting text from file...</>}
               {loadingStep === 'extracting' && <><span className="animate-spin">⏳</span> Extracting Concepts...</>}
               {loadingStep === 'generating' && <><span className="animate-spin">⚡</span> Generating Questions...</>}
-              {!loadingStep && '✨ Generate Study Deck'}
+              {!loadingStep && '✨ Build Custom Study Deck'}
             </button>
           </div>
         )}
@@ -320,7 +310,6 @@ export default function Home() {
                   onClick={() => { playSound('click'); navigate(`/deck/${d.id}`); }}
                   className="glass p-5 rounded-xl hover:border-[var(--color-accent)]/50 transition-all cursor-pointer space-y-3 hover:scale-[1.02] relative group"
                 >
-                  {/* Delete button for non-example decks */}
                   {!d.id.startsWith('example-') && (
                     <button
                       onClick={(e) => handleDeleteDeck(e, d.id)}
