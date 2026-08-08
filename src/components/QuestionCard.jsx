@@ -86,8 +86,8 @@ export default function QuestionCard({ question, concept, onAnswer }) {
   }[question.type] || 'badge-mcq';
 
   return (
-    <div className={`glass-strong p-6 sm:p-8 rounded-2xl transition-all duration-300 animate-fade-in ${
-      isSubmitted ? (isCorrect ? 'animate-correct border-[var(--color-success)]/40' : 'animate-shake border-[var(--color-danger)]/40') : ''
+    <div key={question?.id} className={`glass-strong p-6 sm:p-8 rounded-2xl transition-all duration-200 animate-card-advance ${
+      isSubmitted ? (isCorrect ? 'animate-correct border-[var(--color-success)]/50 shadow-[0_0_25px_rgba(0,206,201,0.25)]' : 'animate-shake border-[var(--color-danger)]/50 shadow-[0_0_25px_rgba(255,118,117,0.25)]') : ''
     }`}>
       {/* Badges & Keyboard hint */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-2">

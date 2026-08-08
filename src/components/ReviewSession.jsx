@@ -308,18 +308,21 @@ export default function ReviewSession() {
       {/* Progress */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-[var(--color-text-muted)]">
-            Question {currentIndex + 1} of {queue.length}
+          <span className="text-sm font-semibold text-[var(--color-text)] flex items-center gap-2">
+            <span>🎯 Question {currentIndex + 1} of {queue.length}</span>
+            <span className="text-xs font-mono font-bold text-[var(--color-accent-light)] bg-[rgba(108,92,231,0.2)] px-2 py-0.5 rounded-full border border-[var(--color-accent)]/30">
+              {Math.round(((currentIndex + 1) / queue.length) * 100)}%
+            </span>
           </span>
           <button
             onClick={() => navigate(`/deck/${id}`)}
-            className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+            className="text-xs text-[var(--color-text-muted)] hover:text-white transition-colors bg-white/[0.04] hover:bg-white/[0.08] px-2.5 py-1 rounded-lg border border-white/[0.06]"
           >
             ✕ End session
           </button>
         </div>
         <div className="progress-bar">
-          <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
+          <div className="progress-bar-fill" style={{ width: `${((currentIndex + 1) / queue.length) * 100}%` }} />
         </div>
       </div>
 
