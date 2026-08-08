@@ -1,3 +1,5 @@
+import { EXAMPLE_DECKS } from '../data/exampleDeck.js';
+
 const DECKS_KEY = 'adaptive-study-engine-decks';
 const API_KEY_KEY = 'adaptive-study-engine-api-key';
 
@@ -29,7 +31,9 @@ export function saveDeck(deck) {
 
 export function getDeck(id) {
   const decks = loadDecks();
-  return decks.find(d => d.id === id) || null;
+  const found = decks.find(d => d.id === id);
+  if (found) return found;
+  return EXAMPLE_DECKS.find(d => d.id === id) || null;
 }
 
 export function deleteDeck(id) {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { toggleSound, isSoundEnabled } from '../utils/audio.js';
+import logoImg from '../assets/logo.png';
 
 export default function Layout({ children }) {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
@@ -16,7 +17,7 @@ export default function Layout({ children }) {
       <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0f1117]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <a href="#/" className="flex items-center gap-3 text-white no-underline transition-opacity hover:opacity-80">
-            <img src="/logo.png" alt="Synapse Logo" className="h-8 w-8 object-contain rounded-lg shadow-md border border-white/10" />
+            <img src={logoImg} alt="Synapse Logo" className="h-8 w-8 object-contain rounded-lg shadow-md border border-white/10" />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">Synapse</span>
             <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest text-[var(--color-accent-light)] bg-[rgba(108,92,231,0.2)] px-2 py-0.5 rounded border border-[var(--color-accent)]/30">
               CUTC Transform
