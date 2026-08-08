@@ -237,11 +237,11 @@ export default function Home() {
               <button
                 onClick={() => pdfInputRef.current?.click()}
                 disabled={!!loadingStep}
-                className="text-xs text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 shadow-md"
+                className="text-xs text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg cursor-pointer"
               >
-                📷 Upload Image / PDF / File
+                <span>📷</span> Attach Image / PDF / Doc
               </button>
-              <input ref={pdfInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt" onChange={handleFileUpload} className="hidden" />
+              <input ref={pdfInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.md" onChange={handleFileUpload} className="hidden" />
               <span className="text-xs text-[var(--color-text-muted)]">or</span>
               <button
                 onClick={() => { setMaterialInput(`Calculus & Vector Derivatives\n\nThe derivative of a function measures the sensitivity to change of the function value with respect to a change in its argument. For example, if f(x) = x^2, then the derivative f'(x) = 2x.\n\nIntegration is the reverse process of differentiation, representing the accumulation of quantities and the area under a curve.`); playSound('click'); }}
@@ -251,16 +251,23 @@ export default function Home() {
               </button>
             </div>
 
+            {materialInput.trim() && (
+              <div className="p-3 rounded-lg bg-[rgba(0,206,201,0.1)] border border-[rgba(0,206,201,0.3)] text-[var(--color-success)] text-xs flex items-center justify-between">
+                <span>✅ Material ready for deck creation ({materialInput.length} characters)</span>
+                <span className="font-mono text-[10px] text-[var(--color-text-muted)]">Zero-API key fallback ready</span>
+              </div>
+            )}
+
             {/* API Key (Optional) */}
             <div className="space-y-1 pt-1">
-              <label className="text-[11px] text-[var(--color-text-muted)] flex items-center gap-1.5">
-                🔑 Gemini API Key <span className="text-[var(--color-text-muted)]/60">(Optional — zero-API-key fallback generator enabled)</span>
+              <label className="text-[11px] text-[var(--color-text-muted)] flex items-center gap-1.5 font-medium">
+                🔑 Gemini API Key <span className="text-[var(--color-text-muted)]/60">(Optional — automatic rule-based generator works without key)</span>
               </label>
               <input
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Paste Gemini API key (optional for advanced AI model)..."
+                placeholder="Paste Gemini API key (optional for cloud AI model)..."
                 className="w-full text-xs"
               />
             </div>
@@ -273,10 +280,10 @@ export default function Home() {
 
             <button
               onClick={handleCreateDeck}
-              disabled={!!loadingStep}
-              className="btn-primary w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={!!loadingStep || !materialInput.trim()}
+              className="btn-primary w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer shadow-xl shadow-[var(--color-accent)]/20"
             >
-              {loadingStep === 'extracting-file' && <><span className="animate-spin">📄</span> Extracting text from file...</>}
+              {loadingStep === 'extracting-file' && <><span className="animate-spin">📄</span> Extracting text from image/file...</>}
               {loadingStep === 'extracting' && <><span className="animate-spin">⏳</span> Extracting Concepts...</>}
               {loadingStep === 'generating' && <><span className="animate-spin">⚡</span> Generating Questions...</>}
               {!loadingStep && '✨ Build Custom Study Deck'}

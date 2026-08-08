@@ -1,88 +1,8 @@
 export const EXAMPLE_DECKS = [
   {
-    "id": "example-cs-101",
-    "title": "Intro to Computer Science",
-    "description": "Variables, loops, algorithms, and Big-O notation",
-    "emoji": "💻",
-    "createdAt": "2026-08-07T12:00:00.000Z",
-    "streak": 0,
-    "longestStreak": 0,
-    "sessionLogs": [],
-    "concepts": [
-      {
-        "id": "binary-numbers",
-        "label": "Binary Numbers",
-        "sourceSnippet": "Binary (base-2) is the fundamental language of digital computers, using 0s and 1s to encode numbers, characters, and machine instructions.",
-        "example": "Mathematical Conversion: 1011₂ = (1 × 2³) + (0 × 2²) + (1 × 2¹) + (1 × 2⁰) = 8 + 0 + 2 + 1 = 11₁₀.",
-        "mastery": 0,
-        "easinessFactor": 2.5,
-        "interval": 1,
-        "repetitions": 0,
-        "nextReviewDate": "2026-08-07T12:00:00.000Z",
-        "history": []
-      },
-      {
-        "id": "variables",
-        "label": "Variables & Scope",
-        "sourceSnippet": "A variable is a named storage location in memory used to hold dynamic data that can be updated during execution.",
-        "example": "Code Snippet:\nlet score = 10;\nscore = score + 5; // score is now 15",
-        "mastery": 0,
-        "easinessFactor": 2.5,
-        "interval": 1,
-        "repetitions": 0,
-        "nextReviewDate": "2026-08-07T12:00:00.000Z",
-        "history": []
-      },
-      {
-        "id": "big-o",
-        "label": "Big-O Algorithmic Complexity",
-        "sourceSnippet": "Big-O notation describes the upper bound performance of an algorithm in terms of time runtime or memory consumption as input N scales.",
-        "example": "Complexity Comparison:\nLinear Search = O(N) (1,000 items → 1,000 steps)\nBinary Search = O(log N) (1,000 items → ~10 steps)",
-        "mastery": 0,
-        "easinessFactor": 2.5,
-        "interval": 1,
-        "repetitions": 0,
-        "nextReviewDate": "2026-08-07T12:00:00.000Z",
-        "history": []
-      }
-    ],
-    "questions": [
-      {
-        "id": "q-cs-1",
-        "conceptId": "binary-numbers",
-        "type": "mcq",
-        "difficulty": "easy",
-        "prompt": "What base is the binary number system?",
-        "options": ["Base-10", "Base-2", "Base-16", "Base-8"],
-        "answer": "Base-2",
-        "explanation": "Binary uses only two digits: 0 and 1."
-      },
-      {
-        "id": "q-cs-2",
-        "conceptId": "variables",
-        "type": "cloze",
-        "difficulty": "medium",
-        "prompt": "A variable stores a named value in ___.",
-        "options": null,
-        "answer": "memory",
-        "explanation": "Variables map symbolic identifiers to memory addresses."
-      },
-      {
-        "id": "q-cs-3",
-        "conceptId": "big-o",
-        "type": "short",
-        "difficulty": "hard",
-        "prompt": "What is the Big-O time complexity of binary search?",
-        "options": null,
-        "answer": "O(log N)",
-        "explanation": "Binary search halves the active search space with every comparison."
-      }
-    ]
-  },
-  {
     "id": "example-calc-101",
-    "title": "Calculus & University Physics",
-    "description": "Derivatives, integrals, kinematics, and Newton laws",
+    "title": "Grade 12 Calculus & Vectors",
+    "description": "Limits, derivatives, vector cross products, and equations of planes",
     "emoji": "📐",
     "createdAt": "2026-08-07T12:00:00.000Z",
     "streak": 0,
@@ -90,10 +10,10 @@ export const EXAMPLE_DECKS = [
     "sessionLogs": [],
     "concepts": [
       {
-        "id": "derivatives",
-        "label": "Power Rule Derivatives",
-        "sourceSnippet": "The power rule states that the derivative of x^n with respect to x is n * x^(n-1).",
-        "example": "Worked Math Example:\nFind d/dx (3x⁴ - 5x² + 7):\n= 3(4x³) - 5(2x¹) + 0 = 12x³ - 10x.",
+        "id": "derivatives-power-rule",
+        "label": "Power Rule & Chain Rule Derivatives",
+        "sourceSnippet": "The power rule states d/dx (x^n) = n * x^(n-1). Combined with the chain rule d/dx [f(g(x))] = f'(g(x)) * g'(x), complex engineering rate-of-change functions are computed.",
+        "example": "Worked Math Problem:\nFind d/dx [(3x² + 5)⁴]:\nLet u = 3x² + 5. Then d/dx = 4(3x² + 5)³ * (6x) = 24x(3x² + 5)³.",
         "mastery": 0,
         "easinessFactor": 2.5,
         "interval": 1,
@@ -102,22 +22,10 @@ export const EXAMPLE_DECKS = [
         "history": []
       },
       {
-        "id": "integration",
-        "label": "Definite Integrals",
-        "sourceSnippet": "Integration calculates the accumulated net signed area under a continuous curve f(x) over [a, b].",
-        "example": "Worked Integral Example:\n∫₁³ 2x dx = [x²]₁³ = (3²) - (1²) = 9 - 1 = 8 units².",
-        "mastery": 0,
-        "easinessFactor": 2.5,
-        "interval": 1,
-        "repetitions": 0,
-        "nextReviewDate": "2026-08-07T12:00:00.000Z",
-        "history": []
-      },
-      {
-        "id": "kinematics",
-        "label": "Newton Second Law (F = ma)",
-        "sourceSnippet": "Acceleration is directly proportional to net external force and inversely proportional to object mass.",
-        "example": "Physics Calculation:\nA 5 kg block pushed with 20 N force on a frictionless surface:\na = F / m = 20 N / 5 kg = 4 m/s².",
+        "id": "vectors-cross-product",
+        "label": "Vector Cross Product & Torque",
+        "sourceSnippet": "The cross product of 3D vectors A × B produces a perpendicular vector with magnitude |A||B|sin(θ), representing physical quantities like torque and magnetic force.",
+        "example": "Worked Vector Calculation:\nIf A = [1, 2, 3] and B = [4, 5, 6]:\nA × B = [(2*6 - 3*5), (3*4 - 1*6), (1*5 - 2*4)] = [-3, 6, -3].",
         "mastery": 0,
         "easinessFactor": 2.5,
         "interval": 1,
@@ -129,51 +37,41 @@ export const EXAMPLE_DECKS = [
     "questions": [
       {
         "id": "q-calc-1",
-        "conceptId": "derivatives",
+        "conceptId": "derivatives-power-rule",
         "type": "mcq",
         "difficulty": "easy",
-        "prompt": "What is the derivative of x³ using the power rule?",
-        "options": ["3x²", "x²", "3x³", "x⁴/4"],
-        "answer": "3x²",
-        "explanation": "d/dx (x³) = 3 * x^(3-1) = 3x²."
+        "prompt": "What is the derivative of x⁴ using the power rule?",
+        "options": ["4x³", "x³", "4x⁴", "3x³"],
+        "answer": "4x³",
+        "explanation": "d/dx (x⁴) = 4 * x^(4-1) = 4x³."
       },
       {
         "id": "q-calc-2",
-        "conceptId": "integration",
-        "type": "cloze",
-        "difficulty": "medium",
-        "prompt": "Integration measures the total accumulated ___ under a curve.",
-        "options": null,
-        "answer": "area",
-        "explanation": "The definite integral equals the net area under f(x)."
-      },
-      {
-        "id": "q-calc-3",
-        "conceptId": "kinematics",
+        "conceptId": "vectors-cross-product",
         "type": "short",
         "difficulty": "hard",
-        "prompt": "What is the formula for Newton second law of motion?",
+        "prompt": "What geometric relationship does A × B have to vectors A and B?",
         "options": null,
-        "answer": "F = ma",
-        "explanation": "Force equals mass multiplied by acceleration."
+        "answer": "perpendicular",
+        "explanation": "The cross product vector is orthogonal (perpendicular) to both input vectors."
       }
     ]
   },
   {
-    "id": "example-chem-101",
-    "title": "General & Organic Chemistry",
-    "description": "Stoichiometry, chemical bonding, thermodynamics, and reaction mechanisms",
-    "emoji": "🧪",
+    "id": "example-phys-em",
+    "title": "Grade 12 Physics: Electricity & Magnetism",
+    "description": "Coulomb's Law, DC circuit analysis, and magnetic forces",
+    "emoji": "⚡",
     "createdAt": "2026-08-07T12:00:00.000Z",
     "streak": 0,
     "longestStreak": 0,
     "sessionLogs": [],
     "concepts": [
       {
-        "id": "stoichiometry",
-        "label": "Molar Mass & Avogadro Number",
-        "sourceSnippet": "One mole of any substance contains exactly 6.022 × 10²³ elementary entities (atoms, molecules, or ions).",
-        "example": "Chemistry Calculation:\nFind moles of H₂O in 36g (Molar mass of H₂O = 18 g/mol):\n36g / 18 g/mol = 2.0 moles = 1.204 × 10²⁴ molecules.",
+        "id": "coulomb-law",
+        "label": "Coulomb's Law & Electric Fields",
+        "sourceSnippet": "Coulomb's Law calculates the electrostatic force between charges: F = k * (|q1*q2| / r²), where k ≈ 8.99 × 10⁹ N·m²/C².",
+        "example": "Physics Calculation:\nTwo 2μC charges separated by 0.1m:\nF = (8.99 × 10⁹) * (2 × 10⁻⁶ * 2 × 10⁻⁶) / (0.1)² = 3.596 N.",
         "mastery": 0,
         "easinessFactor": 2.5,
         "interval": 1,
@@ -182,10 +80,82 @@ export const EXAMPLE_DECKS = [
         "history": []
       },
       {
-        "id": "le-chatelier",
-        "label": "Le Chatelier Principle",
-        "sourceSnippet": "When a chemical system at equilibrium experiences a change in concentration, temperature, or pressure, the system shifts to counteract the imposition.",
-        "example": "Equilibrium Shift Example:\nFor N₂(g) + 3H₂(g) ⇌ 2NH₃(g) (Exothermic ΔH < 0):\nIncreasing temperature shifts equilibrium left toward reactants.",
+        "id": "lorentz-force",
+        "label": "Magnetic Field & Lorentz Force",
+        "sourceSnippet": "A charged particle moving through a magnetic field B experiences a magnetic force F = q(v × B) perpendicular to velocity and field.",
+        "example": "Force Calculation:\nProton (q = 1.6 × 10⁻¹⁹ C) moving at 10⁶ m/s perpendicular to 0.5 T field:\nF = (1.6 × 10⁻¹⁹) * (10⁶) * (0.5) = 8.0 × 10⁻¹⁴ N.",
+        "mastery": 0,
+        "easinessFactor": 2.5,
+        "interval": 1,
+        "repetitions": 0,
+        "nextReviewDate": "2026-08-07T12:00:00.000Z",
+        "history": []
+      }
+    ],
+    "questions": [
+      {
+        "id": "q-em-1",
+        "conceptId": "coulomb-law",
+        "type": "cloze",
+        "difficulty": "medium",
+        "prompt": "Electrostatic force between two point charges is inversely proportional to the square of the ___.",
+        "options": null,
+        "answer": "distance",
+        "explanation": "Coulomb's law obeys an inverse-square law with respect to separation distance r."
+      }
+    ]
+  },
+  {
+    "id": "example-phys-kin",
+    "title": "Grade 12 Physics: Dynamics & Kinematics",
+    "description": "Projectile motion, centripetal acceleration, and work-energy theorem",
+    "emoji": "🚀",
+    "createdAt": "2026-08-07T12:00:00.000Z",
+    "streak": 0,
+    "longestStreak": 0,
+    "sessionLogs": [],
+    "concepts": [
+      {
+        "id": "projectile-motion",
+        "label": "2D Projectile Kinematics",
+        "sourceSnippet": "Projectile motion decomposes into independent horizontal motion (constant velocity dx = vx*t) and vertical motion under gravity (vy = vy0 - g*t).",
+        "example": "Worked Calculation:\nLaunch velocity v0 = 20 m/s at 30°:\nvx = 20 cos(30°) = 17.32 m/s\nvy0 = 20 sin(30°) = 10.0 m/s\nTime to peak height = 10 / 9.81 = 1.02 s.",
+        "mastery": 0,
+        "easinessFactor": 2.5,
+        "interval": 1,
+        "repetitions": 0,
+        "nextReviewDate": "2026-08-07T12:00:00.000Z",
+        "history": []
+      }
+    ],
+    "questions": [
+      {
+        "id": "q-kin-1",
+        "conceptId": "projectile-motion",
+        "type": "mcq",
+        "difficulty": "easy",
+        "prompt": "What is the horizontal acceleration of an ideal projectile (ignoring air resistance)?",
+        "options": ["0 m/s²", "9.81 m/s²", "4.9 m/s²", "Varies with angle"],
+        "answer": "0 m/s²",
+        "explanation": "No horizontal forces act on an ideal projectile, so horizontal acceleration is zero."
+      }
+    ]
+  },
+  {
+    "id": "example-chem-12",
+    "title": "Grade 12 Chemistry: Organic & Reaction Kinetics",
+    "description": "Functional groups, chemical equilibrium, and reaction rates",
+    "emoji": "🧪",
+    "createdAt": "2026-08-07T12:00:00.000Z",
+    "streak": 0,
+    "longestStreak": 0,
+    "sessionLogs": [],
+    "concepts": [
+      {
+        "id": "reaction-kinetics",
+        "label": "Rate Laws & Activation Energy",
+        "sourceSnippet": "The rate law Rate = k[A]^m[B]^n quantifies how reactant concentrations affect reaction speed. Activation energy Ea is the minimum energy required to reach the transition state.",
+        "example": "Arrhenius Formula:\nk = A * e^(-Ea / R*T), where R = 8.314 J/(mol·K).",
         "mastery": 0,
         "easinessFactor": 2.5,
         "interval": 1,
@@ -197,53 +167,31 @@ export const EXAMPLE_DECKS = [
     "questions": [
       {
         "id": "q-chem-1",
-        "conceptId": "stoichiometry",
+        "conceptId": "reaction-kinetics",
         "type": "mcq",
         "difficulty": "easy",
-        "prompt": "How many particles are in one mole of a pure substance?",
-        "options": ["6.022 × 10²³", "3.00 × 10⁸", "9.81 × 10²", "1.602 × 10⁻¹⁹"],
-        "answer": "6.022 × 10²³",
-        "explanation": "Avogadro's constant defines the number of items per mole."
-      },
-      {
-        "id": "q-chem-2",
-        "conceptId": "le-chatelier",
-        "type": "cloze",
-        "difficulty": "medium",
-        "prompt": "Le Chatelier principle states that a system at equilibrium responds to stress by shifting to ___ the stress.",
-        "options": null,
-        "answer": "counteract",
-        "explanation": "The shift relieves the added concentration, temperature, or pressure."
+        "prompt": "What effect does adding a catalyst have on the activation energy (Ea) of a reaction?",
+        "options": ["Lowers Ea", "Raises Ea", "No effect on Ea", "Doubles Ea"],
+        "answer": "Lowers Ea",
+        "explanation": "Catalysts provide an alternative reaction pathway with a lower activation energy."
       }
     ]
   },
   {
-    "id": "example-psych-101",
-    "title": "Intro to Psychology & Neuroscience",
-    "description": "Classical conditioning, memory formation, and cognitive neuroscience",
-    "emoji": "🧠",
+    "id": "example-bio-gen",
+    "title": "Grade 12 Biology: Molecular Genetics & Enzymes",
+    "description": "DNA replication, protein synthesis, and enzyme kinetics",
+    "emoji": "🧬",
     "createdAt": "2026-08-07T12:00:00.000Z",
     "streak": 0,
     "longestStreak": 0,
     "sessionLogs": [],
     "concepts": [
       {
-        "id": "classical-conditioning",
-        "label": "Pavlovian Conditioning",
-        "sourceSnippet": "Classical conditioning pairs an unconditioned stimulus with a neutral stimulus until the neutral stimulus evokes a conditioned response.",
-        "example": "Experiment Scenario:\nFood (Unconditioned Stimulus) → Bell (Conditioned Stimulus) → Salivation (Conditioned Response).",
-        "mastery": 0,
-        "easinessFactor": 2.5,
-        "interval": 1,
-        "repetitions": 0,
-        "nextReviewDate": "2026-08-07T12:00:00.000Z",
-        "history": []
-      },
-      {
-        "id": "working-memory",
-        "label": "Baddeley Working Memory Model",
-        "sourceSnippet": "Working memory is a multi-component cognitive system responsible for temporarily holding and manipulating information during complex reasoning tasks.",
-        "example": "Memory Capacity Rule:\nMiller Law specifies working memory capacity as 7 ± 2 chunks of information.",
+        "id": "dna-replication",
+        "label": "Semiconservative DNA Replication",
+        "sourceSnippet": "DNA Polymerase synthesizes new complementary strands in the 5' to 3' direction. Helicase unwinds the double helix, while DNA Ligase seals Okazaki fragments on the lagging strand.",
+        "example": "Complementary Pairing Rule:\n5'-A-T-G-C-C-G-3' template synthesizes 3'-T-A-C-G-G-C-5'.",
         "mastery": 0,
         "easinessFactor": 2.5,
         "interval": 1,
@@ -254,42 +202,32 @@ export const EXAMPLE_DECKS = [
     ],
     "questions": [
       {
-        "id": "q-psych-1",
-        "conceptId": "classical-conditioning",
-        "type": "mcq",
-        "difficulty": "easy",
-        "prompt": "Who discovered classical conditioning through experiments with dogs?",
-        "options": ["Ivan Pavlov", "B.F. Skinner", "Sigmund Freud", "Jean Piaget"],
-        "answer": "Ivan Pavlov",
-        "explanation": "Pavlov demonstrated conditioned reflexes using acoustic tones and food."
-      },
-      {
-        "id": "q-psych-2",
-        "conceptId": "working-memory",
+        "id": "q-bio-1",
+        "conceptId": "dna-replication",
         "type": "short",
         "difficulty": "medium",
-        "prompt": "What is Miller magic number for short-term working memory capacity?",
+        "prompt": "In what directional orientation does DNA polymerase synthesize new DNA strands?",
         "options": null,
-        "answer": "7",
-        "explanation": "Miller classic 1956 paper established 7 ± 2 chunks."
+        "answer": "5' to 3'",
+        "explanation": "DNA Polymerase can only add nucleotides to the 3' hydroxyl end."
       }
     ]
   },
   {
-    "id": "example-econ-101",
-    "title": "Microeconomics & Market Analysis",
-    "description": "Supply and demand elasticity, equilibrium price, and market surplus",
-    "emoji": "📈",
+    "id": "example-cs-12",
+    "title": "Grade 12 Computer Science: Algorithms & OOP",
+    "description": "Recursion, Big-O complexity, sorting algorithms, and object-oriented design",
+    "emoji": "💻",
     "createdAt": "2026-08-07T12:00:00.000Z",
     "streak": 0,
     "longestStreak": 0,
     "sessionLogs": [],
     "concepts": [
       {
-        "id": "supply-demand",
-        "label": "Market Equilibrium Price",
-        "sourceSnippet": "Market equilibrium occurs at the price level where quantity supplied equals quantity demanded, clearing excess supply or shortage.",
-        "example": "Market Equilibrium Equation:\nQd = 100 - 2P, Qs = 20 + 2P\n100 - 2P = 20 + 2P ⇒ 4P = 80 ⇒ Equilibrium Price P* = $20.",
+        "id": "recursion-base-case",
+        "label": "Recursion & Base Cases",
+        "sourceSnippet": "Recursion occurs when a function calls itself to solve smaller instances of a problem. Every recursive algorithm requires a base case to prevent infinite stack overflow.",
+        "example": "Code Example:\nfunction factorial(n) {\n  if (n <= 1) return 1; // Base Case\n  return n * factorial(n - 1); // Recursive Call\n}",
         "mastery": 0,
         "easinessFactor": 2.5,
         "interval": 1,
@@ -300,14 +238,158 @@ export const EXAMPLE_DECKS = [
     ],
     "questions": [
       {
-        "id": "q-econ-1",
-        "conceptId": "supply-demand",
+        "id": "q-cs-1",
+        "conceptId": "recursion-base-case",
+        "type": "cloze",
+        "difficulty": "medium",
+        "prompt": "A recursive function must have a ___ case to terminate recursion.",
+        "options": null,
+        "answer": "base",
+        "explanation": "Without a base case, recursion continues infinitely causing stack overflow."
+      }
+    ]
+  },
+  {
+    "id": "example-mech-statics",
+    "title": "Intro to Mechanical Engineering: Statics",
+    "description": "Free body diagrams, static equilibrium ΣF=0, and torque calculations",
+    "emoji": "⚙️",
+    "createdAt": "2026-08-07T12:00:00.000Z",
+    "streak": 0,
+    "longestStreak": 0,
+    "sessionLogs": [],
+    "concepts": [
+      {
+        "id": "static-equilibrium",
+        "label": "Static Equilibrium (ΣF = 0, ΣM = 0)",
+        "sourceSnippet": "A rigid body is in static equilibrium when the vector sum of all external forces is zero (ΣFx = 0, ΣFy = 0) and the sum of all moments around any pivot point is zero (ΣM = 0).",
+        "example": "Worked Engineering Calculation:\nA 10m beam supported at ends with 500 N force applied at 4m from left:\nRight Reaction Force Rb * 10m = 500 N * 4m ⇒ Rb = 200 N, Ra = 300 N.",
+        "mastery": 0,
+        "easinessFactor": 2.5,
+        "interval": 1,
+        "repetitions": 0,
+        "nextReviewDate": "2026-08-07T12:00:00.000Z",
+        "history": []
+      }
+    ],
+    "questions": [
+      {
+        "id": "q-statics-1",
+        "conceptId": "static-equilibrium",
         "type": "mcq",
         "difficulty": "easy",
-        "prompt": "What happens when market price is above the equilibrium price?",
-        "options": ["Surplus (Excess Supply)", "Shortage (Excess Demand)", "Equilibrium", "Hyperinflation"],
-        "answer": "Surplus (Excess Supply)",
-        "explanation": "Higher prices encourage producers to supply more than consumers demand."
+        "prompt": "What are the two fundamental conditions for static equilibrium of a 2D rigid structure?",
+        "options": ["ΣF = 0 and ΣM = 0", "ΣF = ma and ΣM = Iα", "Σv = 0 and Σa = 0", "ΣP = 0 and ΣV = 0"],
+        "answer": "ΣF = 0 and ΣM = 0",
+        "explanation": "Net force and net moment must both equal zero for static equilibrium."
+      }
+    ]
+  },
+  {
+    "id": "example-ee-circuits",
+    "title": "Intro to Electrical Engineering: Circuits",
+    "description": "Ohm's Law, Kirchhoff's voltage and current laws, and resistor networks",
+    "emoji": "🔌",
+    "createdAt": "2026-08-07T12:00:00.000Z",
+    "streak": 0,
+    "longestStreak": 0,
+    "sessionLogs": [],
+    "concepts": [
+      {
+        "id": "kirchhoff-laws",
+        "label": "Kirchhoff Current (KCL) & Voltage (KVL) Laws",
+        "sourceSnippet": "KCL states the sum of currents entering a junction equals currents leaving (ΣI = 0). KVL states the directed sum of electrical potential differences around any closed loop is zero (ΣV = 0).",
+        "example": "Circuit Analysis:\nFor a loop with 12V battery and resistors R1 = 4Ω, R2 = 2Ω in series:\nI = V / (R1 + R2) = 12V / 6Ω = 2 Amperes.\nVoltage drop across R1 = 2A * 4Ω = 8V.",
+        "mastery": 0,
+        "easinessFactor": 2.5,
+        "interval": 1,
+        "repetitions": 0,
+        "nextReviewDate": "2026-08-07T12:00:00.000Z",
+        "history": []
+      }
+    ],
+    "questions": [
+      {
+        "id": "q-ee-1",
+        "conceptId": "kirchhoff-laws",
+        "type": "mcq",
+        "difficulty": "easy",
+        "prompt": "Kirchhoff's Current Law (KCL) is a direct consequence of which physical conservation principle?",
+        "options": ["Conservation of Charge", "Conservation of Energy", "Conservation of Momentum", "Conservation of Mass"],
+        "answer": "Conservation of Charge",
+        "explanation": "KCL reflects charge conservation: electric charge cannot accumulate at a node."
+      }
+    ]
+  },
+  {
+    "id": "example-data-prob",
+    "title": "Grade 12 Data Management & Probability",
+    "description": "Permutations, combinations, expected value, and normal distributions",
+    "emoji": "📊",
+    "createdAt": "2026-08-07T12:00:00.000Z",
+    "streak": 0,
+    "longestStreak": 0,
+    "sessionLogs": [],
+    "concepts": [
+      {
+        "id": "combinations-permutations",
+        "label": "Permutations vs Combinations",
+        "sourceSnippet": "Permutations nPr = n! / (n-r)! count ordered arrangements. Combinations nCr = n! / (r!(n-r)!) count unordered selections.",
+        "example": "Worked Probability Problem:\nChoose 3 students out of 10 for a lab team:\n10C3 = 10! / (3! * 7!) = (10 * 9 * 8) / (3 * 2 * 1) = 120 ways.",
+        "mastery": 0,
+        "easinessFactor": 2.5,
+        "interval": 1,
+        "repetitions": 0,
+        "nextReviewDate": "2026-08-07T12:00:00.000Z",
+        "history": []
+      }
+    ],
+    "questions": [
+      {
+        "id": "q-prob-1",
+        "conceptId": "combinations-permutations",
+        "type": "short",
+        "difficulty": "medium",
+        "prompt": "Which formula (nPr or nCr) is used when order does NOT matter?",
+        "options": null,
+        "answer": "nCr",
+        "explanation": "Combinations (nCr) count unordered groupings of items."
+      }
+    ]
+  },
+  {
+    "id": "example-mat-eng",
+    "title": "Engineering Design & Materials Science",
+    "description": "Stress-strain relationship, Young's Modulus, yield strength, and safety factors",
+    "emoji": "🏗️",
+    "createdAt": "2026-08-07T12:00:00.000Z",
+    "streak": 0,
+    "longestStreak": 0,
+    "sessionLogs": [],
+    "concepts": [
+      {
+        "id": "stress-strain",
+        "label": "Hooke's Law & Young's Modulus (E)",
+        "sourceSnippet": "Tensile stress σ = Force / Area. Tensile strain ε = ΔL / L0. In the elastic region, Hooke's Law states stress is directly proportional to strain: σ = E * ε.",
+        "example": "Engineering Calculation:\nSteel rod under 100 MPa stress with E = 200 GPa:\nStrain ε = σ / E = (100 × 10⁶ Pa) / (200 × 10⁹ Pa) = 0.0005 (0.05% elongation).",
+        "mastery": 0,
+        "easinessFactor": 2.5,
+        "interval": 1,
+        "repetitions": 0,
+        "nextReviewDate": "2026-08-07T12:00:00.000Z",
+        "history": []
+      }
+    ],
+    "questions": [
+      {
+        "id": "q-mat-1",
+        "conceptId": "stress-strain",
+        "type": "mcq",
+        "difficulty": "easy",
+        "prompt": "What is the SI unit of stress (σ = Force / Area)?",
+        "options": ["Pascal (Pa or N/m²)", "Joule (J)", "Newton (N)", "Dimensionless"],
+        "answer": "Pascal (Pa or N/m²)",
+        "explanation": "Stress has units of force per unit area, measured in Pascals (N/m²)."
       }
     ]
   }
