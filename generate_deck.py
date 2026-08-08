@@ -1,747 +1,423 @@
 import json
-import os
-import datetime
 
-# Create data structure
-decks = []
+def build_ontario_curriculum():
+    decks = [
+        {
+            "id": "mcv4u-calculus-vectors",
+            "title": "MCV4U — Grade 12 Calculus & Vectors",
+            "description": "Official Ontario Ministry Curriculum: Rates of change, derivatives, curve sketching, exponential/trig derivatives, 3D vectors, dot/cross products, and planes",
+            "emoji": "📐",
+            "createdAt": "2026-08-08T12:00:00.000Z",
+            "streak": 0,
+            "longestStreak": 0,
+            "sessionLogs": [],
+            "concepts": [
+                {
+                    "id": "mcv4u-u1-limits",
+                    "label": "Unit 1: Rates of Change & Limit Laws",
+                    "sourceSnippet": "The average rate of change measures Δy/Δx over an interval [a, b]. The instantaneous rate of change is the limit of average rates as Δx → 0: lim (h→0) [f(a+h) - f(a)] / h, defining the tangent slope.",
+                    "example": "Worked Calculus Limit:\nEvaluate lim (x→3) (x² - 9)/(x - 3):\nFactoring: (x - 3)(x + 3)/(x - 3) = x + 3.\nSubstituting x = 3 ⇒ 3 + 3 = 6.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mcv4u-u2-derivatives",
+                    "label": "Unit 2: Power, Product, Quotient & Chain Rules",
+                    "sourceSnippet": "Differentiation rules enable systematic computation: Power Rule d/dx(xⁿ)=n xⁿ⁻¹, Product Rule (uv)'=u'v+uv', Quotient Rule (u/v)'=(u'v-uv')/v², and Chain Rule d/dx[f(g(x))]=f'(g(x))g'(x).",
+                    "example": "Worked Derivative Problem:\nFind d/dx [(2x³ - 5)⁴]:\nLet u = 2x³ - 5. d/dx = 4(2x³ - 5)³ · (6x²) = 24x²(2x³ - 5)³.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mcv4u-u3-optimization",
+                    "label": "Unit 3: Curve Sketching & Optimization",
+                    "sourceSnippet": "Critical points occur where f'(x)=0 or undefined. The first derivative test identifies local extrema. The second derivative f''(x) determines concavity (f''>0 concave up, f''<0 concave down) and inflection points.",
+                    "example": "Optimization Example:\nMaximize box volume V = x(20 - 2x)²:\ndV/dx = (20 - 2x)² + 2x(20 - 2x)(-2) = 0 ⇒ 4x² - 80x + 400 - 80x + 8x² = 12x² - 160x + 400 = 0 ⇒ x = 10/3 cm.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mcv4u-u4-transcendental",
+                    "label": "Unit 4: Exponential, Logarithmic & Trig Derivatives",
+                    "sourceSnippet": "Special derivatives: d/dx(eˣ) = eˣ, d/dx(aˣ) = aˣ ln(a), d/dx(ln x) = 1/x, d/dx(sin x) = cos x, d/dx(cos x) = -sin x, d/dx(tan x) = sec² x.",
+                    "example": "Trig & Exponential Derivative:\nFind d/dx [e²ˣ sin(3x)]:\n= 2e²ˣ sin(3x) + e²ˣ (3 cos(3x)) = e²ˣ [2 sin(3x) + 3 cos(3x)].",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mcv4u-u5-vectors-intro",
+                    "label": "Unit 5: 2D & 3D Vectors & Representation",
+                    "sourceSnippet": "A vector possesses both magnitude and direction. In 3D Cartesian coordinates, vector v = [vx, vy, vz] has magnitude |v| = √(vx² + vy² + vz²). Unit vectors i, j, k define the standard basis.",
+                    "example": "Vector Magnitude Calculation:\nFor u = [3, -4, 12]:\n|u| = √(3² + (-4)² + 12²) = √(9 + 16 + 144) = √169 = 13 units.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mcv4u-u6-dot-cross",
+                    "label": "Unit 6: Dot Product & Cross Product",
+                    "sourceSnippet": "Dot product u · v = |u||v|cos θ = ux vx + uy vy + uz vz (scalar, used for work W=F·d). Cross product u × v produces a vector perpendicular to both, with magnitude |u||v|sin θ (used for torque τ=r×F).",
+                    "example": "Cross Product Calculation:\nIf A = [1, 2, 3] and B = [4, 5, 6]:\nA × B = [(2·6 - 3·5), (3·4 - 1·6), (1·5 - 2·4)] = [-3, 6, -3].",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mcv4u-u7-lines-planes",
+                    "label": "Unit 7: Equations of Lines & Planes in 3D",
+                    "sourceSnippet": "A 3D line is defined by vector equation r = r0 + t m. A 3D plane is defined by normal vector n = [A, B, C] giving Cartesian equation Ax + By + Cz + D = 0.",
+                    "example": "Plane Equation Calculation:\nFind plane equation passing through P(1, 2, 3) with normal n = [2, -1, 4]:\n2(x - 1) - 1(y - 2) + 4(z - 3) = 0 ⇒ 2x - y + 4z - 12 = 0.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                }
+            ],
+            "questions": [
+                {
+                    "id": "q-mcv-1", "conceptId": "mcv4u-u1-limits", "type": "mcq", "difficulty": "easy",
+                    "prompt": "What does the limit of the secant line slopes as Δx → 0 represent?",
+                    "options": ["Tangent line slope (instantaneous rate of change)", "Average rate of change", "Y-intercept", "Integral area"],
+                    "answer": "Tangent line slope (instantaneous rate of change)",
+                    "explanation": "The limit of secant slopes defines the derivative and instantaneous rate of change."
+                },
+                {
+                    "id": "q-mcv-2", "conceptId": "mcv4u-u2-derivatives", "type": "mcq", "difficulty": "easy",
+                    "prompt": "What is the derivative of f(x) = x⁵ using the Power Rule?",
+                    "options": ["5x⁴", "x⁴", "5x⁵", "4x⁴"],
+                    "answer": "5x⁴",
+                    "explanation": "d/dx(xⁿ) = n·xⁿ⁻¹ ⇒ d/dx(x⁵) = 5x⁴."
+                },
+                {
+                    "id": "q-mcv-3", "conceptId": "mcv4u-u3-optimization", "type": "cloze", "difficulty": "medium",
+                    "prompt": "Points on a curve where f'(x) = 0 or f'(x) is undefined are called ___ points.",
+                    "options": None, "answer": "critical",
+                    "explanation": "Critical points mark potential local maxima, minima, or stationary points."
+                },
+                {
+                    "id": "q-mcv-4", "conceptId": "mcv4u-u6-dot-cross", "type": "short", "difficulty": "hard",
+                    "prompt": "If two non-zero vectors A and B have dot product A · B = 0, what is the angle between them?",
+                    "options": None, "answer": "90 degrees",
+                    "explanation": "Since A · B = |A||B| cos θ = 0, cos θ = 0 ⇒ θ = 90° (perpendicular/orthogonal)."
+                }
+            ]
+        },
+        {
+            "id": "sph4u-physics-12",
+            "title": "SPH4U — Grade 12 Physics",
+            "description": "Official Ontario Ministry Curriculum: 2D Kinematics & Dynamics, Circular Motion & Universal Gravitation, Energy & Momentum, Electricity & Magnetism, and Light & Quantum Physics",
+            "emoji": "🚀",
+            "createdAt": "2026-08-08T12:00:00.000Z",
+            "streak": 0,
+            "longestStreak": 0,
+            "sessionLogs": [],
+            "concepts": [
+                {
+                    "id": "sph4u-u1-kinematics",
+                    "label": "Unit 1: 2D Motion & Newton's Laws of Dynamics",
+                    "sourceSnippet": "2D motion resolves into orthogonal components. Newton's 2nd Law ΣF = m a governs acceleration. Static friction Fs ≤ μs FN and kinetic friction Fk = μk FN act parallel to contact surfaces.",
+                    "example": "Inclined Plane Calculation:\nA 10 kg box on a 30° frictionless incline:\nParallel gravity force Fg,|| = m·g·sin(30°) = 10 · 9.81 · 0.5 = 49.05 N.\nAcceleration a = F / m = 49.05 / 10 = 4.905 m/s².",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sph4u-u2-gravitation",
+                    "label": "Unit 2: Centripetal Acceleration & Gravitation",
+                    "sourceSnippet": "Uniform circular motion requires centripetal acceleration ac = v²/r = ω²r directed toward the center. Newton's Law of Universal Gravitation Fg = G(m1 m2)/r² governs orbital mechanics.",
+                    "example": "Satellite Speed Calculation:\nv = √(G M / r). For Earth orbit at r = 7.0 × 10⁶ m:\nv = √((6.674 × 10⁻¹¹ · 5.972 × 10²⁴) / 7.0 × 10⁶) = 7546 m/s.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sph4u-u3-momentum",
+                    "label": "Unit 3: Energy, Work & Collisions",
+                    "sourceSnippet": "Work W = F d cos θ. Kinetic energy Ek = ½mv² and gravitational potential Eg = mgh. Total mechanical energy is conserved in isolated systems. Linear momentum p = mv is conserved during all collisions (J = Δp = F Δt).",
+                    "example": "1D Inelastic Collision Problem:\nCar A (1000 kg at 20 m/s) hits stationary Car B (1500 kg) and stick together:\np_initial = 1000 · 20 + 0 = 20000 kg·m/s.\nv_final = 20000 / (1000 + 1500) = 8.0 m/s.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sph4u-u4-fields",
+                    "label": "Unit 4: Electric & Magnetic Fields",
+                    "sourceSnippet": "Coulomb's Law Fe = k|q1 q2|/r². Electric field intensity E = Fe/q. A charge q moving at velocity v through magnetic field B experiences Lorentz Force F = q(v × B) with magnitude F = q v B sin θ.",
+                    "example": "Lorentz Force Calculation:\nElectron (q = 1.6 × 10⁻¹⁹ C) moving at 2 × 10⁶ m/s perpendicular to 0.4 T magnetic field:\nF = 1.6 × 10⁻¹⁹ · 2 × 10⁶ · 0.4 = 1.28 × 10⁻¹³ N.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sph4u-u5-quantum",
+                    "label": "Unit 5: Wave Nature of Light & Modern Physics",
+                    "sourceSnippet": "Young's double-slit experiment demonstrates wave interference: m λ = d sin θ. Photoelectric effect proves light particle nature with photon energy E = h f. Einstein's special relativity gives E = mc² and time dilation t = t0 / √(1 - v²/c²).",
+                    "example": "Photon Energy Calculation:\nFind energy of blue photon with frequency f = 6.0 × 10¹⁴ Hz:\nE = h f = (6.626 × 10⁻³⁴ J·s) · (6.0 × 10¹⁴ s⁻¹) = 3.976 × 10⁻¹⁹ Joules.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                }
+            ],
+            "questions": [
+                {
+                    "id": "q-sph-1", "conceptId": "sph4u-u2-gravitation", "type": "mcq", "difficulty": "easy",
+                    "prompt": "Towards where is the centripetal acceleration vector directed in uniform circular motion?",
+                    "options": ["Towards the center of the circle", "Tangential to the path", "Outward away from center", "Opposite to velocity"],
+                    "answer": "Towards the center of the circle",
+                    "explanation": "Centripetal acceleration points directly inward toward the center of the circular path."
+                },
+                {
+                    "id": "q-sph-2", "conceptId": "sph4u-u3-momentum", "type": "cloze", "difficulty": "medium",
+                    "prompt": "Impulse is defined as the change in ___ of an object.",
+                    "options": None, "answer": "momentum",
+                    "explanation": "Impulse J = F Δt = Δp (change in momentum)."
+                }
+            ]
+        },
+        {
+            "id": "sch4u-chemistry-12",
+            "title": "SCH4U — Grade 12 Chemistry",
+            "description": "Official Ontario Ministry Curriculum: Organic Chemistry, Structure & Properties of Matter, Energy Changes & Rates of Reaction, Chemical Systems & Equilibrium, and Electrochemistry",
+            "emoji": "🧪",
+            "createdAt": "2026-08-08T12:00:00.000Z",
+            "streak": 0,
+            "longestStreak": 0,
+            "sessionLogs": [],
+            "concepts": [
+                {
+                    "id": "sch4u-u1-organic",
+                    "label": "Unit 1: Organic Chemistry & Functional Groups",
+                    "sourceSnippet": "Organic compounds contain carbon backbones. Key functional groups include alcohols (-OH), aldehydes (-CHO), ketones (-CO-), carboxylic acids (-COOH), esters (-COO-), and amines (-NH2). Polymerization joins monomers via condensation or addition reactions.",
+                    "example": "Esterification Reaction:\nCarboxylic Acid + Alcohol ⇌ Ester + Water\nEthanoic acid + Ethanol ⇌ Ethyl ethanoate + H₂O.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sch4u-u2-structure",
+                    "label": "Unit 2: Quantum Model, Bonding & VSEPR",
+                    "sourceSnippet": "Electrons inhabit atomic orbitals defined by quantum numbers (n, l, ml, ms). VSEPR theory predicts 3D molecular shapes based on electron pair repulsion around the central atom, determining molecular polarity and intermolecular forces.",
+                    "example": "VSEPR Shape Analysis:\nWater (H₂O) has 2 bonding pairs and 2 lone pairs around Oxygen:\nElectron Geometry = Tetrahedral, Molecular Geometry = Bent (104.5° angle).",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sch4u-u3-thermochemistry",
+                    "label": "Unit 3: Thermochemistry, Enthalpy & Kinetics",
+                    "sourceSnippet": "Enthalpy change ΔH measures heat absorbed or released at constant pressure. Hess's Law states total ΔH is independent of path. Rate laws Rate = k[A]ᵐ[B]ⁿ quantify kinetics, where catalyst lowers activation energy Ea.",
+                    "example": "Hess's Law Calculation:\nTarget: C(s) + O₂(g) → CO₂(g)\nReaction 1: C(s) + ½O₂(g) → CO(g)  ΔH1 = -110.5 kJ\nReaction 2: CO(g) + ½O₂(g) → CO₂(g) ΔH2 = -283.0 kJ\nTotal ΔH = ΔH1 + ΔH2 = -393.5 kJ.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sch4u-u4-equilibrium",
+                    "label": "Unit 4: Chemical Equilibrium & Le Chatelier",
+                    "sourceSnippet": "Equilibrium constant Kc = [Products]/[Reactants] at equilibrium. Le Chatelier's principle states a system under stress shifts to relieve stress. Acid-base equilibrium relies on Ka, Kb, and pH = -log[H+].",
+                    "example": "Equilibrium Constant Calculation:\nFor N₂ + 3H₂ ⇌ 2NH₃ at equilibrium:\n[N₂]=0.1M, [H₂]=0.2M, [NH₃]=0.4M:\nKc = [NH₃]² / ([N₂][H₂]³) = (0.4)² / (0.1 · 0.2³) = 0.16 / 0.0008 = 200.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sch4u-u5-electrochemistry",
+                    "label": "Unit 5: Electrochemistry & Galvanic Cells",
+                    "sourceSnippet": "Redox involves electron transfer: Oxidation Is Loss (OIL), Reduction Is Gain (RIG). Galvanic/voltaic cells generate electricity spontaneously (E°cell = E°cathode - E°anode > 0). Electrolysis uses external voltage to drive non-spontaneous reactions.",
+                    "example": "Standard Cell Potential:\nZn(s) | Zn²⁺(aq) || Cu²⁺(aq) | Cu(s)\nE°cathode (Cu²⁺/Cu) = +0.34 V\nE°anode (Zn²⁺/Zn) = -0.76 V\nE°cell = 0.34 - (-0.76) = +1.10 Volts.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                }
+            ],
+            "questions": [
+                {
+                    "id": "q-sch-1", "conceptId": "sch4u-u1-organic", "type": "mcq", "difficulty": "easy",
+                    "prompt": "Which functional group contains a carbon double-bonded to oxygen and single-bonded to an -OH group (-COOH)?",
+                    "options": ["Carboxylic Acid", "Alcohol", "Aldehyde", "Ester"],
+                    "answer": "Carboxylic Acid",
+                    "explanation": "Carboxylic acids feature the carboxyl functional group (-COOH)."
+                },
+                {
+                    "id": "q-sch-2", "conceptId": "sch4u-u5-electrochemistry", "type": "short", "difficulty": "medium",
+                    "prompt": "At which electrode does oxidation always occur in both galvanic and electrolytic cells?",
+                    "options": None, "answer": "Anode",
+                    "explanation": "Anode is always the site of oxidation (An Ox, Red Cat)."
+                }
+            ]
+        },
+        {
+            "id": "sbi4u-biology-12",
+            "title": "SBI4U — Grade 12 Biology",
+            "description": "Official Ontario Ministry Curriculum: Biochemistry, Metabolic Processes (Respiration & Photosynthesis), Molecular Genetics, Homeostasis, and Population Dynamics",
+            "emoji": "🧬",
+            "createdAt": "2026-08-08T12:00:00.000Z",
+            "streak": 0,
+            "longestStreak": 0,
+            "sessionLogs": [],
+            "concepts": [
+                {
+                    "id": "sbi4u-u1-biochem",
+                    "label": "Unit 1: Biochemistry & Enzyme Kinetics",
+                    "sourceSnippet": "Biological macromolecules (carbohydrates, lipids, proteins, nucleic acids) form via condensation reactions. Enzymes act as biological catalysts, lowering activation energy. Inhibitors (competitive vs non-competitive) regulate enzyme activity.",
+                    "example": "Enzyme Kinetics Principle:\nCompetitive inhibitors bind directly to the active site, increasing Km without changing Vmax.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sbi4u-u2-respiration",
+                    "label": "Unit 2: Cellular Respiration & Photosynthesis",
+                    "sourceSnippet": "Cellular respiration converts glucose into ATP: Glycolysis (cytosol), Pyruvate Oxidation, Krebs Cycle (mitochondrial matrix), and Oxidative Phosphorylation (inner membrane ETC). Photosynthesis couples Light Reactions (thylakoid) with Calvin Cycle (stroma).",
+                    "example": "ATP Yield Balance Sheet:\n1 Molecule Glucose (C₆H₁₂O₆) + 6 O₂ → 6 CO₂ + 6 H₂O + ~30-32 ATP energy equivalents.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sbi4u-u3-genetics",
+                    "label": "Unit 3: Molecular Genetics & Gene Expression",
+                    "sourceSnippet": "DNA replication is semiconservative (Helicase, DNA Polymerase III/I, Ligase). Central Dogma: DNA → (Transcription via RNA Polymerase) → mRNA → (Translation at Ribosome) → Protein. Gene regulation occurs via operons (e.g., lac operon).",
+                    "example": "Transcription & Translation Sequence:\nDNA Code: 5'-TAC GGC TTA-3'\nmRNA Codons: 3'-AUG CCG AAU-5'\nAmino Acid Translation: Met - Pro - Asn.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sbi4u-u4-homeostasis",
+                    "label": "Unit 4: Nervous System & Homeostasis",
+                    "sourceSnippet": "Homeostasis maintains internal stability via negative feedback loops. Neurons transmit action potentials via Na+/K+ voltage-gated channels. The nephron in kidneys filters blood and regulates water balance via ADH.",
+                    "example": "Action Potential Voltage Steps:\nResting Potential (-70mV) → Depolarization (Na+ influx to +40mV) → Repolarization (K+ efflux) → Hyperpolarization.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "sbi4u-u5-populations",
+                    "label": "Unit 5: Population Dynamics & Ecology",
+                    "sourceSnippet": "Population growth models include exponential growth dN/dt = r N and logistic growth dN/dt = r N ((K - N)/K), where K represents carrying capacity. Density-dependent factors (competition, disease) regulate population size.",
+                    "example": "Logistic Growth Calculation:\nIf K = 1000 and N = 500, environmental resistance factor (K-N)/K = 0.5 (growth at 50% max speed).",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                }
+            ],
+            "questions": [
+                {
+                    "id": "q-sbi-1", "conceptId": "sbi4u-u2-respiration", "type": "mcq", "difficulty": "easy",
+                    "prompt": "Where in the eukaryotic cell does glycolysis take place?",
+                    "options": ["Cytosol (Cytoplasm)", "Mitochondrial Matrix", "Inner Mitochondrial Membrane", "Stroma"],
+                    "answer": "Cytosol (Cytoplasm)",
+                    "explanation": "Glycolysis occurs in the cytosol without requiring oxygen."
+                },
+                {
+                    "id": "q-sbi-2", "conceptId": "sbi4u-u3-genetics", "type": "cloze", "difficulty": "medium",
+                    "prompt": "The process of synthesizing mRNA from a DNA template is called ___.",
+                    "options": None, "answer": "transcription",
+                    "explanation": "RNA Polymerase synthesizes mRNA during transcription."
+                }
+            ]
+        },
+        {
+            "id": "ics4u-cs-12",
+            "title": "ICS4U — Grade 12 Computer Science",
+            "description": "Official Ontario Ministry Curriculum: Advanced OOP, Recursion, Sorting/Searching Algorithms, Linear/Non-linear Data Structures, and System Architecture",
+            "emoji": "💻",
+            "createdAt": "2026-08-08T12:00:00.000Z",
+            "streak": 0,
+            "longestStreak": 0,
+            "sessionLogs": [],
+            "concepts": [
+                {
+                    "id": "ics4u-u1-oop",
+                    "label": "Unit 1: Object-Oriented System Architecture",
+                    "sourceSnippet": "OOP core pillars: Encapsulation (private fields, getters/setters), Inheritance (extends superclass), Polymorphism (method overriding/overloading), and Abstraction (abstract classes & interfaces).",
+                    "example": "Polymorphism Code Snippet:\nclass Shape { draw() {} }\nclass Circle extends Shape { draw() { console.log('O'); } }\nShape s = new Circle(); s.draw(); // Calls Circle's draw()",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "ics4u-u2-recursion",
+                    "label": "Unit 2: Recursion & Call Stack Analysis",
+                    "sourceSnippet": "Recursive functions break problems into smaller subproblems by calling themselves. Every recursive function requires a base case to halt recursion and unwind the execution call stack.",
+                    "example": "Recursive Fibonacci Function:\nfunction fib(n) {\n  if (n <= 1) return n; // Base Cases\n  return fib(n - 1) + fib(n - 2);\n}",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "ics4u-u3-algorithms",
+                    "label": "Unit 3: Sorting Algorithms & Big-O Complexity",
+                    "sourceSnippet": "Algorithmic complexity evaluates performance. Quadratic algorithms O(N²): Bubble, Selection, Insertion Sort. Logarithmic / Linearithmic O(N log N): Merge Sort, Quick Sort. Binary Search requires sorted arrays O(log N).",
+                    "example": "Big-O Comparison:\nSearching 1,000,000 items:\nLinear Search O(N) = 1,000,000 operations.\nBinary Search O(log₂ N) ≈ 20 operations!",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "ics4u-u4-datastructures",
+                    "label": "Unit 4: Dynamic Data Structures (Lists, Stacks, Queues, BST)",
+                    "sourceSnippet": "Abstract Data Types (ADTs): Linked Lists store nodes with data and pointers. Stacks use LIFO (Last-In-First-Out, push/pop). Queues use FIFO (First-In-First-Out, enqueue/dequeue). Binary Search Trees (BST) organize data for O(log N) operations.",
+                    "example": "Stack LIFO Example:\npush(10) -> push(20) -> pop() returns 20.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                }
+            ],
+            "questions": [
+                {
+                    "id": "q-ics-1", "conceptId": "ics4u-u3-algorithms", "type": "mcq", "difficulty": "easy",
+                    "prompt": "What is the average time complexity of Merge Sort?",
+                    "options": ["O(N log N)", "O(N²)", "O(N)", "O(1)"],
+                    "answer": "O(N log N)",
+                    "explanation": "Merge Sort uses divide-and-conquer to achieve O(N log N) in all cases."
+                },
+                {
+                    "id": "q-ics-2", "conceptId": "ics4u-u4-datastructures", "type": "short", "difficulty": "medium",
+                    "prompt": "Which data structure operates on a LIFO (Last-In, First-Out) principle?",
+                    "options": None, "answer": "Stack",
+                    "explanation": "Stacks store and retrieve elements in LIFO order."
+                }
+            ]
+        },
+        {
+            "id": "mhf4u-functions-12",
+            "title": "MHF4U — Grade 12 Advanced Functions",
+            "description": "Official Ontario Ministry Curriculum: Polynomial & Rational Functions, Trigonometry, Exponential & Logarithmic Functions, and Function Transformations",
+            "emoji": "📈",
+            "createdAt": "2026-08-08T12:00:00.000Z",
+            "streak": 0,
+            "longestStreak": 0,
+            "sessionLogs": [],
+            "concepts": [
+                {
+                    "id": "mhf4u-u1-polynomials",
+                    "label": "Unit 1: Polynomial Functions & Remainder Theorem",
+                    "sourceSnippet": "Polynomial functions f(x) = an xⁿ + ... + a0 have smooth curves. The Remainder Theorem states f(a) is the remainder when f(x) is divided by (x - a). If f(a) = 0, (x - a) is a factor.",
+                    "example": "Factor Theorem Problem:\nTest if (x - 2) is a factor of f(x) = x³ - 3x² + 4:\nf(2) = (2)³ - 3(2)² + 4 = 8 - 12 + 4 = 0 ⇒ (x - 2) IS a factor!",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mhf4u-u2-rationals",
+                    "label": "Unit 2: Rational Functions & Asymptotes",
+                    "sourceSnippet": "Rational functions f(x) = P(x)/Q(x) have vertical asymptotes where Q(x) = 0. Horizontal asymptotes depend on polynomial degrees: if deg(P) < deg(Q), y = 0; if deg(P) = deg(Q), y = leading coeff ratio.",
+                    "example": "Asymptote Analysis:\nFor f(x) = (3x² + 2) / (x² - 4):\nVertical Asymptotes at x² - 4 = 0 ⇒ x = 2 and x = -2.\nHorizontal Asymptote at y = 3/1 = 3.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mhf4u-u3-trig",
+                    "label": "Unit 3: Trigonometric Ratios, Radians & Identities",
+                    "sourceSnippet": "Angles measured in radians: 2π rad = 360°. Compound angle identities: sin(A ± B) = sin A cos B ± cos A sin B. Double angle identity: cos(2A) = cos² A - sin² A = 2cos² A - 1.",
+                    "example": "Double Angle Calculation:\nIf sin θ = 3/5 in Quadrant I (cos θ = 4/5):\nsin(2θ) = 2 sin θ cos θ = 2 · (3/5) · (4/5) = 24/25 = 0.96.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                }
+            ],
+            "questions": [
+                {
+                    "id": "q-mhf-1", "conceptId": "mhf4u-u1-polynomials", "type": "mcq", "difficulty": "easy",
+                    "prompt": "If f(3) = 0 for a polynomial f(x), what binomial must be a factor of f(x)?",
+                    "options": ["(x - 3)", "(x + 3)", "3x", "(x - 0)"],
+                    "answer": "(x - 3)",
+                    "explanation": "By the Factor Theorem, if f(a) = 0, then (x - a) is a factor."
+                }
+            ]
+        },
+        {
+            "id": "mdm4u-data-management-12",
+            "title": "MDM4U — Grade 12 Data Management",
+            "description": "Official Ontario Ministry Curriculum: Counting Principles, Permutations & Combinations, Probability Distributions, and Statistics",
+            "emoji": "📊",
+            "createdAt": "2026-08-08T12:00:00.000Z",
+            "streak": 0,
+            "longestStreak": 0,
+            "sessionLogs": [],
+            "concepts": [
+                {
+                    "id": "mdm4u-u1-counting",
+                    "label": "Unit 1: Permutations & Combinations",
+                    "sourceSnippet": "Permutations nPr = n!/(n-r)! count ordered arrangements. Combinations nCr = n!/(r!(n-r)!) count unordered selections. Pascal's Triangle gives binomial coefficients.",
+                    "example": "Combination Selection:\nSelect 4 committee members out of 9 candidates:\n9C4 = 9! / (4! · 5!) = (9 · 8 · 7 · 6) / (4 · 3 · 2 · 1) = 126 ways.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                },
+                {
+                    "id": "mdm4u-u2-distributions",
+                    "label": "Unit 2: Probability & Normal Distribution",
+                    "sourceSnippet": "Expected value E(X) = Σ x P(x). Normal distribution N(μ, σ²) follows a bell curve where z = (x - μ)/σ measures standard deviations from the mean.",
+                    "example": "Z-Score Calculation:\nFor mean μ = 70, standard deviation σ = 10, find z-score for score x = 85:\nz = (85 - 70) / 10 = +1.5.",
+                    "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "nextReviewDate": "2026-08-08T12:00:00.000Z", "history": []
+                }
+            ],
+            "questions": [
+                {
+                    "id": "q-mdm-1", "conceptId": "mdm4u-u1-counting", "type": "mcq", "difficulty": "easy",
+                    "prompt": "Which formula (nPr or nCr) is used when the selection order does NOT matter?",
+                    "options": ["nCr (Combinations)", "nPr (Permutations)", "n! (Factorials)", "P(A|B)"],
+                    "answer": "nCr (Combinations)",
+                    "explanation": "Combinations count unordered groups of items."
+                }
+            ]
+        }
+    ]
+    return decks
 
-cs_concepts = [
-    {
-        "id": "binary-numbers",
-        "label": "Binary Numbers",
-        "sourceSnippet": "Binary (base-2) is the language of computers, using only 0s and 1s to represent all data and instructions. Each 0 or 1 is called a bit, and eight bits make a byte. By combining these simple on/off states, computers can encode complex information like numbers, text, and images.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "variables",
-        "label": "Variables",
-        "sourceSnippet": "A variable is a named storage location in memory used to hold data that can be modified during program execution. Think of it as a container with a label that stores a specific value. When you use the variable name in your code, the computer looks up and uses the stored value.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "data-types",
-        "label": "Data Types",
-        "sourceSnippet": "Data types classify the kind of value a variable can hold, determining what operations can be performed on it. Common types include integers (whole numbers), floats (decimals), strings (text), and booleans (true/false). Using the correct data type ensures operations like addition or string concatenation behave as expected.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "conditionals",
-        "label": "Conditionals",
-        "sourceSnippet": "Conditionals are programming constructs that execute different code paths depending on whether a specific condition is true or false. If-else statements are the most common form.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "loops",
-        "label": "Loops",
-        "sourceSnippet": "Loops repeat a sequence of instructions until a certain condition is met. For loops iterate a specific number of times, while while loops execute as long as a condition remains true.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "functions",
-        "label": "Functions",
-        "sourceSnippet": "Functions are reusable blocks of code designed to perform a specific task. They take inputs (parameters), perform operations, and often return an output.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "arrays",
-        "label": "Arrays",
-        "sourceSnippet": "An array is a data structure consisting of a collection of elements, typically of the same data type, stored at contiguous memory locations.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "algorithms",
-        "label": "Algorithms",
-        "sourceSnippet": "An algorithm is a finite sequence of well-defined, computer-implementable instructions to solve a class of problems or perform a computation.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "big-o",
-        "label": "Big-O Notation",
-        "sourceSnippet": "Big-O notation characterizes functions according to their growth rates, used to classify algorithms based on how their run time or space requirements grow as input size grows.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "recursion",
-        "label": "Recursion",
-        "sourceSnippet": "Recursion is a method of solving a computational problem where the solution depends on solutions to smaller instances of the same problem. A recursive function calls itself.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "boolean-logic",
-        "label": "Boolean Logic",
-        "sourceSnippet": "Boolean logic is a form of algebra in which all values are reduced to either TRUE or FALSE, using operations like AND, OR, and NOT.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "debugging",
-        "label": "Debugging",
-        "sourceSnippet": "Debugging is the process of finding and resolving bugs (errors or abnormalities) within computer programs or software to prevent incorrect operation.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    }
-]
+def main():
+    decks = build_ontario_curriculum()
+    js_content = f"export const EXAMPLE_DECKS = {json.dumps(decks, indent=2)};\n"
+    with open('src/data/exampleDeck.js', 'w', encoding='utf-8') as f:
+        f.write(js_content)
+    print(f"Successfully generated {len(decks)} complete Ontario Ministry Grade 12 curriculum decks!")
 
-cs_questions = [
-    {
-        "id": "q-binary-1", "conceptId": "binary-numbers", "type": "mcq", "difficulty": "easy",
-        "prompt": "What base is the binary number system?",
-        "options": ["Base-10", "Base-2", "Base-16", "Base-8"],
-        "answer": "Base-2",
-        "explanation": "Binary only uses two digits, 0 and 1, so it is a base-2 system."
-    },
-    {
-        "id": "q-binary-2", "conceptId": "binary-numbers", "type": "cloze", "difficulty": "medium",
-        "prompt": "Eight bits make a ___.",
-        "options": None,
-        "answer": "byte",
-        "explanation": "A byte is the standard unit of digital data, consisting of 8 bits."
-    },
-    {
-        "id": "q-binary-3", "conceptId": "binary-numbers", "type": "short", "difficulty": "hard",
-        "prompt": "What are the two digits used in binary?",
-        "options": None,
-        "answer": "0 and 1",
-        "explanation": "Binary represents the on/off states of computer hardware using 0 and 1."
-    },
-    {
-        "id": "q-variables-1", "conceptId": "variables", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is a variable in programming?",
-        "options": ["A static value", "A named storage location in memory", "A type of error", "A function call"],
-        "answer": "A named storage location in memory",
-        "explanation": "Variables act as containers with names that store data during program execution."
-    },
-    {
-        "id": "q-variables-2", "conceptId": "variables", "type": "cloze", "difficulty": "medium",
-        "prompt": "When you use a variable name, the computer looks up its stored ___.",
-        "options": None,
-        "answer": "value",
-        "explanation": "The name refers to the location, which holds the actual value stored there."
-    },
-    {
-        "id": "q-variables-3", "conceptId": "variables", "type": "short", "difficulty": "hard",
-        "prompt": "Can a variable's value be modified during program execution?",
-        "options": None,
-        "answer": "Yes",
-        "explanation": "Variables are typically mutable, meaning their stored values can be updated."
-    },
-    {
-        "id": "q-datatypes-1", "conceptId": "data-types", "type": "mcq", "difficulty": "easy",
-        "prompt": "Which data type is used for whole numbers?",
-        "options": ["Float", "String", "Boolean", "Integer"],
-        "answer": "Integer",
-        "explanation": "Integers represent whole numbers without fractional parts."
-    },
-    {
-        "id": "q-datatypes-2", "conceptId": "data-types", "type": "cloze", "difficulty": "medium",
-        "prompt": "Text is stored using the ___ data type.",
-        "options": None,
-        "answer": "string",
-        "explanation": "Strings are sequences of characters used to represent text."
-    },
-    {
-        "id": "q-datatypes-3", "conceptId": "data-types", "type": "short", "difficulty": "hard",
-        "prompt": "What type of value evaluates to true or false?",
-        "options": None,
-        "answer": "Boolean",
-        "explanation": "Booleans represent one of two truth values: true or false."
-    },
-    # Conditionals
-    {
-        "id": "q-cond-1", "conceptId": "conditionals", "type": "mcq", "difficulty": "easy",
-        "prompt": "Which statement is commonly used for conditionals?",
-        "options": ["for", "while", "if-else", "def"],
-        "answer": "if-else",
-        "explanation": "If-else statements are the most common form of conditionals."
-    },
-    {
-        "id": "q-cond-2", "conceptId": "conditionals", "type": "cloze", "difficulty": "medium",
-        "prompt": "Conditionals execute different code paths depending on whether a specific condition is ___ or false.",
-        "options": None,
-        "answer": "true",
-        "explanation": "Conditionals rely on boolean logic evaluation."
-    },
-    {
-        "id": "q-cond-3", "conceptId": "conditionals", "type": "short", "difficulty": "hard",
-        "prompt": "What kind of constructs execute different code paths based on a condition?",
-        "options": None,
-        "answer": "Conditionals",
-        "explanation": "Conditionals allow for branching logic."
-    },
-    # Loops
-    {
-        "id": "q-loops-1", "conceptId": "loops", "type": "mcq", "difficulty": "easy",
-        "prompt": "What do loops do in programming?",
-        "options": ["Make decisions", "Repeat instructions", "Store data", "Define classes"],
-        "answer": "Repeat instructions",
-        "explanation": "Loops execute a block of code multiple times."
-    },
-    {
-        "id": "q-loops-2", "conceptId": "loops", "type": "cloze", "difficulty": "medium",
-        "prompt": "___ loops iterate a specific number of times.",
-        "options": None,
-        "answer": "For",
-        "explanation": "For loops are used when the number of iterations is known."
-    },
-    {
-        "id": "q-loops-3", "conceptId": "loops", "type": "short", "difficulty": "hard",
-        "prompt": "Which type of loop executes as long as a condition remains true?",
-        "options": None,
-        "answer": "While loop",
-        "explanation": "While loops depend on an ongoing true condition."
-    },
-    # Functions
-    {
-        "id": "q-func-1", "conceptId": "functions", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is a function in programming?",
-        "options": ["A data type", "A reusable block of code", "A conditional statement", "A loop"],
-        "answer": "A reusable block of code",
-        "explanation": "Functions group code to perform specific tasks so it can be reused."
-    },
-    {
-        "id": "q-func-2", "conceptId": "functions", "type": "cloze", "difficulty": "medium",
-        "prompt": "Functions take inputs called ___.",
-        "options": None,
-        "answer": "parameters",
-        "explanation": "Parameters are passed to functions as inputs."
-    },
-    {
-        "id": "q-func-3", "conceptId": "functions", "type": "short", "difficulty": "hard",
-        "prompt": "What do functions often do after performing operations?",
-        "options": None,
-        "answer": "Return an output",
-        "explanation": "Functions frequently return a value based on their computations."
-    },
-    # Arrays
-    {
-        "id": "q-arr-1", "conceptId": "arrays", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is an array?",
-        "options": ["A single value", "A loop", "A collection of elements", "A function"],
-        "answer": "A collection of elements",
-        "explanation": "Arrays store multiple items in a single variable."
-    },
-    {
-        "id": "q-arr-2", "conceptId": "arrays", "type": "cloze", "difficulty": "medium",
-        "prompt": "Elements in an array are stored at ___ memory locations.",
-        "options": None,
-        "answer": "contiguous",
-        "explanation": "Arrays are typically stored consecutively in memory."
-    },
-    {
-        "id": "q-arr-3", "conceptId": "arrays", "type": "short", "difficulty": "hard",
-        "prompt": "Do arrays usually hold elements of the same or different data types?",
-        "options": None,
-        "answer": "Same data type",
-        "explanation": "Traditional arrays contain elements of the same type."
-    },
-    # Algorithms
-    {
-        "id": "q-alg-1", "conceptId": "algorithms", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is an algorithm?",
-        "options": ["A programming language", "A sequence of instructions", "A hardware component", "A variable"],
-        "answer": "A sequence of instructions",
-        "explanation": "Algorithms are step-by-step procedures for calculations."
-    },
-    {
-        "id": "q-alg-2", "conceptId": "algorithms", "type": "cloze", "difficulty": "medium",
-        "prompt": "Algorithms are designed to ___ a class of problems.",
-        "options": None,
-        "answer": "solve",
-        "explanation": "The purpose of an algorithm is problem solving."
-    },
-    {
-        "id": "q-alg-3", "conceptId": "algorithms", "type": "short", "difficulty": "hard",
-        "prompt": "Must an algorithm be a finite or infinite sequence?",
-        "options": None,
-        "answer": "Finite",
-        "explanation": "An algorithm must eventually terminate."
-    },
-    # Big-O
-    {
-        "id": "q-bigo-1", "conceptId": "big-o", "type": "mcq", "difficulty": "easy",
-        "prompt": "What does Big-O notation characterize?",
-        "options": ["Syntax errors", "Function growth rates", "Memory addresses", "Network speed"],
-        "answer": "Function growth rates",
-        "explanation": "It describes how algorithm performance scales with input size."
-    },
-    {
-        "id": "q-bigo-2", "conceptId": "big-o", "type": "cloze", "difficulty": "medium",
-        "prompt": "Big-O is used to classify algorithms based on run time or ___ requirements.",
-        "options": None,
-        "answer": "space",
-        "explanation": "Big-O analyzes both time and space complexity."
-    },
-    {
-        "id": "q-bigo-3", "conceptId": "big-o", "type": "short", "difficulty": "hard",
-        "prompt": "What happens to the input size when analyzing Big-O?",
-        "options": None,
-        "answer": "It grows",
-        "explanation": "Big-O looks at asymptotic behavior as input size tends to infinity."
-    },
-    # Recursion
-    {
-        "id": "q-rec-1", "conceptId": "recursion", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is recursion?",
-        "options": ["A loop", "A function calling itself", "An error", "A data type"],
-        "answer": "A function calling itself",
-        "explanation": "Recursion occurs when a function invokes itself."
-    },
-    {
-        "id": "q-rec-2", "conceptId": "recursion", "type": "cloze", "difficulty": "medium",
-        "prompt": "Recursion breaks problems into ___ instances of the same problem.",
-        "options": None,
-        "answer": "smaller",
-        "explanation": "Recursive solutions depend on solving smaller subproblems."
-    },
-    {
-        "id": "q-rec-3", "conceptId": "recursion", "type": "short", "difficulty": "hard",
-        "prompt": "What must a recursive function eventually reach to stop calling itself?",
-        "options": None,
-        "answer": "Base case",
-        "explanation": "A base case prevents infinite recursion."
-    },
-    # Boolean logic
-    {
-        "id": "q-bool-1", "conceptId": "boolean-logic", "type": "mcq", "difficulty": "easy",
-        "prompt": "Boolean logic reduces values to what?",
-        "options": ["0 to 9", "TRUE or FALSE", "Positive and negative", "Strings"],
-        "answer": "TRUE or FALSE",
-        "explanation": "Boolean algebra works with truth values."
-    },
-    {
-        "id": "q-bool-2", "conceptId": "boolean-logic", "type": "cloze", "difficulty": "medium",
-        "prompt": "Boolean logic uses operations like AND, OR, and ___.",
-        "options": None,
-        "answer": "NOT",
-        "explanation": "These are the fundamental boolean operators."
-    },
-    {
-        "id": "q-bool-3", "conceptId": "boolean-logic", "type": "short", "difficulty": "hard",
-        "prompt": "What type of algebra is Boolean logic a form of?",
-        "options": None,
-        "answer": "Algebra",
-        "explanation": "It is a mathematical framework for logical operations."
-    },
-    # Debugging
-    {
-        "id": "q-debug-1", "conceptId": "debugging", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is debugging?",
-        "options": ["Writing code", "Finding and resolving bugs", "Compiling", "Designing UX"],
-        "answer": "Finding and resolving bugs",
-        "explanation": "It is the process of fixing software errors."
-    },
-    {
-        "id": "q-debug-2", "conceptId": "debugging", "type": "cloze", "difficulty": "medium",
-        "prompt": "Debugging prevents ___ operation of software.",
-        "options": None,
-        "answer": "incorrect",
-        "explanation": "Removing bugs ensures the program works as intended."
-    },
-    {
-        "id": "q-debug-3", "conceptId": "debugging", "type": "short", "difficulty": "hard",
-        "prompt": "What is another word for errors or abnormalities in a program?",
-        "options": None,
-        "answer": "Bugs",
-        "explanation": "Software defects are commonly called bugs."
-    }
-]
-
-cs_deck = {
-    "id": "example-cs-101",
-    "title": "Intro to Computer Science",
-    "description": "Variables, loops, algorithms, and Big-O notation",
-    "emoji": "💻",
-    "createdAt": "new Date().toISOString()",
-    "streak": 0,
-    "longestStreak": 0,
-    "sessionLogs": [],
-    "concepts": cs_concepts,
-    "questions": cs_questions
-}
-
-# BIOLOGY
-bio_concepts = [
-    {
-        "id": "cell-membrane",
-        "label": "Cell Membrane",
-        "sourceSnippet": "The cell membrane (plasma membrane) is a biological membrane that separates and protects the interior of all cells from the outside environment. It is selectively permeable to ions and organic molecules and controls the movement of substances in and out of cells.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "mitochondria",
-        "label": "Mitochondria",
-        "sourceSnippet": "Mitochondria are often referred to as the powerhouses of the cell. They are organelles that act like a digestive system which takes in nutrients, breaks them down, and creates energy rich molecules for the cell. The biochemical processes of the cell are known as cellular respiration.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "nucleus",
-        "label": "Nucleus",
-        "sourceSnippet": "The nucleus is a highly specialized organelle that serves as the information processing and administrative center of the cell. This organelle has two major functions: it stores the cell's hereditary material, or DNA, and it coordinates the cell's activities, which include growth, intermediary metabolism, protein synthesis, and reproduction.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "ribosomes",
-        "label": "Ribosomes",
-        "sourceSnippet": "Ribosomes are the protein builders or the protein synthesizers of the cell. They are like construction guys who connect one amino acid at a time and build long chains. Ribosomes are special because they are found in both prokaryotes and eukaryotes.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "dna-replication",
-        "label": "DNA Replication",
-        "sourceSnippet": "DNA replication is the biological process of producing two identical replicas of DNA from one original DNA molecule. This process occurs in all living organisms and is the basis for biological inheritance.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "mitosis",
-        "label": "Mitosis",
-        "sourceSnippet": "Mitosis is a part of the cell cycle in which replicated chromosomes are separated into two new nuclei. Cell division gives rise to genetically identical cells in which the total number of chromosomes is maintained.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    }
-]
-
-bio_questions = [
-    {
-        "id": "q-mem-1", "conceptId": "cell-membrane", "type": "mcq", "difficulty": "easy",
-        "prompt": "What separates the interior of the cell from the outside environment?",
-        "options": ["Nucleus", "Ribosome", "Cell Membrane", "Mitochondria"],
-        "answer": "Cell Membrane",
-        "explanation": "The cell membrane acts as a protective barrier."
-    },
-    {
-        "id": "q-mem-2", "conceptId": "cell-membrane", "type": "cloze", "difficulty": "medium",
-        "prompt": "The cell membrane is selectively ___ to ions and organic molecules.",
-        "options": None,
-        "answer": "permeable",
-        "explanation": "It controls what enters and exits the cell."
-    },
-    {
-        "id": "q-mem-3", "conceptId": "cell-membrane", "type": "short", "difficulty": "hard",
-        "prompt": "What controls the movement of substances in and out of cells?",
-        "options": None,
-        "answer": "Cell Membrane",
-        "explanation": "The cell membrane regulates molecular transport."
-    },
-    {
-        "id": "q-mito-1", "conceptId": "mitochondria", "type": "mcq", "difficulty": "easy",
-        "prompt": "Mitochondria are often referred to as the ___ of the cell.",
-        "options": ["Brain", "Powerhouse", "Garbage disposal", "Skeleton"],
-        "answer": "Powerhouse",
-        "explanation": "Mitochondria generate most of the chemical energy needed to power the cell."
-    },
-    {
-        "id": "q-mito-2", "conceptId": "mitochondria", "type": "cloze", "difficulty": "medium",
-        "prompt": "The biochemical processes of the cell are known as ___ respiration.",
-        "options": None,
-        "answer": "cellular",
-        "explanation": "Cellular respiration happens in the mitochondria."
-    },
-    {
-        "id": "q-mito-3", "conceptId": "mitochondria", "type": "short", "difficulty": "hard",
-        "prompt": "What organelle takes in nutrients, breaks them down, and creates energy rich molecules?",
-        "options": None,
-        "answer": "Mitochondria",
-        "explanation": "This is the primary function of mitochondria."
-    },
-    {
-        "id": "q-nuc-1", "conceptId": "nucleus", "type": "mcq", "difficulty": "easy",
-        "prompt": "Which organelle stores the cell's DNA?",
-        "options": ["Ribosome", "Mitochondria", "Nucleus", "Golgi apparatus"],
-        "answer": "Nucleus",
-        "explanation": "The nucleus stores the hereditary material (DNA)."
-    },
-    {
-        "id": "q-nuc-2", "conceptId": "nucleus", "type": "cloze", "difficulty": "medium",
-        "prompt": "The nucleus serves as the information processing and ___ center of the cell.",
-        "options": None,
-        "answer": "administrative",
-        "explanation": "It coordinates cell activities."
-    },
-    {
-        "id": "q-nuc-3", "conceptId": "nucleus", "type": "short", "difficulty": "hard",
-        "prompt": "Name one of the two major functions of the nucleus.",
-        "options": None,
-        "answer": "Stores DNA",
-        "explanation": "It stores DNA and coordinates cell activities."
-    },
-    {
-        "id": "q-ribo-1", "conceptId": "ribosomes", "type": "mcq", "difficulty": "easy",
-        "prompt": "What do ribosomes synthesize?",
-        "options": ["Lipids", "Proteins", "Carbohydrates", "DNA"],
-        "answer": "Proteins",
-        "explanation": "Ribosomes are the protein builders of the cell."
-    },
-    {
-        "id": "q-ribo-2", "conceptId": "ribosomes", "type": "cloze", "difficulty": "medium",
-        "prompt": "Ribosomes connect one ___ at a time to build long chains.",
-        "options": None,
-        "answer": "amino acid",
-        "explanation": "Proteins are built from amino acid chains."
-    },
-    {
-        "id": "q-ribo-3", "conceptId": "ribosomes", "type": "short", "difficulty": "hard",
-        "prompt": "Are ribosomes found in prokaryotes or eukaryotes?",
-        "options": None,
-        "answer": "Both",
-        "explanation": "Ribosomes are found in both cell types."
-    },
-    {
-        "id": "q-dna-1", "conceptId": "dna-replication", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is the process of producing two identical replicas of DNA?",
-        "options": ["Translation", "Transcription", "DNA Replication", "Mitosis"],
-        "answer": "DNA Replication",
-        "explanation": "Replication copies the genetic information."
-    },
-    {
-        "id": "q-dna-2", "conceptId": "dna-replication", "type": "cloze", "difficulty": "medium",
-        "prompt": "DNA replication produces two identical ___ of DNA from one original molecule.",
-        "options": None,
-        "answer": "replicas",
-        "explanation": "It duplicates the DNA molecule."
-    },
-    {
-        "id": "q-dna-3", "conceptId": "dna-replication", "type": "short", "difficulty": "hard",
-        "prompt": "What process is the basis for biological inheritance?",
-        "options": None,
-        "answer": "DNA Replication",
-        "explanation": "It allows traits to be passed to offspring."
-    },
-    {
-        "id": "q-mitosis-1", "conceptId": "mitosis", "type": "mcq", "difficulty": "easy",
-        "prompt": "What does mitosis separate into two new nuclei?",
-        "options": ["Ribosomes", "Replicated chromosomes", "Mitochondria", "Cell membranes"],
-        "answer": "Replicated chromosomes",
-        "explanation": "Mitosis divides the genetic material equally."
-    },
-    {
-        "id": "q-mitosis-2", "conceptId": "mitosis", "type": "cloze", "difficulty": "medium",
-        "prompt": "Cell division gives rise to genetically ___ cells.",
-        "options": None,
-        "answer": "identical",
-        "explanation": "Mitosis creates exact copies."
-    },
-    {
-        "id": "q-mitosis-3", "conceptId": "mitosis", "type": "short", "difficulty": "hard",
-        "prompt": "Does mitosis change the total number of chromosomes?",
-        "options": None,
-        "answer": "No",
-        "explanation": "The chromosome number is maintained."
-    }
-]
-
-bio_deck = {
-    "id": "example-bio-101",
-    "title": "Cellular Biology",
-    "description": "Cell organelles, mitosis, and DNA replication",
-    "emoji": "🧬",
-    "createdAt": "new Date().toISOString()",
-    "streak": 0,
-    "longestStreak": 0,
-    "sessionLogs": [],
-    "concepts": bio_concepts,
-    "questions": bio_questions
-}
-
-# PSYCHOLOGY
-psych_concepts = [
-    {
-        "id": "classical-conditioning",
-        "label": "Classical Conditioning",
-        "sourceSnippet": "Classical conditioning is a learning procedure in which a biologically potent stimulus (e.g. food) is paired with a previously neutral stimulus (e.g. a bell). It refers to the learning process that results from this pairing.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "operant-conditioning",
-        "label": "Operant Conditioning",
-        "sourceSnippet": "Operant conditioning, also known as instrumental conditioning, is a method of learning normally attributed to B.F. Skinner, where the consequences of a response determine the probability of it being repeated.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "short-term-memory",
-        "label": "Short-term Memory",
-        "sourceSnippet": "Short-term memory is the capacity for holding a small amount of information in an active, readily available state for a short interval. For example, short-term memory holds a phone number that has just been recited.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "long-term-memory",
-        "label": "Long-term Memory",
-        "sourceSnippet": "Long-term memory is the stage of the Atkinson-Shiffrin memory model where informative knowledge is held indefinitely. It is defined in contrast to short-term and working memory, which persist for only about 18 to 30 seconds.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "cognitive-biases",
-        "label": "Cognitive Biases",
-        "sourceSnippet": "A cognitive bias is a systematic pattern of deviation from norm or rationality in judgment. Individuals create their own subjective reality from their perception of the input.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    },
-    {
-        "id": "maslows-hierarchy",
-        "label": "Maslow's Hierarchy",
-        "sourceSnippet": "Maslow's hierarchy of needs is an idea in psychology proposed by Abraham Maslow in his 1943 paper. It is a motivational theory comprising a five-tier model of human needs, often depicted as hierarchical levels within a pyramid.",
-        "mastery": 0, "easinessFactor": 2.5, "interval": 1, "repetitions": 0, "history": []
-    }
-]
-
-psych_questions = [
-    {
-        "id": "q-class-1", "conceptId": "classical-conditioning", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is paired with a neutral stimulus in classical conditioning?",
-        "options": ["A biological potent stimulus", "A neutral response", "Punishment", "A cognitive bias"],
-        "answer": "A biological potent stimulus",
-        "explanation": "It pairs a natural reflex with a new trigger."
-    },
-    {
-        "id": "q-class-2", "conceptId": "classical-conditioning", "type": "cloze", "difficulty": "medium",
-        "prompt": "Classical conditioning is a ___ procedure.",
-        "options": None,
-        "answer": "learning",
-        "explanation": "It's a fundamental type of learning."
-    },
-    {
-        "id": "q-class-3", "conceptId": "classical-conditioning", "type": "short", "difficulty": "hard",
-        "prompt": "Give an example of a previously neutral stimulus commonly used to explain this concept.",
-        "options": None,
-        "answer": "A bell",
-        "explanation": "Pavlov famously used a bell (or metronome) in his experiments."
-    },
-    {
-        "id": "q-operant-1", "conceptId": "operant-conditioning", "type": "mcq", "difficulty": "easy",
-        "prompt": "Who is normally attributed with operant conditioning?",
-        "options": ["Sigmund Freud", "B.F. Skinner", "Ivan Pavlov", "Abraham Maslow"],
-        "answer": "B.F. Skinner",
-        "explanation": "Skinner is the father of operant conditioning."
-    },
-    {
-        "id": "q-operant-2", "conceptId": "operant-conditioning", "type": "cloze", "difficulty": "medium",
-        "prompt": "The consequences of a response determine the ___ of it being repeated.",
-        "options": None,
-        "answer": "probability",
-        "explanation": "Reinforcement increases probability, punishment decreases it."
-    },
-    {
-        "id": "q-operant-3", "conceptId": "operant-conditioning", "type": "short", "difficulty": "hard",
-        "prompt": "What is another name for operant conditioning?",
-        "options": None,
-        "answer": "Instrumental conditioning",
-        "explanation": "It is also known as instrumental conditioning."
-    },
-    {
-        "id": "q-stm-1", "conceptId": "short-term-memory", "type": "mcq", "difficulty": "easy",
-        "prompt": "How much information can short-term memory hold?",
-        "options": ["Unlimited", "A large amount", "A small amount", "None"],
-        "answer": "A small amount",
-        "explanation": "STM has a very limited capacity."
-    },
-    {
-        "id": "q-stm-2", "conceptId": "short-term-memory", "type": "cloze", "difficulty": "medium",
-        "prompt": "Short-term memory holds information in an active, readily ___ state.",
-        "options": None,
-        "answer": "available",
-        "explanation": "The information is immediately accessible."
-    },
-    {
-        "id": "q-stm-3", "conceptId": "short-term-memory", "type": "short", "difficulty": "hard",
-        "prompt": "Give an example of something held in short-term memory.",
-        "options": None,
-        "answer": "A phone number",
-        "explanation": "A just-recited phone number is a classic example."
-    },
-    {
-        "id": "q-ltm-1", "conceptId": "long-term-memory", "type": "mcq", "difficulty": "easy",
-        "prompt": "How long is knowledge held in long-term memory?",
-        "options": ["18 to 30 seconds", "A few hours", "Indefinitely", "A few days"],
-        "answer": "Indefinitely",
-        "explanation": "LTM has a potentially limitless duration."
-    },
-    {
-        "id": "q-ltm-2", "conceptId": "long-term-memory", "type": "cloze", "difficulty": "medium",
-        "prompt": "Long-term memory is defined in contrast to ___ and working memory.",
-        "options": None,
-        "answer": "short-term",
-        "explanation": "It's a different stage in the memory model."
-    },
-    {
-        "id": "q-ltm-3", "conceptId": "long-term-memory", "type": "short", "difficulty": "hard",
-        "prompt": "Which memory model includes long-term memory as a stage?",
-        "options": None,
-        "answer": "Atkinson-Shiffrin",
-        "explanation": "This model proposed sensory, short-term, and long-term memory."
-    },
-    {
-        "id": "q-bias-1", "conceptId": "cognitive-biases", "type": "mcq", "difficulty": "easy",
-        "prompt": "What is a cognitive bias?",
-        "options": ["A mental illness", "A perfect rational judgment", "A systematic deviation from rationality", "A memory technique"],
-        "answer": "A systematic deviation from rationality",
-        "explanation": "It describes flawed patterns of thinking."
-    },
-    {
-        "id": "q-bias-2", "conceptId": "cognitive-biases", "type": "cloze", "difficulty": "medium",
-        "prompt": "Individuals create their own ___ reality from their perception of the input.",
-        "options": None,
-        "answer": "subjective",
-        "explanation": "Biases color how we see the world."
-    },
-    {
-        "id": "q-bias-3", "conceptId": "cognitive-biases", "type": "short", "difficulty": "hard",
-        "prompt": "Do cognitive biases represent a deviation from the norm?",
-        "options": None,
-        "answer": "Yes",
-        "explanation": "They are systematic deviations from rational judgment."
-    },
-    {
-        "id": "q-maslow-1", "conceptId": "maslows-hierarchy", "type": "mcq", "difficulty": "easy",
-        "prompt": "How many tiers are in Maslow's model of human needs?",
-        "options": ["Three", "Five", "Seven", "Ten"],
-        "answer": "Five",
-        "explanation": "It is a five-tier model."
-    },
-    {
-        "id": "q-maslow-2", "conceptId": "maslows-hierarchy", "type": "cloze", "difficulty": "medium",
-        "prompt": "Maslow's hierarchy of needs is often depicted as hierarchical levels within a ___.",
-        "options": None,
-        "answer": "pyramid",
-        "explanation": "The pyramid shape is standard for this model."
-    },
-    {
-        "id": "q-maslow-3", "conceptId": "maslows-hierarchy", "type": "short", "difficulty": "hard",
-        "prompt": "In what year did Abraham Maslow propose this idea?",
-        "options": None,
-        "answer": "1943",
-        "explanation": "He proposed it in his 1943 paper."
-    }
-]
-
-psych_deck = {
-    "id": "example-psych-101",
-    "title": "Intro to Psychology",
-    "description": "Classical conditioning, memory, and cognitive biases",
-    "emoji": "🧠",
-    "createdAt": "new Date().toISOString()",
-    "streak": 0,
-    "longestStreak": 0,
-    "sessionLogs": [],
-    "concepts": psych_concepts,
-    "questions": psych_questions
-}
-
-decks = [cs_deck, bio_deck, psych_deck]
-
-output = "export const EXAMPLE_DECKS = [\n"
-for i, deck in enumerate(decks):
-    deck_str = json.dumps(deck, indent=2)
-    deck_str = deck_str.replace('"new Date().toISOString()"', "new Date().toISOString()")
-    
-    # We want to format it nicely with 'new Date().toISOString()'
-    # Wait, the history also has nextReviewDate, but I just put nextReviewDate inside the string directly
-    # In concepts I didn't add nextReviewDate. Let's add it.
-    
-    output += deck_str
-    if i < len(decks) - 1:
-        output += ",\n"
-
-output += "\n];\n"
-
-# add nextReviewDate to concepts
-output = output.replace('"repetitions": 0,', '"repetitions": 0, "nextReviewDate": new Date().toISOString(),')
-
-with open("src/data/exampleDeck.js", "w") as f:
-    f.write(output)
-
-print("Done")
+if __name__ == '__main__':
+    main()
