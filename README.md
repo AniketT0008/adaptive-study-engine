@@ -46,3 +46,8 @@ npm run dev
 npm run lint
 npm run build
 ```
+
+## Contributors
+
+- [AniketT0008](https://github.com/AniketT0008)
+- [jeevanpartapsingh21-a11y](https://github.com/jeevanpartapsingh21-a11y)
