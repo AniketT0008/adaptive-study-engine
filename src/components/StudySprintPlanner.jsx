@@ -52,6 +52,8 @@ export default function StudySprintPlanner({ deck, onReview, onFocus, onLearn })
         <div className="glass p-5 rounded-xl border border-white/[0.08] flex flex-col items-center justify-center text-center">
           <div
             className="relative grid place-items-center rounded-full w-32 h-32"
+            role="img"
+            aria-label={`Readiness ${sprint.readiness} out of 100`}
             style={{
               background: `conic-gradient(${readinessColor(sprint.readiness)} ${sprint.readiness * 3.6}deg, rgba(255,255,255,0.08) 0deg)`,
             }}
@@ -66,6 +68,7 @@ export default function StudySprintPlanner({ deck, onReview, onFocus, onLearn })
           </div>
           <h3 className="mt-4 text-base font-extrabold text-white">{sprint.headline}</h3>
           <p className="text-xs text-[var(--color-text-muted)] mt-1">{sprint.minutes} minute sprint plan</p>
+          <p className="text-[10px] text-[var(--color-text-muted)] mt-2">{sprint.readinessScale}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -86,7 +89,7 @@ export default function StudySprintPlanner({ deck, onReview, onFocus, onLearn })
             <h3 className="text-sm font-extrabold text-[var(--color-text)]">Highest Impact Lessons</h3>
             <span className="text-[10px] text-[var(--color-text-muted)] font-mono">{sprint.priorities.length} queued</span>
           </div>
-          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+          <div role="region" tabIndex="0" aria-label="Highest impact lessons" className="space-y-2 max-h-64 overflow-y-auto pr-1">
             {sprint.priorities.slice(0, 8).map((concept, index) => (
               <div key={concept.id} className="glass p-3 rounded-lg border border-white/[0.06] flex items-center gap-3">
                 <span className="w-6 h-6 rounded bg-white/[0.06] text-[11px] font-black text-[var(--color-accent-light)] grid place-items-center shrink-0">
@@ -106,7 +109,7 @@ export default function StudySprintPlanner({ deck, onReview, onFocus, onLearn })
 
         <div className="space-y-3">
           <h3 className="text-sm font-extrabold text-[var(--color-text)]">Unit Risk Radar</h3>
-          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+          <div role="region" tabIndex="0" aria-label="Unit risk details" className="space-y-2 max-h-64 overflow-y-auto pr-1">
             {sprint.units.slice(0, 8).map((unit) => (
               <div key={unit.name} className="glass p-3 rounded-lg border border-white/[0.06] space-y-2">
                 <div className="flex items-center justify-between gap-3">

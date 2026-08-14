@@ -1,4 +1,4 @@
-import { getQuestionSet, rotateOptions } from '../engine/teaching.js';
+import { rotateOptions } from '../engine/teaching.js';
 
 const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -86,10 +86,25 @@ function labelFromSnippet(snippet, index) {
   return words.slice(0, 4).map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 }
 
+export function assessSourceMaterial(material) {
+  const text = String(material || '').trim();
+  const words = text.split(/\s+/).filter(Boolean);
+  const sentences = text.split(/[.!?]+/).map((part) => part.trim()).filter((part) => part.length >= 20);
+  const uniqueWords = new Set(words.map((word) => word.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(Boolean));
+  const errors = [];
+  if (text.length < 300) errors.push('Add at least 300 characters of course notes.');
+  if (words.length < 60) errors.push('Add at least 60 words so lessons have enough context.');
+  if (sentences.length < 4) errors.push('Include at least four complete explanatory sentences.');
+  if (uniqueWords.size < 35) errors.push('The notes repeat too little information to build a useful deck.');
+  return { ok: errors.length === 0, errors, words: words.length, sentences: sentences.length };
+}
+
 /**
  * Local rule-based concept & question generator fallback when no API key is provided or API fails.
  */
 export function generateLocalDeckFromText(text) {
+  const quality = assessSourceMaterial(text);
+  if (!quality.ok) throw new Error(quality.errors.join(' '));
   const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 30);
   const rawBlocks = paragraphs.length >= 3
     ? paragraphs
@@ -249,8 +264,10 @@ export async function callGeminiText(prompt, apiKey) {
  * Extracts concepts from course material using Gemini or local NLP fallback.
  */
 export async function extractConcepts(material, apiKey) {
-  if (!material || material.trim().length < 50) {
-    return generateLocalDeckFromText(material || '').concepts;
+  const quality = assessSourceMaterial(material);
+  if (!quality.ok) throw new Error(quality.errors.join(' '));
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error('Connect Gemini before generating a custom deck. Files can be read locally, but reliable lessons and assessments require generation.');
   }
 
   if (apiKey && apiKey.trim()) {
@@ -276,15 +293,19 @@ ${material}`;
     if (result && Array.isArray(result) && result.length > 0) {
       return result;
     }
+    throw new Error('Gemini did not return usable lesson concepts. Verify the key or improve the source notes and try again.');
   }
 
-  return generateLocalDeckFromText(material).concepts;
+  return [];
 }
 
 /**
  * Generates quiz questions using Gemini or local template fallback.
  */
 export async function generateQuestions(concepts, apiKey) {
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error('Connect Gemini before generating assessment questions.');
+  }
   if (apiKey && apiKey.trim()) {
     const conceptList = concepts.map(c => `- ID: "${c.id}", Label: "${c.label}", Unit: "${c.unit || 'Imported Material'}", Snippet: "${c.sourceSnippet}"`).join('\n');
 
@@ -326,24 +347,9 @@ Return only a JSON array.`;
           requiresSelfAssessment: false,
         }));
     }
+    throw new Error('Gemini did not return valid four-option assessment questions. No fallback deck was saved.');
   }
-
-  const questions = [];
-  concepts.forEach((concept) => {
-    getQuestionSet(concept).forEach((spec) => questions.push({
-      id: `q-gen-${concept.id}-${spec.difficulty}`,
-      conceptId: concept.id,
-      type: 'mcq',
-      difficulty: spec.difficulty,
-      prompt: spec.prompt,
-      options: rotateOptions(spec.answer, spec.distractors, `${concept.id}-${spec.difficulty}`),
-      answer: spec.answer,
-      explanation: spec.explanation,
-      visual: spec.visual,
-      requiresSelfAssessment: false,
-    }));
-  });
-  return questions;
+  return [];
 }
 
 /**

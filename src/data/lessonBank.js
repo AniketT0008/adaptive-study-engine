@@ -2,63 +2,62 @@ function E(prompt, answer, d1, d2, d3, explanation) {
   return { prompt, answer, distractors: [d1, d2, d3], explanation };
 }
 
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function stemFromExample(example, answer) {
-  const text = String(example).trim().replace(/[.,;]+$/, '');
-  const escaped = escapeRegExp(answer);
-  const trailing = new RegExp(`(?:gives|equals|is|prints|returns|produces|has|yields|=|:)?\\s*${escaped}$`, 'i');
-  if (trailing.test(text)) {
-    return text.replace(trailing, '').replace(/[.,;:=]+$/, '').trim();
-  }
-  const last = text.lastIndexOf(String(answer));
-  if (last >= Math.max(0, text.length - String(answer).length - 8)) {
-    const stem = `${text.slice(0, last).replace(/[.,;:=]+$/, '').trim()} ___`.trim();
-    if (stem.length >= 28 && !/(?:the expression|the result|gives|so the)$/i.test(stem.replace(/_+/g, '').trim())) {
-      return stem;
-    }
-  }
-  return text;
-}
-
 const LESSON_PACKS = {};
+
+function withoutTerminalPunctuation(value) {
+  return String(value).trim().replace(/[.!?]+$/, '');
+}
+
+function resultClaim(value) {
+  return `the worked result is ${withoutTerminalPunctuation(value)}.`;
+}
+
+function hideWorkedAnswer(example, answer) {
+  const text = String(example).trim();
+  const answerText = String(answer).trim();
+  const escaped = answerText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const exactAnswer = new RegExp(`(^|[^A-Za-z0-9])${escaped}(?=$|[^A-Za-z0-9])`, 'gi');
+  return text.replace(exactAnswer, (match, prefix) => {
+    if (prefix === '-' && /^\d/.test(answerText)) return match;
+    return `${prefix}[result hidden]`;
+  });
+}
 
 function add(rows) {
   for (const line of rows.trim().split("\n")) {
     const [label, fact, example, answer, d1, d2, d3] = line.split("\t");
-    const stem = stemFromExample(example, answer);
+    const correctClaim = `${fact} Therefore, ${resultClaim(answer)}`;
+    const promptExample = hideWorkedAnswer(example, answer);
     LESSON_PACKS[label] = {
-      snippet: `${fact} ${example}`,
+      snippet: fact,
       example,
-      intuition: fact,
+      intuition: `The governing idea is ${withoutTerminalPunctuation(fact).replace(/^./, (character) => character.toLowerCase())}. In the worked case, that relationship distinguishes ${answer} from the tempting alternative ${d1}.`,
       worked: example,
-      goal: `Use ${label} correctly and explain why the stated result follows.`,
-      mistake: `For ${label}, a common error is concluding ${d1} instead of ${answer}.`,
+      goal: `Apply ${label} to a new case, obtain the correct result, and justify the decisive step represented by “${answer}” in the worked example.`,
+      mistake: `Concluding ${d1} instead of ${answer}, usually by misapplying or omitting the relationship stated in the definition.`,
       easy: E(
-        `${fact} ${stem}. What is the result?`,
+        `${label}: ${promptExample} Which result follows?`,
         answer,
         d1,
         d2,
         d3,
-        `${fact} Therefore the worked result is ${answer}.`,
+        correctClaim,
       ),
       medium: E(
-        `Given this ${label} setup: ${example} Why is ${answer} the result rather than ${d1}?`,
-        fact,
-        `The result must be ${d1} because the given values can be ignored.`,
-        `Average the givens and report ${d2} without using ${label}.`,
-        `${answer} and ${d1} are interchangeable if the arithmetic looks neat.`,
-        `${fact} Therefore the worked result is ${answer}.`,
+        `For ${label}, which statement correctly connects the governing principle to this case: ${promptExample}`,
+        `${fact} Therefore, ${resultClaim(answer)}`,
+        `${fact} Therefore, ${resultClaim(d1)}`,
+        `${fact} Therefore, ${resultClaim(d2)}`,
+        `${fact} Therefore, ${resultClaim(d3)}`,
+        `The principle must be applied to the stated values and conditions. ${correctClaim}`,
       ),
       hard: E(
-        `In this ${label} example: ${example} A student reported ${d1} instead of ${answer}. What failed?`,
-        `They skipped the evaluation that produces ${answer} from the given setup.`,
-        `Nothing failed; ${d1} is interchangeable with ${answer}.`,
-        `Keep ${d1} and round until it matches ${d3}.`,
-        `Drop units, signs, or regularity conditions, then keep ${d1}.`,
-        `${example} The correct result is ${answer}.`,
+        `A student studying ${label} concludes ${d1} for this case: ${promptExample} Which diagnosis is correct?`,
+        `${d1} conflicts with the governing relationship; applying it gives ${answer}.`,
+        `${d2} is the required result because it uses the same quantities in a different order.`,
+        `${d3} is equally valid because the governing relationship does not determine one result.`,
+        `${answer} and ${d1} are equivalent descriptions of the same outcome.`,
+        `${fact} Applying that relationship to the given case produces ${answer}, so the reported ${d1} reveals a conceptual or evaluation error.`,
       ),
     };
   }

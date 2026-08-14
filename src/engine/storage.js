@@ -1,9 +1,11 @@
 import { EXAMPLE_DECKS } from '../data/exampleDeck.js';
 import { UNIVERSITY_DECKS } from '../data/universityCatalog.js';
+import { normalizeDeck, validateDeck } from '../data/validation.js';
 
 const DECKS_KEY = 'adaptive-study-engine-decks';
 const API_KEY_KEY = 'adaptive-study-engine-api-key';
 const API_KEY_SESSION = 'adaptive-study-engine-api-key-session';
+const STORAGE_VERSION = 2;
 
 const ALL_BUILTIN_DECKS = [...EXAMPLE_DECKS, ...UNIVERSITY_DECKS];
 
@@ -50,9 +52,14 @@ function migrateBuiltInDeck(deck) {
 
 export function saveDecks(decks) {
   try {
-    localStorage.setItem(DECKS_KEY, JSON.stringify(decks));
+    const normalized = (Array.isArray(decks) ? decks : [])
+      .map(normalizeDeck)
+      .filter(Boolean);
+    localStorage.setItem(DECKS_KEY, JSON.stringify({ version: STORAGE_VERSION, decks: normalized }));
+    return { ok: true, decks: normalized };
   } catch (e) {
     console.error('Failed to save decks:', e);
+    return { ok: false, error: e };
   }
 }
 
@@ -72,15 +79,18 @@ export function loadDecks() {
     const data = localStorage.getItem(DECKS_KEY);
     if (!data) return [];
     const parsed = JSON.parse(data);
-    if (!Array.isArray(parsed)) return [];
+    const storedDecks = Array.isArray(parsed) ? parsed : parsed?.decks;
+    if (!Array.isArray(storedDecks)) return [];
 
     let changed = false;
-    const migrated = parsed.map((deck) => {
+    const migrated = storedDecks.map((deck) => {
       const result = migrateBuiltInDeck(deck);
       if (result.changed) changed = true;
-      return result.deck;
-    });
-    if (changed) saveDecks(migrated);
+      const normalized = normalizeDeck(result.deck);
+      if (!normalized || validateDeck(normalized).length > 0) changed = true;
+      return normalized;
+    }).filter((deck) => deck && validateDeck(deck).length === 0);
+    if (changed || Array.isArray(parsed) || parsed.version !== STORAGE_VERSION) saveDecks(migrated);
     return migrated;
   } catch (e) {
     console.error('Failed to load decks:', e);
@@ -89,11 +99,18 @@ export function loadDecks() {
 }
 
 export function saveDeck(deck) {
+  const sourceErrors = validateDeck(deck);
+  if (sourceErrors.length > 0) return { ok: false, errors: sourceErrors };
+  const normalized = normalizeDeck(deck);
+  const errors = validateDeck(normalized);
+  if (!normalized || errors.length > 0) {
+    return { ok: false, errors: errors.length ? errors : ['Deck could not be normalized.'] };
+  }
   const decks = loadDecks();
-  const idx = decks.findIndex(d => d.id === deck.id);
-  if (idx >= 0) decks[idx] = deck;
-  else decks.push(deck);
-  saveDecks(decks);
+  const idx = decks.findIndex(d => d.id === normalized.id);
+  if (idx >= 0) decks[idx] = normalized;
+  else decks.push(normalized);
+  return saveDecks(decks);
 }
 
 export function getDeck(id) {

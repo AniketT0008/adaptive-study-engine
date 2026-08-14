@@ -6,4 +6,17 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: './',
+  build: {
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) return 'react-vendor'
+          if (id.includes('node_modules/recharts')) return 'charts'
+          if (id.includes('node_modules/katex')) return 'math'
+          if (id.includes('/src/data/')) return 'curriculum'
+          return undefined
+        },
+      },
+    },
+  },
 })

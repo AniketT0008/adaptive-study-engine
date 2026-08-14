@@ -219,7 +219,7 @@ export const TOPIC_QUESTIONS = {
     E('A student cancels (x−2) and still draws a vertical asymptote at x=2. What failed?', 'A cancelled factor is a hole, not a VA, if it no longer remains in the denominator.', 'Holes are intercepts.', 'Degree never matters.', 'x=2 cannot be a hole.', 'Simplify before classifying discontinuities.'),
   ),
   'Radians and Unit Circle': pack(
-    E('π radians equals how many degrees?', '180.', '90.', '360.', '1.', 'π rad = 180°.'),
+    E('π radians equals how many degrees?', '180.', '90.', '360.', '1.', 'A half-turn has arc length πr, so its angle is π radians or 180 degrees.'),
     E('On the unit circle, the coordinates of an angle θ are?', '(cos θ, sin θ).', '(sin θ, cos θ).', '(θ, π).', '(1, θ).', 'x = cos, y = sin.'),
     E('A student converts π/2 to 180°. What failed?', 'π/2 is 90°, not 180°.', 'Radians cannot convert.', 'Unit circle forbids 90°.', 'π is 1 degree.', 'Half of 180° is 90°.'),
   ),

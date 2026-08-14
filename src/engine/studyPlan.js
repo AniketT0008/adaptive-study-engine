@@ -46,6 +46,7 @@ export function buildStudySprint(deck, minutes = 45) {
       reason: conceptReason(concept),
       due: daysUntil(concept.nextReviewDate) <= 0,
       newLesson: !concept.history?.length && !concept.learnedAt,
+      reviewed: Boolean(concept.history?.length),
     }))
     .sort((a, b) => b.priority - a.priority);
 
@@ -58,11 +59,14 @@ export function buildStudySprint(deck, minutes = 45) {
   const readiness = practicedCount === 0
     ? 0
     : Math.max(0, Math.min(100, Math.round(avgMastery * 78 + (1 - weakCount / practicedCount) * 16 + (1 - dueCount / practicedCount) * 6)));
-  const reviewSlots = Math.max(3, Math.min(sorted.length, Math.floor(minutes / 7)));
+  const reviewSlots = Math.max(1, Math.min(sorted.length, Math.floor(minutes / 7)));
   const learnSlots = Math.max(1, Math.min(4, Math.floor(minutes / 18)));
-  const priorities = sorted.slice(0, reviewSlots);
+  const priorities = sorted.filter((concept) => concept.reviewed).slice(0, reviewSlots);
+  const priorityIds = new Set(priorities.map((concept) => concept.id));
   const newLessons = sorted.filter((concept) => concept.newLesson).slice(0, learnSlots);
-  const weakLessons = sorted.filter((concept) => !concept.newLesson && (concept.mastery || 0) < 0.55).slice(0, 4);
+  const weakLessons = sorted
+    .filter((concept) => concept.reviewed && !priorityIds.has(concept.id) && (concept.mastery || 0) < 0.55)
+    .slice(0, 4);
 
   const unitMap = new Map();
   for (const concept of concepts) {
@@ -101,6 +105,7 @@ export function buildStudySprint(deck, minutes = 45) {
 
   return {
     readiness,
+    readinessScale: '0–100 based only on practiced lessons, overdue reviews, and demonstrated mastery',
     headline,
     minutes,
     reviewSlots,

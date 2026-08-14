@@ -4,6 +4,7 @@ import { getDeck } from '../engine/storage.js';
 import { getDueReviewedConcepts } from '../engine/adaptive.js';
 import { playSound } from '../utils/audio.js';
 import StudySprintPlanner from './StudySprintPlanner.jsx';
+import { summarizeConcepts } from '../engine/selectors.js';
 
 function getMasteryColor(mastery) {
   if (mastery < 0.3) return '#ff7675';
@@ -80,13 +81,14 @@ export default function DeckView() {
 
   const totalConcepts = deck.concepts?.length || 0;
   const totalQuestions = deck.questions?.length || 0;
-  const totalReviews = deck.concepts?.reduce((acc, c) => acc + (c.history?.length || 0), 0) || 0;
+  const conceptSummary = summarizeConcepts(deck.concepts);
+  const totalReviews = conceptSummary.reviews;
   const averageMastery = totalConcepts > 0
     ? deck.concepts.reduce((acc, c) => acc + (c.mastery || 0), 0) / totalConcepts
     : 0;
 
-  const studiedCount = deck.concepts?.filter(c => c.history && c.history.length > 0).length || 0;
-  const newCount = totalConcepts - studiedCount;
+  const newCount = conceptSummary.new;
+  const studiedCount = totalConcepts - newCount;
   const unitGroups = (deck.units?.length
     ? deck.units.map((unit) => ({
       name: unit.name,
@@ -275,7 +277,7 @@ export default function DeckView() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl">📝</span>
-                    <span className="text-[10px] font-bold uppercase bg-[var(--color-danger)] text-white px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold uppercase bg-[var(--color-danger)] text-black px-2 py-0.5 rounded-full">
                       Exam Prep
                     </span>
                   </div>

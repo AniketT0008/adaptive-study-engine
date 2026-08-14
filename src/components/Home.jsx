@@ -4,8 +4,10 @@ import { EXAMPLE_DECKS } from '../data/exampleDeck.js';
 import { getUniversityDecksBySchool, buildDeckFromCatalogCourse } from '../data/universityCatalog.js';
 import { createConcept, createDeck } from '../data/models.js';
 import { saveDeck, loadDecks, getApiKey, saveApiKey, saveDecks, mergeDeckCollections, hasPersistedApiKey } from '../engine/storage.js';
-import { extractConcepts, generateQuestions, extractTextFromFile, testGeminiConnection } from '../api/gemini.js';
+import { extractConcepts, generateQuestions, extractTextFromFile, testGeminiConnection, assessSourceMaterial } from '../api/gemini.js';
+import { normalizeDeck, validateDeck } from '../data/validation.js';
 import { playSound } from '../utils/audio.js';
+import { summarizeConcepts } from '../engine/selectors.js';
 
 function titleFromNotes(material, concepts, fileName) {
   const named = String(material || '')
@@ -27,6 +29,7 @@ export default function Home() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const pdfInputRef = useRef(null);
+  const deleteCancelRef = useRef(null);
   const [decks, setDecks] = useState([]);
   const [materialInput, setMaterialInput] = useState('');
   const [selectedMaterialName, setSelectedMaterialName] = useState('');
@@ -34,9 +37,12 @@ export default function Home() {
   const [loadingStep, setLoadingStep] = useState(null);
   const [error, setError] = useState('');
   const [showCreateDeck, setShowCreateDeck] = useState(false);
-  const [apiStatus, setApiStatus] = useState({ state: 'idle', message: 'Local fallback ready' });
+  const [apiStatus, setApiStatus] = useState({ state: 'idle', message: 'Gemini required for custom decks' });
   const [customDeckTitle, setCustomDeckTitle] = useState('');
   const [rememberApiKey, setRememberApiKey] = useState(false);
+  const [generatedPreview, setGeneratedPreview] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     setDecks(loadDecks());
@@ -47,6 +53,16 @@ export default function Home() {
       setApiStatus({ state: 'idle', message: hasPersistedApiKey() ? 'Saved on this device' : 'Key in this tab only' });
     }
   }, []);
+
+  useEffect(() => {
+    if (!pendingDelete) return undefined;
+    deleteCancelRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setPendingDelete(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [pendingDelete]);
 
   const handleLoadExample = (exampleDeck) => {
     playSound('click');
@@ -107,11 +123,18 @@ export default function Home() {
 
   const handleCreateDeck = async () => {
     playSound('click');
-    if (!materialInput.trim()) {
-      setError("Please paste some course material or upload a file.");
+    const sourceQuality = assessSourceMaterial(materialInput);
+    if (!sourceQuality.ok) {
+      setError(sourceQuality.errors.join(' '));
+      return;
+    }
+    if (!apiKey.trim() || apiStatus.state !== 'ok') {
+      setError('Connect and verify Gemini before building a custom deck. Synapse will not save generic fallback questions.');
       return;
     }
     setError('');
+    setNotice('');
+    setGeneratedPreview(null);
     if (apiKey.trim()) saveApiKey(apiKey, rememberApiKey);
 
     try {
@@ -147,16 +170,33 @@ export default function Home() {
         }))
       });
 
-      saveDeck(newDeck);
-      setDecks(loadDecks());
-      playSound('streak');
-      navigate(`/deck/${deckId}`);
+      const normalized = normalizeDeck(newDeck);
+      const validationErrors = validateDeck(normalized);
+      if (validationErrors.length > 0) {
+        throw new Error(`Generated deck failed quality checks: ${validationErrors.slice(0, 3).join(' ')}`);
+      }
+      setGeneratedPreview(normalized);
+      setNotice('Preview ready. Review the lesson and question counts before saving.');
+      playSound('correct');
     } catch (err) {
       console.error(err);
-      setError("Failed to build deck. Please try again.");
+      setError(err?.message || "Failed to build deck. Please try again.");
     } finally {
       setLoadingStep(null);
     }
+  };
+
+  const handleConfirmGeneratedDeck = () => {
+    if (!generatedPreview) return;
+    const result = saveDeck(generatedPreview);
+    if (!result?.ok) {
+      setError(result?.errors?.join(' ') || 'The deck could not be saved in this browser.');
+      return;
+    }
+    setDecks(loadDecks());
+    setNotice('Custom deck saved.');
+    playSound('streak');
+    navigate(`/deck/${generatedPreview.id}`);
   };
 
   const handleVerifyApiKey = async () => {
@@ -187,6 +227,7 @@ export default function Home() {
     document.body.appendChild(a);
     a.click();
     a.remove();
+    setNotice(`Exported ${decks.length} deck${decks.length === 1 ? '' : 's'}.`);
   };
 
   const handleImportDecks = (e) => {
@@ -198,14 +239,17 @@ export default function Home() {
     reader.onload = (event) => {
       try {
         const imported = JSON.parse(event.target.result);
-        const isDeck = (deck) => deck && typeof deck.id === 'string' && Array.isArray(deck.concepts) && Array.isArray(deck.questions);
-        const importedDecks = Array.isArray(imported) ? imported : [imported];
-        if (importedDecks.length > 0 && importedDecks.every(isDeck)) {
+        const rawDecks = Array.isArray(imported) ? imported : Array.isArray(imported?.decks) ? imported.decks : [imported];
+        const validationErrors = rawDecks.flatMap((deck) => validateDeck(deck));
+        const importedDecks = rawDecks.map(normalizeDeck);
+        if (importedDecks.length > 0 && validationErrors.length === 0) {
           const mergedDecks = mergeDeckCollections(loadDecks(), importedDecks);
-          saveDecks(mergedDecks);
+          const result = saveDecks(mergedDecks);
+          if (!result.ok) throw result.error;
           setDecks(mergedDecks);
+          setNotice(`Imported ${importedDecks.length} valid deck${importedDecks.length === 1 ? '' : 's'}.`);
         } else {
-          setError("Invalid deck file. Import a Synapse deck JSON export.");
+          setError(`Invalid deck file. ${validationErrors.slice(0, 2).join(' ') || 'Import a Synapse deck JSON export.'}`);
           return;
         }
         playSound('streak');
@@ -220,19 +264,24 @@ export default function Home() {
 
   const handleDeleteDeck = (e, deckId) => {
     e.stopPropagation();
-    if (!confirm('Delete this deck? This cannot be undone.')) return;
+    setPendingDelete(decks.find((deck) => deck.id === deckId) || null);
+  };
+
+  const confirmDeleteDeck = () => {
+    if (!pendingDelete) return;
+    const deckId = pendingDelete.id;
     const updated = loadDecks().filter(d => d.id !== deckId);
     saveDecks(updated);
     setDecks(updated);
+    setNotice(`Deleted ${pendingDelete.title}.`);
+    setPendingDelete(null);
     playSound('click');
   };
 
-  const totalSavedConcepts = decks.reduce((sum, deck) => sum + (deck.concepts?.length || 0), 0);
-  const totalSavedReviews = decks.reduce((sum, deck) => sum + (deck.concepts || []).reduce((count, concept) => count + (concept.history?.length || 0), 0), 0);
-  const dueSavedConcepts = decks.reduce((sum, deck) => {
-    const now = new Date().toISOString();
-    return sum + (deck.concepts || []).filter((concept) => concept.nextReviewDate <= now).length;
-  }, 0);
+  const savedSummary = summarizeConcepts(decks.flatMap((deck) => deck.concepts || []));
+  const totalSavedConcepts = savedSummary.total;
+  const totalSavedReviews = savedSummary.reviews;
+  const dueSavedConcepts = savedSummary.due;
 
   return (
     <div className="max-w-5xl mx-auto space-y-10 animate-fade-in">
@@ -417,15 +466,15 @@ export default function Home() {
 
             {materialInput.trim() && (
               <div className="p-3 rounded-lg bg-[rgba(0,206,201,0.1)] border border-[rgba(0,206,201,0.3)] text-[var(--color-success)] text-xs flex items-center justify-between">
-                <span>✅ Material ready for deck creation ({materialInput.length} characters)</span>
-                <span className="font-mono text-[10px] text-[var(--color-text-muted)]">Zero-API key fallback ready</span>
+                <span>{assessSourceMaterial(materialInput).ok ? '✓ Source quality threshold met' : 'More detailed notes required'} ({materialInput.length} characters)</span>
+                <span className="font-mono text-[10px] text-[var(--color-text-muted)]">Gemini verification required</span>
               </div>
             )}
 
-            {/* API Key (Optional) */}
+            {/* API Key */}
             <div className="space-y-2 pt-1">
               <label className="text-[11px] text-[var(--color-text-muted)] flex items-center gap-1.5 font-medium">
-                🔑 Gemini API Key <span className="text-[var(--color-text-muted)]/60">(optional for text notes, required for images/PDFs)</span>
+                🔑 Gemini API Key <span className="text-[var(--color-text-muted)]/60">(required for reliable custom lessons and assessments)</span>
               </label>
               <div className="flex items-center justify-between gap-3">
                 <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${
@@ -444,7 +493,7 @@ export default function Home() {
                   value={apiKey}
                   onChange={(e) => {
                     setApiKey(e.target.value);
-                    setApiStatus({ state: 'idle', message: e.target.value.trim() ? 'Not verified yet' : 'Local fallback ready' });
+                    setApiStatus({ state: 'idle', message: e.target.value.trim() ? 'Not verified yet' : 'Gemini required for custom decks' });
                   }}
                   placeholder="Paste Gemini API key..."
                   className="w-full text-xs"
@@ -459,7 +508,7 @@ export default function Home() {
                 </button>
               </div>
               <p className="text-[11px] text-[var(--color-text-muted)]">
-                Text and markdown files work offline. Gemini powers AI deck generation, tutor replies, and image/PDF text extraction.
+                Text and markdown files are read locally. Gemini generates the lessons and questions; Synapse refuses generic fallback decks when generation fails.
               </p>
               <label className="flex items-start gap-2 text-[11px] text-[var(--color-text-muted)] cursor-pointer">
                 <input
@@ -475,14 +524,29 @@ export default function Home() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-[rgba(255,118,117,0.1)] border border-[rgba(255,118,117,0.3)] text-[var(--color-danger)] text-xs">
+              <div role="alert" className="p-3 rounded-lg bg-[rgba(255,118,117,0.1)] border border-[rgba(255,118,117,0.3)] text-[var(--color-danger)] text-xs">
                 {error}
+              </div>
+            )}
+
+            {generatedPreview && (
+              <div className="rounded-xl border border-[var(--color-success)]/30 bg-[rgba(0,206,201,0.08)] p-4 space-y-3" aria-live="polite">
+                <div>
+                  <h4 className="font-bold text-[var(--color-text)]">{generatedPreview.title}</h4>
+                  <p className="text-xs text-[var(--color-text-muted)]">
+                    {generatedPreview.concepts.length} lessons · {generatedPreview.questions.length} validated questions
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={handleConfirmGeneratedDeck} className="btn-primary text-xs">Save and open deck</button>
+                  <button type="button" onClick={() => setGeneratedPreview(null)} className="btn-secondary text-xs">Discard preview</button>
+                </div>
               </div>
             )}
 
             <button
               onClick={handleCreateDeck}
-              disabled={!!loadingStep || !materialInput.trim()}
+              disabled={!!loadingStep || !materialInput.trim() || !apiKey.trim() || apiStatus.state !== 'ok'}
               className="btn-primary w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer shadow-xl shadow-[var(--color-accent)]/20"
             >
               {loadingStep === 'extracting-file' && <><span className="animate-spin">📄</span> Extracting text from image/file...</>}
@@ -514,31 +578,37 @@ export default function Home() {
                 ? Math.round((d.concepts.reduce((s, c) => s + (c.mastery || 0), 0) / d.concepts.length) * 100)
                 : 0;
               return (
-                <div
+                <article
                   key={d.id}
-                  onClick={() => { playSound('click'); navigate(`/deck/${d.id}`); }}
-                  className="glass p-5 rounded-xl hover:border-[var(--color-accent)]/50 transition-all cursor-pointer space-y-3 hover:scale-[1.02] relative group"
+                  className="glass rounded-xl hover:border-[var(--color-accent)]/50 transition-all hover:scale-[1.02] relative group"
                 >
+                  <button
+                    type="button"
+                    onClick={() => { playSound('click'); navigate(`/deck/${d.id}`); }}
+                    className="w-full p-5 pr-12 text-left space-y-3 rounded-xl"
+                    aria-label={`Open ${d.title}`}
+                  >
+                    <h4 className="font-bold text-[var(--color-text)] truncate">{d.title}</h4>
+                    <div className="flex justify-between text-xs text-[var(--color-text-muted)]">
+                      <span>{d.concepts?.length || 0} concepts</span>
+                      <span>{avgMastery}% mastery</span>
+                    </div>
+                    <div className="mastery-bar" role="progressbar" aria-label={`${d.title} mastery`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={avgMastery}>
+                      <div className="mastery-bar-fill" style={{ width: `${avgMastery}%`, backgroundColor: avgMastery >= 70 ? '#55efc4' : avgMastery >= 40 ? '#ffeaa7' : '#ff7675' }} />
+                    </div>
+                  </button>
                   {!d.id.startsWith('example-') && (
                     <button
                       type="button"
                       aria-label={`Delete ${d.title}`}
                       title="Delete deck"
                       onClick={(e) => handleDeleteDeck(e, d.id)}
-                      className="absolute top-3 right-3 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] opacity-0 group-hover:opacity-100 transition-all text-xs bg-white/[0.04] px-2 py-1 rounded"
+                      className="absolute top-3 right-3 z-10 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] opacity-70 group-hover:opacity-100 focus:opacity-100 transition-all text-xs bg-white/[0.04] px-2 py-1 rounded"
                     >
                       🗑
                     </button>
                   )}
-                  <h4 className="font-bold text-[var(--color-text)] truncate pr-8">{d.title}</h4>
-                  <div className="flex justify-between text-xs text-[var(--color-text-muted)]">
-                    <span>{d.concepts?.length || 0} concepts</span>
-                    <span>{avgMastery}% mastery</span>
-                  </div>
-                  <div className="mastery-bar">
-                    <div className="mastery-bar-fill" style={{ width: `${avgMastery}%`, backgroundColor: avgMastery >= 70 ? '#55efc4' : avgMastery >= 40 ? '#ffeaa7' : '#ff7675' }} />
-                  </div>
-                </div>
+                </article>
               );
             })}
           </div>
@@ -548,6 +618,40 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {notice && (
+        <div role="status" aria-live="polite" className="fixed bottom-5 right-5 z-50 max-w-sm rounded-xl border border-[var(--color-success)]/30 bg-[#132322] px-4 py-3 text-sm text-[var(--color-success)] shadow-2xl">
+          {notice}
+        </div>
+      )}
+
+      {error && !showCreateDeck && (
+        <div role="alert" className="fixed bottom-5 left-5 z-50 max-w-sm rounded-xl border border-[var(--color-danger)]/30 bg-[#2b171a] px-4 py-3 text-sm text-[#ffb4b3] shadow-2xl">
+          {error}
+        </div>
+      )}
+
+      {pendingDelete && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" role="presentation" onMouseDown={() => setPendingDelete(null)}>
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-deck-title"
+            aria-describedby="delete-deck-description"
+            className="glass-strong w-full max-w-md rounded-2xl p-6"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <h2 id="delete-deck-title" className="text-xl font-bold text-[var(--color-text)]">Delete deck?</h2>
+            <p id="delete-deck-description" className="mt-2 text-sm text-[var(--color-text-muted)]">
+              {pendingDelete.title} and its local study history will be permanently removed.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button ref={deleteCancelRef} type="button" className="btn-secondary" onClick={() => setPendingDelete(null)}>Cancel</button>
+              <button type="button" className="rounded-xl bg-[var(--color-danger)] px-4 py-2 text-sm font-bold text-black" onClick={confirmDeleteDeck}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

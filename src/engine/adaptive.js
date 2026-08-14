@@ -1,11 +1,8 @@
 import { computeSM2, getQuality } from './sm2.js';
+import { hasReviewHistory, isDueForReview } from './selectors.js';
 
 export const SESSION_NEW_CAP = 3;
 export const SESSION_CAP = 8;
-
-function hasHistory(concept) {
-  return (concept.history?.length || 0) > 0;
-}
 
 function sortByMasteryThenDue(a, b) {
   const masteryDifference = (a.mastery || 0) - (b.mastery || 0);
@@ -24,17 +21,17 @@ export function getDueConcepts(concepts, focusMode = false) {
   const now = new Date().toISOString();
 
   if (focusMode) {
-    const practiced = concepts.filter(hasHistory).sort(sortByMasteryThenDue);
+    const practiced = concepts.filter(hasReviewHistory).sort(sortByMasteryThenDue);
     if (practiced.length === 0) return [];
     const focusCount = Math.max(1, Math.ceil(practiced.length * 0.25));
     return practiced.slice(0, Math.min(focusCount, SESSION_CAP));
   }
 
   const dueReviewed = concepts
-    .filter((concept) => hasHistory(concept) && (!concept.nextReviewDate || concept.nextReviewDate <= now))
+    .filter((concept) => hasReviewHistory(concept) && isDueForReview(concept, new Date(now).getTime()))
     .sort(sortByMasteryThenDue);
-  const learnedUnquizzed = concepts.filter((concept) => !hasHistory(concept) && concept.learnedAt);
-  const brandNew = concepts.filter((concept) => !hasHistory(concept) && !concept.learnedAt);
+  const learnedUnquizzed = concepts.filter((concept) => !hasReviewHistory(concept) && concept.learnedAt);
+  const brandNew = concepts.filter((concept) => !hasReviewHistory(concept) && !concept.learnedAt);
   const newToIntro = [...learnedUnquizzed, ...brandNew].slice(0, SESSION_NEW_CAP);
 
   return [...dueReviewed, ...newToIntro].slice(0, SESSION_CAP);
@@ -44,7 +41,7 @@ export function getDueConcepts(concepts, focusMode = false) {
 export function getDueReviewedConcepts(concepts) {
   if (!concepts || !Array.isArray(concepts)) return [];
   const now = new Date().toISOString();
-  return concepts.filter((concept) => hasHistory(concept) && (!concept.nextReviewDate || concept.nextReviewDate <= now));
+  return concepts.filter((concept) => hasReviewHistory(concept) && isDueForReview(concept, new Date(now).getTime()));
 }
 
 /**
@@ -153,13 +150,30 @@ export function updateConceptAfterAnswer(concept, isCorrect, difficulty, questio
  * Returns { targeted: number[], random: number[] } — arrays showing cumulative avg mastery after each review.
  * Runs a Monte Carlo simulation.
  */
-export function simulateComparison(concepts) {
+function createSeededRandom(seed) {
+  let state = (seed >>> 0) || 1;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+function conceptSeed(concepts) {
+  return concepts.reduce((seed, concept) => {
+    const text = `${concept.id || concept.label || ''}:${Math.round((concept.mastery || 0) * 1000)}`;
+    for (let i = 0; i < text.length; i += 1) seed = ((seed << 5) - seed + text.charCodeAt(i)) | 0;
+    return seed;
+  }, 2166136261);
+}
+
+export function simulateComparison(concepts, seed = null) {
   if (!concepts || !Array.isArray(concepts) || concepts.length === 0) {
     return { targeted: Array(50).fill(0), random: Array(50).fill(0), informative: false };
   }
 
   const startingMastery = concepts.map((c) => c.mastery || 0);
-  const informative = startingMastery.some((mastery) => mastery > 0) && startingMastery.some((mastery, index) => Math.abs(mastery - startingMastery[0]) > 0.04);
+  const informative = startingMastery.some((mastery) => mastery > 0) && startingMastery.some((mastery) => Math.abs(mastery - startingMastery[0]) > 0.04);
+  const randomValue = createSeededRandom(seed ?? conceptSeed(concepts));
 
   const numReviews = 50; // simulate 50 reviews
   const numTrials = 20;  // average over 20 trials for random
@@ -176,7 +190,7 @@ export function simulateComparison(concepts) {
     }
     // Simulate answering: higher mastery = more likely correct
     const pCorrect = 0.3 + tMasteries[minIdx] * 0.5;
-    const correct = Math.random() < pCorrect;
+    const correct = randomValue() < pCorrect;
     tMasteries[minIdx] = Math.max(0, Math.min(1, tMasteries[minIdx] + (correct ? 0.12 : -0.05)));
     
     const avg = tMasteries.reduce((s, m) => s + m, 0) / tMasteries.length;
@@ -189,9 +203,9 @@ export function simulateComparison(concepts) {
     let rMasteries = concepts.map(c => c.mastery || 0);
     const trial = [];
     for (let i = 0; i < numReviews; i++) {
-      const idx = Math.floor(Math.random() * rMasteries.length);
+      const idx = Math.floor(randomValue() * rMasteries.length);
       const pCorrect = 0.3 + rMasteries[idx] * 0.5;
-      const correct = Math.random() < pCorrect;
+      const correct = randomValue() < pCorrect;
       rMasteries[idx] = Math.max(0, Math.min(1, rMasteries[idx] + (correct ? 0.12 : -0.05)));
       const avg = rMasteries.reduce((s, m) => s + m, 0) / rMasteries.length;
       trial.push(avg);

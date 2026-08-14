@@ -3,9 +3,11 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getDeck, saveDeck, getApiKey } from '../engine/storage.js';
 import { playSound } from '../utils/audio.js';
 import { callGeminiText } from '../api/gemini.js';
-import { stripMarkdown, toParagraphs, isCasualMessage, dedupeLines, formatMath } from '../utils/formatText.js';
+import { stripMarkdown, toParagraphs, isCasualMessage, dedupeLines } from '../utils/formatText.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
 import { getQuestionSet } from '../engine/teaching.js';
+import { updateConceptAfterAnswer } from '../engine/adaptive.js';
+import MathText from './MathText.jsx';
 
 function MissingDeck({ onHome }) {
   return (
@@ -208,16 +210,6 @@ export default function LearnMode() {
     return `Answer to “${query}”:\n\n${directEvidence}\n\nReasoning: ${stripMarkdown(explanation)}\n\nConcrete reference: ${example || 'Use the lesson diagram and check the stated assumptions before drawing a conclusion.'}`;
   };
 
-  const buildFormulaExplanation = () => {
-    const conceptName = currentConcept?.label || 'this lesson';
-    const intuition = stripMarkdown(currentConcept?.intuition || currentConcept?.shortDefinition || currentConcept?.sourceSnippet || '');
-    const method = stripMarkdown(currentConcept?.workedExplanation || 'Start from the governing definition, keep every assumption visible, and derive the result one step at a time.');
-    const example = stripMarkdown(currentConcept?.example || 'Use a small concrete case and verify the result independently.');
-    const warning = stripMarkdown(currentConcept?.commonMistake || 'Do not substitute values until the assumptions and variable meanings are clear.');
-
-    return `Why the rule for ${conceptName} works:\n\n${intuition}\n\nDerivation or mechanism: ${method} Each symbol or step represents a defined quantity, operation, or causal link; the relationship works because those definitions are preserved from the givens to the conclusion. It is not a shortcut that applies automatically outside its stated conditions.\n\nConcrete check: ${example} Reproduce the setup, change one input, and verify that the result changes in the direction predicted by the definition. Common error: ${warning}`;
-  };
-
   const handleAskAiTeacher = async (customPrompt) => {
     const query = customPrompt || aiQuestion;
     if (!query.trim()) return;
@@ -284,6 +276,20 @@ Rules:
     const correct = String(option).trim().toLowerCase() === String(selfCheckQuestion?.answer).trim().toLowerCase();
     setIsSelfCheckCorrect(correct);
     playSound(correct ? 'correct' : 'wrong');
+    if (selfCheckQuestion && currentConcept && deck) {
+      const updatedConcept = updateConceptAfterAnswer(
+        currentConcept,
+        correct,
+        selfCheckQuestion.difficulty || 'easy',
+        selfCheckQuestion.id,
+      );
+      const updatedDeck = {
+        ...deck,
+        concepts: deck.concepts.map((concept) => (concept.id === currentConcept.id ? updatedConcept : concept)),
+      };
+      saveDeck(updatedDeck);
+      setDeck(updatedDeck);
+    }
   };
 
   const exampleSteps = (currentConcept?.example || '')
@@ -395,13 +401,13 @@ Rules:
               {unitDefinitionLines.length > 0 && (
                 <section className="rounded-lg border border-[var(--color-accent)]/20 bg-[rgba(108,92,231,0.07)] p-4 space-y-2">
                   <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--color-accent-light)]">Unit definition — {unitLabel}</h4>
-                  {unitDefinitionLines.map((line, index) => <p key={index} className="text-xs leading-relaxed text-[var(--color-text-muted)]">{line}</p>)}
+                  {unitDefinitionLines.map((line, index) => <p key={index} className="text-xs leading-relaxed text-[var(--color-text-muted)]"><MathText>{line}</MathText></p>)}
                 </section>
               )}
               {uniqueTopicLines.length > 0 && (
                 <section className="rounded-lg border border-[var(--color-success)]/20 bg-[rgba(0,206,201,0.06)] p-4 space-y-2">
                   <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--color-success)]">Topic definition — {currentConcept?.label}</h4>
-                  {uniqueTopicLines.map((line, index) => <p key={index} className="text-xs leading-relaxed text-[var(--color-text-muted)]">{line}</p>)}
+                  {uniqueTopicLines.map((line, index) => <p key={index} className="text-xs leading-relaxed text-[var(--color-text-muted)]"><MathText>{line}</MathText></p>)}
                 </section>
               )}
             </div>
@@ -437,7 +443,7 @@ Rules:
               <div className="bg-[var(--color-surface-2)] p-5 rounded-xl border border-white/[0.08] space-y-3">
                 {lessonLines.map((line, idx) => (
                   <p key={idx} className={`text-[var(--color-text)] leading-relaxed ${idx === 0 ? 'text-lg font-medium text-white' : 'text-sm'}`}>
-                    {line}
+                    <MathText>{line}</MathText>
                   </p>
                 ))}
               </div>
@@ -448,7 +454,7 @@ Rules:
             <div className="space-y-4 animate-fade-in">
               <ConceptDiagram courseCode={deck.courseCode} label={currentConcept?.label} snippet={currentConcept?.sourceSnippet} />
               <div className="bg-[rgba(0,206,201,0.08)] p-5 rounded-xl border border-[var(--color-success)]/30 space-y-3">
-                <p className="text-base text-white leading-relaxed">{currentConcept?.intuition || currentConcept?.sourceSnippet}</p>
+                <p className="text-base text-white leading-relaxed"><MathText>{currentConcept?.intuition || currentConcept?.sourceSnippet}</MathText></p>
                 <div className="p-4 bg-[#0f1117] rounded-lg border border-[var(--color-success)]/20 text-sm text-[var(--color-text-muted)]">
                   <span className="text-white font-semibold">How to reason with it:</span> {currentConcept?.workedExplanation || 'Start with the conditions, apply the relevant rule, then check the conclusion.'}
                 </div>
@@ -463,12 +469,12 @@ Rules:
                 <h4 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-warning)]">
                   Worked Examples
                 </h4>
-                <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">{currentConcept?.workedExplanation}</p>
+                <p className="text-sm leading-relaxed text-[var(--color-text-muted)]"><MathText>{currentConcept?.workedExplanation}</MathText></p>
                 <div className="space-y-2">
                   {exampleSteps.length > 0 ? exampleSteps.map((step, idx) => (
                     <div key={idx} className="flex gap-3 text-sm font-mono text-[var(--color-text)] bg-[var(--color-surface-2)] p-3 rounded-lg border border-white/[0.06]">
                       <span className="text-[var(--color-warning)] font-bold shrink-0">{idx + 1}.</span>
-                      <span className="whitespace-pre-wrap">{stripMarkdown(step)}</span>
+                      <MathText className="whitespace-pre-wrap">{stripMarkdown(step)}</MathText>
                     </div>
                   )) : (
                     <p className="text-sm text-[var(--color-text-muted)]">No worked example yet — ask the AI tutor below for a practice problem.</p>
@@ -482,7 +488,7 @@ Rules:
             <div className="space-y-4 animate-fade-in">
               <div className="bg-[rgba(108,92,231,0.08)] p-5 rounded-xl border border-[var(--color-accent)]/30 space-y-4">
                 <p className="text-sm font-medium text-white">
-                  {selfCheckQuestion?.prompt || `What is the key idea behind ${currentConcept?.label}?`}
+                  <MathText>{selfCheckQuestion?.prompt || `What is the key idea behind ${currentConcept?.label}?`}</MathText>
                 </p>
                 <div className="space-y-2">
                   {selfCheckOptions.map((opt, i) => {
@@ -498,7 +504,7 @@ Rules:
                     }
                     return (
                       <button key={i} disabled={selfCheckAnswered} onClick={() => handleSelfCheckSelect(opt)} className={btnClass}>
-                        {String.fromCharCode(65 + i)}. {opt}
+                        {String.fromCharCode(65 + i)}. <MathText>{opt}</MathText>
                       </button>
                     );
                   })}

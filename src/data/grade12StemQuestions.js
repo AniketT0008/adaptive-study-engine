@@ -9,7 +9,7 @@ function pack(easy, medium, hard) {
 /** Real MCV4U / SPH4U / SCH4U items keyed by exact lesson label. */
 export const GRADE12_STEM_QUESTIONS = {
   'Limit Laws and Algebraic Simplification': pack(
-    E('What is lim x→3 (x²−9)/(x−3)?', '6', '0', 'undefined', '9', 'Factor: (x−3)(x+3)/(x−3)=x+3 for x≠3, so the limit is 6.'),
+    E('What is lim x→3 (x²−9)/(x−3)?', '6', '0', 'The limit does not exist.', '9', 'Factor: (x−3)(x+3)/(x−3)=x+3 for x≠3, so the limit is 6.'),
     E('Why must you factor before substituting x=3 in (x²−9)/(x−3)?', 'Direct substitution is 0/0, a removable discontinuity.', 'The function is already continuous at 3.', 'Limit laws forbid algebra.', 'The limit is always 0 when the numerator is 0.', '0/0 is indeterminate; cancel the common factor, then take the limit.'),
     E('A student reports lim x→3 (x²−9)/(x−3) as undefined because the original function has no value at 3. What failed?', 'A missing function value does not decide the two-sided limit after simplification.', 'The limit must equal f(3).', 'Factoring changes the limit.', 'x+3 cannot be used.', 'Limits ask what f approaches, not whether f(3) exists.'),
   ),
@@ -110,7 +110,7 @@ export const GRADE12_STEM_QUESTIONS = {
   ),
   'Lines and Planes in 3D': pack(
     E('A plane through (1,2,3) with normal ⟨2,−1,4⟩ has equation?', '2(x−1)−(y−2)+4(z−3)=0', '2x−y+4z=0', 'x+2y+3z=0', '⟨2,−1,4⟩·⟨x,y,z⟩=1', 'n·(r−r0)=0 with r0=(1,2,3).'),
-    E('A line in 3D is determined by?', 'A point and a direction vector.', 'A normal vector only.', 'Two scalars.', 'A single coordinate.', 'r=r0+t d.'),
+    E('A line in 3D is determined by?', 'A point and a direction vector.', 'A normal vector only.', 'Two scalars.', 'A single coordinate.', 'Its vector equation is r=r0+t d: r0 fixes a point and d supplies the line direction.'),
     E('A student writes the plane as 2x−y+4z=0 using that normal but ignoring (1,2,3). What failed?', 'The constant term must match the given point; 2(1)−(2)+4(3)=12, not 0.', 'Normals cannot define planes.', '(1,2,3) is the normal.', 'Lines use two normals.', 'Plug the point in to fix D in Ax+By+Cz+D=0.'),
   ),
   'Intersections and Distances': pack(
@@ -156,7 +156,7 @@ export const GRADE12_STEM_QUESTIONS = {
   ),
   'Momentum, Impulse, and Collisions': pack(
     E('Two carts sticking together after colliding are modelled how?', 'm1v1+m2v2=(m1+m2)vf  (inelastic, momentum conserved if isolated)', 'K is conserved and they bounce', 'vf=v1+v2', 'Impulse is zero always', 'Perfectly inelastic: one combined mass; momentum still conserved if ΣFext=0.'),
-    E('Impulse equals?', 'Change in momentum, also F_avg Δt', 'Force only', 'Mass only', '½mv²', 'J=Δp=FΔt.'),
+    E('Impulse equals?', 'Change in momentum, also F_avg Δt', 'Force only', 'Mass only', '½mv²', 'Impulse is J=Δp; for a constant or average force it is also F_avg Δt.'),
     E('A student conserves kinetic energy for carts that stick. What failed?', 'Sticking is inelastic; K is not conserved, though p may be.', 'Masses cannot add.', 'vf must be v1.', 'Impulse forbids sticking.', 'Use momentum, then check that K dropped.'),
   ),
   'Universal Gravitation and Orbits': pack(

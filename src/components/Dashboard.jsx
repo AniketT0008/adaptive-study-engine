@@ -6,6 +6,7 @@ import AccuracyTrend from './charts/AccuracyTrend.jsx';
 import ComparisonChart from './charts/ComparisonChart.jsx';
 import SM2Sandbox from './SM2Sandbox.jsx';
 import RecallHistory from './RecallHistory.jsx';
+import { summarizeConcepts } from '../engine/selectors.js';
 
 export default function Dashboard() {
   const { id } = useParams();
@@ -46,7 +47,8 @@ export default function Dashboard() {
     );
   }
 
-  const totalReviews = deck.concepts.reduce((sum, c) => sum + (c.history?.length || 0), 0);
+  const conceptSummary = summarizeConcepts(deck.concepts);
+  const totalReviews = conceptSummary.reviews;
   const sessionLogs = deck.sessionLogs || [];
   const historyLogs = deck.concepts.flatMap((concept) =>
     (concept.history || []).map((attempt) => ({
@@ -57,8 +59,8 @@ export default function Dashboard() {
   const accuracySource = sessionLogs.length > 0 ? sessionLogs : historyLogs;
   const totalCorrect = accuracySource.filter((log) => log.correct).length;
   const accuracy = accuracySource.length > 0 ? Math.round((totalCorrect / accuracySource.length) * 100) : 0;
-  const avgMastery = deck.concepts.length > 0
-    ? Math.round((deck.concepts.reduce((s, c) => s + (c.mastery || 0), 0) / deck.concepts.length) * 100)
+  const avgMastery = conceptSummary.total > 0
+    ? Math.round((conceptSummary.masteryTotal / conceptSummary.total) * 100)
     : 0;
 
   const getMasteryColor = (val) => {

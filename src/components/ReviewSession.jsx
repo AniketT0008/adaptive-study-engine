@@ -4,6 +4,22 @@ import { getDeck, saveDeck } from '../engine/storage.js';
 import { getDueConcepts, getFollowUpQuestion, selectNextQuestion, updateConceptAfterAnswer } from '../engine/adaptive.js';
 import QuestionCard from './QuestionCard.jsx';
 import { playSound } from '../utils/audio.js';
+import { validateQuestion } from '../data/validation.js';
+
+function stableShuffle(items, seedText) {
+  let seed = 2166136261;
+  for (const char of String(seedText || 'synapse')) seed = Math.imul(seed ^ char.charCodeAt(0), 16777619);
+  const random = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
 
 export default function ReviewSession() {
   const { id } = useParams();
@@ -18,6 +34,7 @@ export default function ReviewSession() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [currentMasteryChange, setCurrentMasteryChange] = useState(null);
+  const [queueError, setQueueError] = useState('');
 
   const [sessionStats, setSessionStats] = useState({
     correct: 0,
@@ -29,18 +46,23 @@ export default function ReviewSession() {
 
   const initQueue = useCallback((loadedDeck) => {
     if (!loadedDeck || !loadedDeck.concepts) return;
+    setQueueError('');
+    const validQuestions = (loadedDeck.questions || []).filter((question) => validateQuestion(question).length === 0);
+    if ((loadedDeck.questions || []).length > 0 && validQuestions.length === 0) {
+      setQueueError('This deck has no valid four-option questions. Re-import or regenerate it before starting a quiz.');
+    }
 
     if (midtermMode) {
       // Practice Midterm: every concept in the course, hardest question available
       // for each one, in a random exam-style order — ignores review scheduling.
-      const shuffled = [...loadedDeck.concepts].sort(() => Math.random() - 0.5);
+      const shuffled = stableShuffle(loadedDeck.concepts, `${loadedDeck.id}:midterm`);
       const q = [];
       shuffled.forEach((concept) => {
-        const conceptQs = (loadedDeck.questions || []).filter((qq) => qq.conceptId === concept.id);
+        const conceptQs = validQuestions.filter((qq) => qq.conceptId === concept.id);
         if (conceptQs.length === 0) return;
         const hard = conceptQs.filter((qq) => qq.difficulty === 'hard');
         const pool = hard.length > 0 ? hard : conceptQs;
-        const question = pool[Math.floor(Math.random() * pool.length)];
+        const question = stableShuffle(pool, `${loadedDeck.id}:${concept.id}`)[0];
         q.push({ question, concept: { ...concept } });
       });
       setQueue(q);
@@ -56,14 +78,14 @@ export default function ReviewSession() {
     // direct application, visual/scenario transfer, then error analysis.
     const q = [];
     dueConcepts.forEach(concept => {
-      const conceptQuestions = (loadedDeck.questions || []).filter((question) => question.conceptId === concept.id);
+      const conceptQuestions = validQuestions.filter((question) => question.conceptId === concept.id);
       if (focusMode) {
         const ordered = ['easy', 'medium', 'hard']
           .map((difficulty) => conceptQuestions.find((question) => question.difficulty === difficulty))
           .filter(Boolean);
         ordered.forEach((question) => q.push({ question, concept: { ...concept } }));
       } else {
-        const question = selectNextQuestion(loadedDeck.questions, concept);
+        const question = selectNextQuestion(validQuestions, concept);
         if (question) q.push({ question, concept: { ...concept } });
       }
     });
@@ -162,7 +184,11 @@ export default function ReviewSession() {
     };
 
     // Save to localStorage and update state
-    saveDeck(updatedDeck);
+    const saveResult = saveDeck(updatedDeck);
+    if (!saveResult?.ok) {
+      setQueueError('Your answer was graded, but progress could not be saved. Export your decks and reload before continuing.');
+      return;
+    }
     setDeck(updatedDeck);
 
     // Track session stats
@@ -232,6 +258,18 @@ export default function ReviewSession() {
         <div className="glass p-8 rounded-2xl text-center">
           <div className="text-4xl mb-4 animate-spin">⚡</div>
           <p className="text-[var(--color-text-muted)]">Loading study session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (queueError) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div role="alert" className="glass-strong max-w-lg rounded-2xl p-8 text-center">
+          <h2 className="text-xl font-bold text-[var(--color-text)]">Quiz unavailable</h2>
+          <p className="mt-3 text-sm text-[var(--color-text-muted)]">{queueError}</p>
+          <button type="button" onClick={() => navigate(`/deck/${id}`)} className="btn-primary mt-6">Back to deck</button>
         </div>
       </div>
     );

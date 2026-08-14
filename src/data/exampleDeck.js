@@ -1,5 +1,6 @@
 import { createConcept, createDeck, createQuestion } from './models.js';
 import { getQuestionSet, rotateOptions } from '../engine/teaching.js';
+import { getTopicQuestions } from './topicQuestions.js';
 
 const BUILT_IN_CREATED_AT = '2026-08-08T12:00:00.000Z';
 
@@ -367,6 +368,8 @@ function slugify(value) {
 
 function createLessonConcept(deck, unit, lesson, unitIndex, lessonIndex) {
   const [label, sourceSnippet, example] = lesson;
+  const questionPack = getTopicQuestions(label);
+  const misconception = questionPack?.hard?.distractors?.[0];
   return createConcept({
     id: `${deck.id}-u${unitIndex + 1}-l${lessonIndex + 1}-${slugify(label)}`,
     label,
@@ -374,6 +377,10 @@ function createLessonConcept(deck, unit, lesson, unitIndex, lessonIndex) {
     topics: [unit.name, label],
     sourceSnippet,
     example,
+    learningGoal: `Use ${label} to solve an unfamiliar course-specific problem and explain each step with the governing relationship and a check of the result.`,
+    commonMistake: misconception
+      ? `Assuming “${misconception}” instead of testing that claim against the definition and worked evidence.`
+      : `Applying ${label} without checking its defining conditions against the problem.`,
   });
 }
 

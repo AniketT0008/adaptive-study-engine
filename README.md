@@ -11,7 +11,8 @@ Live Application: https://AniketT0008.github.io/adaptive-study-engine/
 - Adaptive spaced repetition powered by the SuperMemo-2 (SM-2) algorithm.
 - Multimodal material import: paste notes or upload text, image, PDF, or markdown files.
 - Analytics dashboard with mastery, accuracy, recall history, and targeted-vs-random review simulation.
-- Local fallback deck generation when no Gemini API key is provided.
+- Strict content validation, versioned local storage, and import/export safeguards.
+- Keyboard-accessible quizzes, reduced-motion support, and KaTeX math rendering.
 
 ## How Adaptation Works
 
@@ -21,7 +22,7 @@ Focus Review applies this model to the weakest quarter of a deck. It keeps each 
 
 ## Import Notes
 
-Text and Markdown files import directly in the browser. PDF and image extraction use a Gemini API key because they require OCR/visual understanding. The import control accepts PDF, PNG, JPG, JPEG, WEBP, TXT, and Markdown files; it deliberately does not claim support for Word documents.
+Text and Markdown files are read directly in the browser. PDF and image extraction use a Gemini API key because they require OCR/visual understanding. Reliable custom lesson and question generation also requires a verified Gemini key; Synapse does not silently save generic fallback questions when generation fails. The import control accepts PDF, PNG, JPG, JPEG, WEBP, TXT, and Markdown files; it deliberately does not claim support for Word documents.
 
 ## Built With
 
@@ -31,7 +32,8 @@ Text and Markdown files import directly in the browser. PDF and image extraction
 - React Router 7
 - Recharts
 - Web Audio API
-- Gemini 2.0 Flash
+- KaTeX
+- Gemini 2.5 Flash (with a 2.0 Flash compatibility fallback)
 
 ## Local Development
 
@@ -44,10 +46,10 @@ npm run dev
 
 ```bash
 npm run lint
+npm run content:validate
+npm run test
 npm run build
+npm run test:e2e
 ```
 
-## Contributors
-
-- [AniketT0008](https://github.com/AniketT0008)
-- [jeevanpartapsingh21-a11y](https://github.com/jeevanpartapsingh21-a11y)
+Run the complete release gate with `npm run verify`.

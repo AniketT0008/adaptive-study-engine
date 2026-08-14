@@ -191,11 +191,7 @@ function lessonExample(courseCode, unitName, lesson) {
 
 function packSourceSnippet(pack, course, unitName, lesson) {
   if (!pack) return lessonSnippet(course, unitName, lesson);
-  return [
-    pack.snippet,
-    `${pack.intuition} ${pack.worked}`,
-    `Worked example: ${pack.example} Goal: ${pack.goal} Common error: ${pack.mistake}`,
-  ].join('\n\n');
+  return pack.snippet;
 }
 
 function createCatalogConcept(course, unitName, lesson, unitIndex, lessonIndex) {

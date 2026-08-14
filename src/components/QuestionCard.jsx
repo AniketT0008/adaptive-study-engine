@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { playSound } from '../utils/audio.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
-import { formatMath } from '../utils/formatText.js';
+import { validateQuestion } from '../data/validation.js';
+import MathText from './MathText.jsx';
 
 const diffLabels = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
@@ -17,8 +18,8 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
   }, [question?.id]);
 
   const checkAnswer = useCallback((value) => (
-    String(value).trim().toLowerCase() === String(question.answer).trim().toLowerCase()
-  ), [question.answer]);
+    String(value).trim().toLowerCase() === String(question?.answer || '').trim().toLowerCase()
+  ), [question?.answer]);
 
   const handleSelect = useCallback((option) => {
     if (isSubmitted) return;
@@ -52,7 +53,17 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handleSelect, isSubmitted, question.options]);
+  }, [handleNext, handleSelect, isSubmitted, question?.options]);
+
+  const validationErrors = validateQuestion(question);
+  if (validationErrors.length > 0) {
+    return (
+      <div role="alert" className="glass-strong rounded-2xl border border-[var(--color-danger)]/40 p-6">
+        <h3 className="font-bold text-[var(--color-danger)]">This question cannot be displayed</h3>
+        <p className="mt-2 text-sm text-[var(--color-text-muted)]">{validationErrors[0]}</p>
+      </div>
+    );
+  }
 
   const diffBadgeClass = {
     easy: 'badge-easy',
@@ -86,7 +97,7 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
       </div>
 
       <p className="text-xl font-semibold text-[var(--color-text)] mb-6 leading-relaxed">
-        {formatMath(question.prompt)}
+        <MathText>{question.prompt}</MathText>
       </p>
 
       {question.visual && (
@@ -118,7 +129,7 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
 
           return (
             <button
-              key={option}
+              key={`${index}-${option}`}
               type="button"
               disabled={isSubmitted}
               onClick={() => handleSelect(option)}
@@ -129,7 +140,7 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
                   <span className="text-xs font-mono text-[var(--color-text-muted)] bg-white/[0.06] w-6 h-6 rounded flex items-center justify-center font-bold shrink-0">
                     {index + 1}
                   </span>
-                  <span className="text-[var(--color-text)] text-sm font-medium text-left">{formatMath(option)}</span>
+                  <MathText className="text-[var(--color-text)] text-sm font-medium text-left">{option}</MathText>
                 </div>
                 {isSubmitted && isOptionCorrect && <span className="text-[var(--color-success)] font-bold text-lg shrink-0">✓</span>}
                 {isSubmitted && isSelected && !isOptionCorrect && <span className="text-[var(--color-danger)] font-bold text-lg shrink-0">✗</span>}
@@ -148,7 +159,7 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
               {isCorrect ? 'Correct' : 'Not quite'}
             </h4>
             <p className="text-sm text-[var(--color-text-muted)] mt-1">
-              {formatMath(question.explanation)}
+              <MathText>{question.explanation}</MathText>
             </p>
           </div>
 
