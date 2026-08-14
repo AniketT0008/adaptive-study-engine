@@ -1,3 +1,15 @@
+const SUPER_DIGITS = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+
+/**
+ * Render simple math tokens for UI copy: x^2 → x², pi → π.
+ */
+export function formatMath(text) {
+  if (text == null) return '';
+  return String(text)
+    .replace(/\^(\d+)/g, (_, digits) => [...digits].map((d) => SUPER_DIGITS[Number(d)] ?? d).join(''))
+    .replace(/\bpi\b/gi, 'π');
+}
+
 /**
  * Strip markdown bold/italic markers for plain display.
  */

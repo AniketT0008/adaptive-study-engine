@@ -57,6 +57,26 @@ async function requestGemini(payload, apiKey, { responseMimeType, timeoutMs = 30
   return { ok: false, error: lastError };
 }
 
+function labelFromSnippet(snippet, index) {
+  const sentence = String(snippet || '').split(/[.!?]/)[0].trim();
+  if (!sentence) return `Topic ${index + 1}`;
+
+  const named = sentence.match(/^(?:The|A|An)\s+([A-Za-z][A-Za-z0-9\s-]{1,48}?)(?:\s+(?:is|are|describes?|requires?|means|uses|connects|measures|equals)\b)/i);
+  if (named?.[1]) {
+    return named[1].replace(/\s+/g, ' ').trim().replace(/^\w/, (c) => c.toUpperCase());
+  }
+
+  const beforeVerb = sentence.match(/^([A-Z][A-Za-z0-9\s-]{1,40}?)(?:\s+(?:describe|require|connect|measure|use|mean|equal|represent)s?\b)/i);
+  if (beforeVerb?.[1] && beforeVerb[1].split(/\s+/).length <= 4) {
+    return beforeVerb[1].trim();
+  }
+
+  const stop = new Set(['the', 'a', 'an', 'is', 'are', 'of', 'and', 'to', 'for', 'with', 'that', 'this', 'as', 'from']);
+  const words = sentence.replace(/[^a-zA-Z0-9\s-]/g, '').split(/\s+/).filter((word) => word.length > 2 && !stop.has(word.toLowerCase()));
+  if (words.length === 0) return `Topic ${index + 1}`;
+  return words.slice(0, 3).map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+}
+
 /**
  * Local rule-based concept & question generator fallback when no API key is provided or API fails.
  */
@@ -70,10 +90,7 @@ export function generateLocalDeckFromText(text) {
 
   for (let i = 0; i < count; i++) {
     const snippet = rawBlocks[i] || rawBlocks[i % rawBlocks.length] || 'Key concept from course notes.';
-    const words = snippet.replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3);
-    const mainWord = words[0] ? words[0].charAt(0).toUpperCase() + words[0].slice(1) : `Topic ${i + 1}`;
-    const secondWord = words[1] ? words[1].charAt(0).toUpperCase() + words[1].slice(1) : 'Analysis';
-    const label = `${mainWord} ${secondWord}`;
+    const label = labelFromSnippet(snippet, i);
     const conceptId = `c-local-${Date.now()}-${i}`;
 
     concepts.push({
@@ -82,7 +99,7 @@ export function generateLocalDeckFromText(text) {
       unit: 'Imported Material',
       topics: [label],
       sourceSnippet: snippet.trim(),
-      example: `Practical Application: Applying ${label} in practice.\nFormula/Rule: Given ${mainWord}, evaluate output based on ${secondWord}.`,
+      example: `Worked check for ${label}: restated from the notes — ${snippet.trim().slice(0, 180)}${snippet.length > 180 ? '…' : ''}`,
       learningGoal: `Explain ${label} and apply it to a fresh example from the imported material.`,
       commonMistake: `Treating ${label} as a definition to memorize instead of checking when it applies.`,
       mastery: 0,
@@ -93,23 +110,58 @@ export function generateLocalDeckFromText(text) {
       history: [],
     });
 
-    const correct = `${snippet.slice(0, 70)}${snippet.length > 70 ? '…' : ''}`;
-    questions.push({
-      id: `q-local-${conceptId}-1`,
-      conceptId,
-      type: 'mcq',
-      difficulty: 'medium',
-      prompt: `Which statement best applies ${label} to the material you provided?`,
-      options: [
-        correct,
-        'The concept is unrelated to the imported material.',
-        `The concept can only be used by memorizing the final answer.`,
-        `The concept changes the problem so the original conditions no longer matter.`,
-      ],
-      answer: correct,
-      explanation: `The course material states: ${snippet.slice(0, 140)}${snippet.length > 140 ? '…' : ''}`,
-      requiresSelfAssessment: false,
-    });
+    const claim = String(snippet).split(/[.!?]/)[0].trim() || snippet.trim().slice(0, 90);
+    const excerpt = snippet.length > 140 ? `${snippet.trim().slice(0, 140)}…` : snippet.trim();
+    questions.push(
+      {
+        id: `q-local-${conceptId}-easy`,
+        conceptId,
+        type: 'mcq',
+        difficulty: 'easy',
+        prompt: `The notes on ${label} include: "${excerpt}" Which claim is actually in that passage?`,
+        options: [
+          claim,
+          `${label} is defined by discarding the given conditions.`,
+          `The notes say ${label} never applies to this material.`,
+          `The passage only lists unrelated formulas with no claim about ${label}.`,
+        ],
+        answer: claim,
+        explanation: `The imported notes support this wording: ${claim}.`,
+        requiresSelfAssessment: false,
+      },
+      {
+        id: `q-local-${conceptId}-medium`,
+        conceptId,
+        type: 'mcq',
+        difficulty: 'medium',
+        prompt: `Using the notes on ${label}, which application is justified?`,
+        options: [
+          `Keep the stated conditions, apply ${label}, and interpret the result in that same setting.`,
+          `Reuse a memorized number from another topic even if the givens changed.`,
+          `Ignore the notes and guess from the heading ${label} alone.`,
+          `Change the original conditions until a familiar formula becomes easier to use.`,
+        ],
+        answer: `Keep the stated conditions, apply ${label}, and interpret the result in that same setting.`,
+        explanation: `A justified application starts from the imported conditions for ${label}, not from a title or a leftover number.`,
+        requiresSelfAssessment: false,
+      },
+      {
+        id: `q-local-${conceptId}-hard`,
+        conceptId,
+        type: 'mcq',
+        difficulty: 'hard',
+        prompt: `A student memorizes the heading "${label}" and ignores this sentence: "${claim}." What went wrong?`,
+        options: [
+          `They used the title instead of the stated conditions in the notes.`,
+          `They should have deleted units and signs before answering.`,
+          `The heading is enough; the sentence can be ignored.`,
+          `They needed a longer heading rather than the given conditions.`,
+        ],
+        answer: `They used the title instead of the stated conditions in the notes.`,
+        explanation: `The heading names the topic; the notes supply the conditions that make ${label} applicable.`,
+        requiresSelfAssessment: false,
+      },
+    );
   }
 
   return { concepts, questions };

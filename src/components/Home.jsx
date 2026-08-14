@@ -255,10 +255,11 @@ export default function Home() {
               : 0;
 
             return (
-              <div
+              <button
+                type="button"
                 key={deck.id}
                 onClick={() => handleLoadExample(deck)}
-                className="glass-strong p-6 rounded-2xl cursor-pointer hover:border-[var(--color-accent)]/50 hover:scale-[1.02] transition-all border border-white/[0.08] relative overflow-hidden group flex flex-col justify-between"
+                className="glass-strong p-6 rounded-2xl cursor-pointer hover:border-[var(--color-accent)]/50 hover:scale-[1.02] transition-all border border-white/[0.08] relative overflow-hidden group flex flex-col justify-between text-left w-full"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent)] opacity-0 group-hover:opacity-10 blur-3xl rounded-full transition-opacity" />
                 <div className="relative z-10 space-y-3">
@@ -281,7 +282,7 @@ export default function Home() {
                     <div className="text-xs font-semibold text-[var(--color-accent-light)]">Start learning →</div>
                   )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

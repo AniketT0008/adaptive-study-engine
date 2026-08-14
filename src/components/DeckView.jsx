@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getDeck, saveDeck } from '../engine/storage.js';
 import { getDueConcepts } from '../engine/adaptive.js';
 import { playSound } from '../utils/audio.js';
+import StudySprintPlanner from './StudySprintPlanner.jsx';
 
 function getMasteryColor(mastery) {
   if (mastery < 0.3) return '#ff7675';
@@ -35,19 +36,22 @@ export default function DeckView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
+  const [missing, setMissing] = useState(false);
   const [dueConcepts, setDueConcepts] = useState([]);
 
   useEffect(() => {
     if (id) {
       const loadedDeck = getDeck(id);
       if (loadedDeck) {
+        setMissing(false);
         setDeck(loadedDeck);
         setDueConcepts(getDueConcepts(loadedDeck.concepts));
       } else {
-        navigate('/');
+        setMissing(true);
+        setDeck(null);
       }
     }
-  }, [id, navigate]);
+  }, [id]);
 
   const handleStartReview = () => {
     playSound('click');
@@ -61,6 +65,18 @@ export default function DeckView() {
     }
     navigate(`/review/${deck.id}`);
   };
+
+  if (missing) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="glass p-8 rounded-2xl text-center max-w-md">
+          <h2 className="text-xl font-bold text-[var(--color-text)] mb-3">Deck not found</h2>
+          <p className="text-sm text-[var(--color-text-muted)] mb-6">That deck is not saved in this browser.</p>
+          <button onClick={() => navigate('/')} className="btn-primary">Go Home</button>
+        </div>
+      </div>
+    );
+  }
 
   if (!deck) {
     return (
@@ -290,7 +306,12 @@ export default function DeckView() {
         </div>
       </div>
 
-      {/* Concept Grid */}
+      <StudySprintPlanner
+        deck={deck}
+        onReview={handleStartReview}
+        onFocus={() => { playSound('click'); navigate(`/review/${deck.id}?focus=true`); }}
+        onLearn={() => { playSound('click'); navigate(`/learn/${deck.id}`); }}
+      />
       <div className="space-y-4">
         <h2 className="text-2xl font-bold flex items-center gap-3 text-[var(--color-text)]">
           <span>📚</span> Concepts List
@@ -324,9 +345,11 @@ export default function DeckView() {
                 {unit.concepts.map((concept, index) => {
                   const status = getConceptStatus(concept);
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={concept.id}
-                      className="glass p-5 rounded-xl transition-all duration-300 hover:scale-[1.02] border border-white/[0.06] hover:border-[var(--color-accent)]/40 flex flex-col justify-between"
+                      onClick={() => { playSound('click'); navigate(`/learn/${deck.id}?concept=${encodeURIComponent(concept.id)}`); }}
+                      className="glass p-5 rounded-xl transition-all duration-300 hover:scale-[1.02] border border-white/[0.06] hover:border-[var(--color-accent)]/40 flex flex-col justify-between text-left w-full"
                       style={{ animationDelay: `${index * 40}ms` }}
                     >
                       <div>
@@ -363,7 +386,7 @@ export default function DeckView() {
                           <span>EF: {concept.easinessFactor ? concept.easinessFactor.toFixed(1) : '2.5'}</span>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>

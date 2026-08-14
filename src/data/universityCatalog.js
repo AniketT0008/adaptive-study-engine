@@ -1,5 +1,6 @@
 import { createConcept, createDeck, createQuestion } from './models.js';
 import { getQuestionSet, rotateOptions } from '../engine/teaching.js';
+import { getLessonPack } from './lessonBank.js';
 
 const COURSE_CATALOG = [
   {
@@ -188,14 +189,28 @@ function lessonExample(courseCode, unitName, lesson) {
   return `Practice workflow for ${lesson}:\n1. Draw the system, choose coordinates, and label every known quantity and direction.\n2. State the governing equation and the assumptions that make it valid.\n3. Rearrange symbolically before substituting values.\n4. Check units, signs, and a simple limiting case before interpreting the result.`;
 }
 
+function packSourceSnippet(pack, course, unitName, lesson) {
+  if (!pack) return lessonSnippet(course, unitName, lesson);
+  return [
+    pack.snippet,
+    `${pack.intuition} ${pack.worked}`,
+    `Worked example: ${pack.example} Goal: ${pack.goal} Common error: ${pack.mistake}`,
+  ].join('\n\n');
+}
+
 function createCatalogConcept(course, unitName, lesson, unitIndex, lessonIndex) {
+  const pack = getLessonPack(lesson);
   return createConcept({
     id: `${course.id}-u${unitIndex + 1}-l${lessonIndex + 1}-${slugify(lesson)}`,
     label: lesson,
     unit: unitName,
     topics: [unitName, lesson],
-    sourceSnippet: lessonSnippet(course, unitName, lesson),
-    example: lessonExample(course.courseCode, unitName, lesson),
+    sourceSnippet: packSourceSnippet(pack, course, unitName, lesson),
+    example: pack?.example || lessonExample(course.courseCode, unitName, lesson),
+    intuition: pack?.intuition,
+    workedExplanation: pack?.worked,
+    learningGoal: pack?.goal,
+    commonMistake: pack?.mistake,
   });
 }
 
@@ -233,7 +248,7 @@ export function buildDeckFromCatalogCourse(course) {
     concepts,
     questions: concepts.flatMap(createCatalogQuestions),
     }),
-    curriculumVersion: 8,
+    curriculumVersion: 10,
   };
 }
 

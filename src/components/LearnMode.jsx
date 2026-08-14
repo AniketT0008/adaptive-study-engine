@@ -1,16 +1,30 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getDeck, saveDeck, getApiKey } from '../engine/storage.js';
 import { playSound } from '../utils/audio.js';
 import { callGeminiText } from '../api/gemini.js';
-import { stripMarkdown, toParagraphs, isCasualMessage, dedupeLines } from '../utils/formatText.js';
+import { stripMarkdown, toParagraphs, isCasualMessage, dedupeLines, formatMath } from '../utils/formatText.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
 import { getQuestionSet } from '../engine/teaching.js';
+
+function MissingDeck({ onHome }) {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="glass p-8 rounded-2xl text-center max-w-md">
+        <h2 className="text-xl font-bold text-[var(--color-text)] mb-3">Deck not found</h2>
+        <p className="text-sm text-[var(--color-text-muted)] mb-6">That link does not match a saved deck in this browser.</p>
+        <button onClick={onHome} className="btn-primary">Go Home</button>
+      </div>
+    </div>
+  );
+}
 
 export default function LearnMode() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [deck, setDeck] = useState(null);
+  const [missing, setMissing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [reviewedConcepts, setReviewedConcepts] = useState(new Set());
   const [activeTab, setActiveTab] = useState('lesson');
@@ -26,8 +40,19 @@ export default function LearnMode() {
 
   useEffect(() => {
     const loadedDeck = getDeck(id);
-    if (loadedDeck) setDeck(loadedDeck);
-  }, [id]);
+    if (!loadedDeck) {
+      setMissing(true);
+      setDeck(null);
+      return;
+    }
+    setMissing(false);
+    setDeck(loadedDeck);
+    const conceptId = searchParams.get('concept');
+    if (conceptId) {
+      const index = loadedDeck.concepts?.findIndex((concept) => concept.id === conceptId);
+      if (index >= 0) setCurrentIndex(index);
+    }
+  }, [id, searchParams]);
 
   const concepts = deck?.concepts || [];
   const currentConcept = concepts[currentIndex];
@@ -83,9 +108,12 @@ export default function LearnMode() {
       const updatedDeck = { ...deck, concepts: updatedConcepts };
       saveDeck(updatedDeck);
       setDeck(updatedDeck);
+      if (currentIndex < (deck.concepts?.length || 0) - 1) {
+        handleNext();
+      }
     }
     setReviewedConcepts(newReviewed);
-  }, [currentConcept, deck, reviewedConcepts]);
+  }, [currentConcept, currentIndex, deck, handleNext, reviewedConcepts]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -97,6 +125,10 @@ export default function LearnMode() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleNext, handlePrev, toggleReviewed]);
+
+  if (missing) {
+    return <MissingDeck onHome={() => navigate('/')} />;
+  }
 
   if (!deck) {
     return <div className="text-center p-8 text-[var(--color-text-muted)]">Loading study material...</div>;
@@ -114,6 +146,8 @@ export default function LearnMode() {
   const currentUnit = deck.units?.find((unit) => unit.name === currentConcept?.unit);
   const unitDefinitionLines = toParagraphs(currentUnit?.definition || '');
   const topicDefinitionLines = toParagraphs(currentConcept?.topicDefinition || currentConcept?.sourceSnippet || '');
+  const lessonLines = toParagraphs(currentConcept?.sourceSnippet || '');
+  const uniqueTopicLines = topicDefinitionLines.filter((line) => !lessonLines.includes(line));
   const selfCheckQuestion = deck.questions?.find((question) => question.conceptId === currentConcept?.id && question.type === 'mcq');
   const selfCheckOptions = selfCheckQuestion?.options || [];
 
@@ -247,7 +281,7 @@ Rules:
     if (selfCheckAnswered) return;
     setSelfCheckSelected(option);
     setSelfCheckAnswered(true);
-    const correct = option === selfCheckQuestion?.answer;
+    const correct = String(option).trim().toLowerCase() === String(selfCheckQuestion?.answer).trim().toLowerCase();
     setIsSelfCheckCorrect(correct);
     playSound(correct ? 'correct' : 'wrong');
   };
@@ -256,8 +290,6 @@ Rules:
     .split(/\n/)
     .map((s) => s.trim())
     .filter(Boolean);
-
-  const lessonLines = toParagraphs(currentConcept?.sourceSnippet || '');
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
@@ -275,10 +307,10 @@ Rules:
           </span>
           <span className="text-[var(--color-text-muted)]">→</span>
           <button
-            onClick={() => navigate(`/deck/${id}`)}
+            onClick={() => navigate(`/review/${id}`)}
             className="text-[var(--color-text-muted)] hover:text-white px-3 py-1 rounded-full transition-colors"
           >
-            Step 2: Quiz (from deck)
+            Step 2: Quiz
           </button>
         </div>
       </div>
@@ -366,10 +398,10 @@ Rules:
                   {unitDefinitionLines.map((line, index) => <p key={index} className="text-xs leading-relaxed text-[var(--color-text-muted)]">{line}</p>)}
                 </section>
               )}
-              {topicDefinitionLines.length > 0 && (
+              {uniqueTopicLines.length > 0 && (
                 <section className="rounded-lg border border-[var(--color-success)]/20 bg-[rgba(0,206,201,0.06)] p-4 space-y-2">
                   <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--color-success)]">Topic definition — {currentConcept?.label}</h4>
-                  {topicDefinitionLines.map((line, index) => <p key={index} className="text-xs leading-relaxed text-[var(--color-text-muted)]">{line}</p>)}
+                  {uniqueTopicLines.map((line, index) => <p key={index} className="text-xs leading-relaxed text-[var(--color-text-muted)]">{line}</p>)}
                 </section>
               )}
             </div>
@@ -488,6 +520,9 @@ Rules:
           <h4 className="text-xs font-extrabold uppercase tracking-wider text-white flex items-center gap-2">
             <span>💬</span> Ask about this topic
           </h4>
+          <p className="text-xs text-[var(--color-text-muted)]">
+            Answers from this lesson text. A Gemini key is optional for extra help.
+          </p>
 
           <div className="flex items-center gap-2 flex-wrap text-xs">
             {[

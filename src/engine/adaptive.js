@@ -17,15 +17,18 @@ export function getDueConcepts(concepts, focusMode = false) {
   });
   
   if (focusMode && concepts.length > 0) {
-    const allSorted = [...concepts].sort((a, b) => a.mastery - b.mastery);
-    const thresholdIndex = Math.max(0, Math.ceil(allSorted.length * 0.25) - 1);
-    const threshold = allSorted[thresholdIndex]?.mastery ?? 0.25;
-    
-    // Filter due concepts to those at or below threshold
-    let focusDue = due.filter(c => c.mastery <= threshold);
-    if (focusDue.length === 0 && concepts.length > 0) {
-      // Fallback: pick the lowest mastery concept regardless of due date
-      focusDue = [allSorted[0]];
+    const allSorted = [...concepts].sort((a, b) => {
+      const masteryDifference = (a.mastery || 0) - (b.mastery || 0);
+      if (masteryDifference !== 0) return masteryDifference;
+      const historyDifference = (a.history?.length || 0) - (b.history?.length || 0);
+      if (historyDifference !== 0) return historyDifference;
+      return String(a.id).localeCompare(String(b.id));
+    });
+    const focusCount = Math.max(1, Math.ceil(allSorted.length * 0.25));
+    const focusIds = new Set(allSorted.slice(0, focusCount).map((concept) => concept.id));
+    let focusDue = due.filter((concept) => focusIds.has(concept.id));
+    if (focusDue.length === 0) {
+      focusDue = allSorted.slice(0, focusCount);
     }
     due = focusDue;
   }
@@ -127,8 +130,11 @@ export function updateConceptAfterAnswer(concept, isCorrect, difficulty, questio
  */
 export function simulateComparison(concepts) {
   if (!concepts || !Array.isArray(concepts) || concepts.length === 0) {
-    return { targeted: Array(50).fill(0), random: Array(50).fill(0) };
+    return { targeted: Array(50).fill(0), random: Array(50).fill(0), informative: false };
   }
+
+  const startingMastery = concepts.map((c) => c.mastery || 0);
+  const informative = startingMastery.some((mastery) => mastery > 0) && startingMastery.some((mastery, index) => Math.abs(mastery - startingMastery[0]) > 0.04);
 
   const numReviews = 50; // simulate 50 reviews
   const numTrials = 20;  // average over 20 trials for random
@@ -175,5 +181,5 @@ export function simulateComparison(concepts) {
     random.push(Math.round(avg * 100) / 100);
   }
   
-  return { targeted, random };
+  return { targeted, random, informative };
 }

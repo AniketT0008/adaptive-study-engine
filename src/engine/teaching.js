@@ -1,3 +1,5 @@
+import { getLessonPack } from '../data/lessonBank.js';
+
 function hash(value) {
   return [...String(value)].reduce((total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0, 0);
 }
@@ -69,6 +71,11 @@ export function rotateOptions(answer, distractors, seed) {
 }
 
 export function getTeachingSupport(label, snippet = '', example = '') {
+  const pack = getLessonPack(label);
+  if (pack?.intuition && pack?.worked) {
+    return { intuition: pack.intuition, workedExplanation: pack.worked };
+  }
+
   const text = `${label} ${snippet}`.toLowerCase();
   const defaultSupport = {
     intuition: `${label} is useful because it turns the general idea in this unit into a decision you can defend. First identify what is given and what conditions apply; then use the rule to explain the result, not merely name it.`,
@@ -279,7 +286,9 @@ export function getTeachingSupport(label, snippet = '', example = '') {
       workedExplanation: `For ${label}, state the random variable, identify the distribution or process and its parameters, write the event mathematically, calculate, and translate the probability or expectation back into context. Then test whether independence, sample size, or distributional assumptions are actually justified.`,
     };
   }
-  if (/program|function|algorithm|data|recursion|class|testing/.test(text)) {
+  if (/\b(algorithm|recursion|loop|array|pointer|compiler|runtime|parameter passing|source code|data structure|unit test|test case|debugging|racket|scheme|lambda expressions|higher-order)\b/.test(text)
+    || /function signatures|map, filter|cons |boolean logic and conditionals/.test(text)
+    || /programming|software design|code tracing|dry-running/.test(text)) {
     if (/loop|iteration|control|condition|boolean/.test(text)) {
       return {
         intuition: `${label} controls which statements execute and how often. A condition is a Boolean claim about current program state; a loop is correct only when its invariant is preserved and its update eventually makes the stopping condition true.`,
@@ -341,6 +350,9 @@ export function getTeachingSupport(label, snippet = '', example = '') {
 }
 
 export function getAppliedQuestionSpec(concept) {
+  const pack = getLessonPack(concept.label);
+  if (pack?.easy) return pack.easy;
+
   const text = `${concept.label} ${concept.sourceSnippet}`.toLowerCase();
   if (/average and instantaneous rate/.test(text)) {
     return {
@@ -505,6 +517,9 @@ export function getAppliedQuestionSpec(concept) {
 }
 
 function getTransferQuestionSpec(concept) {
+  const pack = getLessonPack(concept.label);
+  if (pack?.medium) return pack.medium;
+
   const text = `${concept.label} ${concept.shortDefinition || concept.sourceSnippet}`.toLowerCase();
   const method = concept.workedExplanation || `Apply ${concept.label} from the stated givens and verify the result.`;
 
@@ -517,7 +532,8 @@ function getTransferQuestionSpec(concept) {
   if (/newton|force|kinematic|projectile|energy|momentum|electric|magnetic|wave|relativity/.test(text)) {
     return { prompt: `A student starts a ${concept.label} problem by substituting numbers before drawing the system or choosing signs. What is the strongest correction?`, answer: 'Define the system and positive direction, write the governing equation symbolically, then substitute values with units.', distractors: ['Keep the substitution but remove negative signs to avoid direction errors.', 'Choose whichever equation contains the most given numbers.', 'Average all given values before selecting a physical model.'], explanation: method };
   }
-  if (/program|function|loop|array|list|recursion|algorithm|class|testing|data/.test(text)) {
+  if (/\b(algorithm|recursion|loop|array|pointer|parameter|racket|scheme|lambda|debugging|unit test)\b/.test(text)
+    || /function signatures|higher-order|data structure|source code/.test(text)) {
     return { prompt: `Which test strategy gives the strongest evidence that an implementation of ${concept.label} is correct?`, answer: 'Trace a normal case, a boundary case, and a case that would violate the function contract if unchecked.', distractors: ['Run one typical input and accept the program if it does not crash.', 'Inspect only the final output and ignore intermediate state.', 'Use the largest possible input first and skip small examples.'], explanation: method };
   }
   if (/probability|distribution|markov|poisson|statistics|regression|sampling|counting/.test(text)) {
@@ -528,6 +544,9 @@ function getTransferQuestionSpec(concept) {
 }
 
 function getErrorAnalysisQuestionSpec(concept) {
+  const pack = getLessonPack(concept.label);
+  if (pack?.hard) return pack.hard;
+
   const text = `${concept.label} ${concept.shortDefinition || ''}`.toLowerCase();
   const mistake = concept.commonMistake || `applying ${concept.label} without checking its assumptions`;
 
@@ -567,7 +586,8 @@ function getErrorAnalysisQuestionSpec(concept) {
       explanation: `A plausible number can still describe the wrong direction or system. ${concept.workedExplanation || ''}`.trim(),
     };
   }
-  if (/program|function|loop|array|list|recursion|algorithm|class|testing|data/.test(text)) {
+  if (/\b(algorithm|recursion|loop|array|pointer|parameter|racket|scheme|lambda|debugging|unit test)\b/.test(text)
+    || /function signatures|higher-order|data structure|source code/.test(text)) {
     return {
       prompt: `An implementation of ${concept.label} passes its sample input but fails in production. Which debugging step gives the best evidence?`,
       answer: 'Trace state against the contract on empty, one-item, boundary, duplicate, and invalid inputs, then isolate the first violated invariant.',

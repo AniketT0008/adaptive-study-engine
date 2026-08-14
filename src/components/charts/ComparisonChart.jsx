@@ -4,12 +4,13 @@ import { simulateComparison } from '../../engine/adaptive.js';
 
 const ComparisonChart = ({ concepts = [] }) => {
   const [data, setData] = useState([]);
-  const [metrics, setMetrics] = useState({ adaptiveTarget: 0, randomTarget: 0, diffPercent: 0 });
+  const [metrics, setMetrics] = useState({ adaptiveTarget: 0, randomTarget: 0, diffPercent: 0, informative: false });
 
   useEffect(() => {
     if (concepts && concepts.length > 0) {
       try {
         const results = simulateComparison(concepts);
+        const informative = Boolean(results.informative);
         
         let adaptCross = 0;
         let randCross = 0;
@@ -37,7 +38,8 @@ const ComparisonChart = ({ concepts = [] }) => {
         setMetrics({
           adaptiveTarget: finalAdaptCross,
           randomTarget: finalRandCross,
-          diffPercent: diff > 0 ? diff : 0
+          diffPercent: diff > 0 ? diff : 0,
+          informative,
         });
       } catch (err) {
         console.error("Simulation error", err);
@@ -95,12 +97,25 @@ const ComparisonChart = ({ concepts = [] }) => {
       </div>
 
       <div className="bg-[#161623] rounded-xl p-5 border border-[#2e3245]">
-        <h4 className="text-xl text-white font-bold mb-2">
-          Adaptive review reaches mastery in <span className="text-[#55efc4]">~{metrics.adaptiveTarget} reviews</span> vs <span className="text-[#ff7675]">~{metrics.randomTarget}</span> for random — <span className="text-[#55efc4] border-b-2 border-[#55efc4] pb-0.5">{metrics.diffPercent}% faster</span>
-        </h4>
-        <p className="text-gray-400 text-sm leading-relaxed mt-3">
-          By always targeting your weakest concepts first, the adaptive engine ensures no concept falls behind. Random ordering wastes reviews on material you already know.
-        </p>
+        {metrics.informative && metrics.diffPercent > 0 ? (
+          <>
+            <h4 className="text-xl text-white font-bold mb-2">
+              In this projection, weak-first review hits 80% average mastery in ~{metrics.adaptiveTarget} reviews vs ~{metrics.randomTarget} for random order ({metrics.diffPercent}% fewer reviews).
+            </h4>
+            <p className="text-gray-400 text-sm leading-relaxed mt-3">
+              This is a toy simulation from your current mastery values, not a measured result from your sessions.
+            </p>
+          </>
+        ) : (
+          <>
+            <h4 className="text-xl text-white font-bold mb-2">
+              Not enough mastery spread to compare strategies yet.
+            </h4>
+            <p className="text-gray-400 text-sm leading-relaxed mt-3">
+              Complete a few quizzes first. The chart only claims a speedup when some lessons are ahead of others and the simulated curves actually differ.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

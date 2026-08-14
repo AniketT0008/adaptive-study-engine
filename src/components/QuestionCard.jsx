@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { playSound } from '../utils/audio.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
+import { formatMath } from '../utils/formatText.js';
 
 const diffLabels = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
-export default function QuestionCard({ question, concept, courseCode, onAnswer }) {
+export default function QuestionCard({ question, concept, courseCode, onAnswer, onCommit, onNext }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -26,12 +27,14 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer }
     setIsCorrect(correct);
     setIsSubmitted(true);
     playSound(correct ? 'correct' : 'wrong');
-  }, [checkAnswer, isSubmitted]);
+    if (onCommit) onCommit(correct, question);
+  }, [checkAnswer, isSubmitted, onCommit, question]);
 
   const handleNext = useCallback(() => {
     playSound('click');
-    onAnswer(isCorrect, question);
-  }, [isCorrect, onAnswer, question]);
+    if (onNext) onNext();
+    else onAnswer?.(isCorrect, question);
+  }, [isCorrect, onAnswer, onNext, question]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -83,7 +86,7 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer }
       </div>
 
       <p className="text-xl font-semibold text-[var(--color-text)] mb-6 leading-relaxed">
-        {question.prompt}
+        {formatMath(question.prompt)}
       </p>
 
       {question.visual && (
@@ -126,7 +129,7 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer }
                   <span className="text-xs font-mono text-[var(--color-text-muted)] bg-white/[0.06] w-6 h-6 rounded flex items-center justify-center font-bold shrink-0">
                     {index + 1}
                   </span>
-                  <span className="text-[var(--color-text)] text-sm font-medium text-left">{option}</span>
+                  <span className="text-[var(--color-text)] text-sm font-medium text-left">{formatMath(option)}</span>
                 </div>
                 {isSubmitted && isOptionCorrect && <span className="text-[var(--color-success)] font-bold text-lg shrink-0">✓</span>}
                 {isSubmitted && isSelected && !isOptionCorrect && <span className="text-[var(--color-danger)] font-bold text-lg shrink-0">✗</span>}
@@ -145,7 +148,7 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer }
               {isCorrect ? 'Correct' : 'Not quite'}
             </h4>
             <p className="text-sm text-[var(--color-text-muted)] mt-1">
-              {question.explanation}
+              {formatMath(question.explanation)}
             </p>
           </div>
 

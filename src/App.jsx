@@ -17,6 +17,7 @@ export default function App() {
           <Route path="/learn/:id" element={<LearnMode />} />
           <Route path="/review/:id" element={<ReviewSession />} />
           <Route path="/dashboard/:id" element={<Dashboard />} />
+          <Route path="*" element={<Home />} />
         </Routes>
       </Layout>
     </HashRouter>

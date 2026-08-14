@@ -13,6 +13,7 @@ export default function ReviewSession() {
   const midtermMode = searchParams.get('midterm') === 'true';
 
   const [deck, setDeck] = useState(null);
+  const [missing, setMissing] = useState(false);
   const [queue, setQueue] = useState([]);      // [{ question, concept }]
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -76,12 +77,14 @@ export default function ReviewSession() {
   useEffect(() => {
     const loadedDeck = getDeck(id);
     if (!loadedDeck) {
-      navigate('/');
+      setMissing(true);
+      setDeck(null);
       return;
     }
+    setMissing(false);
     setDeck(loadedDeck);
     initQueue(loadedDeck);
-  }, [id, focusMode, navigate, initQueue]);
+  }, [id, focusMode, initQueue]);
 
   const toggleFocusMode = () => {
     playSound('click');
@@ -196,15 +199,31 @@ export default function ReviewSession() {
       : queue;
 
     if (followUp) setQueue(nextQueue);
+  }, [deck, queue, currentIndex, focusMode, midtermMode]);
 
-    // Move to next question or finish.
-    if (currentIndex + 1 < nextQueue.length) {
-      setCurrentIndex(prev => prev + 1);
+  const goNext = useCallback(() => {
+    playSound('click');
+    const nextLength = queue.length;
+    if (currentIndex + 1 < nextLength) {
+      setCurrentIndex((prev) => prev + 1);
+      setCurrentMasteryChange(null);
     } else {
       setIsFinished(true);
       playSound('streak');
     }
-  }, [deck, queue, currentIndex, focusMode, midtermMode]);
+  }, [currentIndex, queue.length]);
+
+  if (missing) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="glass p-8 rounded-2xl text-center max-w-md">
+          <h2 className="text-xl font-bold text-[var(--color-text)] mb-3">Deck not found</h2>
+          <p className="text-sm text-[var(--color-text-muted)] mb-6">That quiz link does not match a saved deck in this browser.</p>
+          <button onClick={() => navigate('/')} className="btn-primary">Go Home</button>
+        </div>
+      </div>
+    );
+  }
 
   // --- Loading State ---
   if (!deck) {
@@ -400,7 +419,8 @@ export default function ReviewSession() {
         question={currentItem.question}
         concept={currentItem.concept}
         courseCode={deck.courseCode}
-        onAnswer={handleAnswer}
+        onCommit={handleAnswer}
+        onNext={goNext}
       />
 
       {/* Session stats bar */}
