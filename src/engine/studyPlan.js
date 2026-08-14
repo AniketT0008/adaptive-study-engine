@@ -87,9 +87,9 @@ export function buildStudySprint(deck, minutes = 45) {
         : 'Build foundation first';
 
   const actions = [
-    `${Math.min(10, priorities.length)} adaptive review questions`,
-    `${newLessons.length || Math.min(2, sorted.length)} lesson preview${(newLessons.length || 2) === 1 ? '' : 's'}`,
-    `${weakLessons.length || Math.min(2, priorities.length)} weak-point explanation${(weakLessons.length || 2) === 1 ? '' : 's'}`,
+    priorities.slice(0, 3).map((concept) => concept.label).join('; ') || 'No review lessons queued yet',
+    newLessons.slice(0, 2).map((concept) => concept.label).join('; ') || 'No new lessons left to preview',
+    weakLessons.slice(0, 2).map((concept) => concept.label).join('; ') || 'No weak lessons identified yet — quiz first',
   ];
 
   return {

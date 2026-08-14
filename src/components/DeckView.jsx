@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getDeck, saveDeck } from '../engine/storage.js';
+import { getDeck } from '../engine/storage.js';
 import { getDueConcepts } from '../engine/adaptive.js';
 import { playSound } from '../utils/audio.js';
 import StudySprintPlanner from './StudySprintPlanner.jsx';
@@ -55,14 +55,6 @@ export default function DeckView() {
 
   const handleStartReview = () => {
     playSound('click');
-    if (dueConcepts.length === 0 && deck?.concepts) {
-      const now = new Date().toISOString();
-      const updatedDeck = {
-        ...deck,
-        concepts: deck.concepts.map(c => ({ ...c, nextReviewDate: now }))
-      };
-      saveDeck(updatedDeck);
-    }
     navigate(`/review/${deck.id}`);
   };
 
@@ -224,7 +216,7 @@ export default function DeckView() {
                   </p>
                 </div>
                 <div className="mt-4 text-xs font-bold text-[var(--color-success)] flex items-center gap-1">
-                  <span>{dueConcepts.length === 0 ? 'Practice All' : 'Start Quiz'}</span> →
+                    <span>{dueConcepts.length === 0 ? 'Intro Quiz' : 'Start Quiz'}</span> →
                 </div>
               </button>
 
@@ -244,7 +236,7 @@ export default function DeckView() {
                     Focus Mode
                   </h3>
                   <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed">
-                    Isolate your bottom 25% weakest concepts to eliminate study churn.
+                    Isolate the weakest 25% of lessons you have already quizzed. If you have no quiz history yet, study first.
                   </p>
                 </div>
                 <div className="mt-4 text-xs font-bold text-[var(--color-warning)] flex items-center gap-1">
@@ -383,7 +375,11 @@ export default function DeckView() {
                         </div>
                         <div className="flex justify-between text-[11px] text-[var(--color-text-muted)] font-mono">
                           <span>{concept.history?.length || 0} reviews</span>
-                          <span>EF: {concept.easinessFactor ? concept.easinessFactor.toFixed(1) : '2.5'}</span>
+                          <span
+                            title="SM-2 easiness factor. Starts at 2.5 and drops when answers are missed, which shortens the next interval."
+                          >
+                            Ease {concept.easinessFactor ? concept.easinessFactor.toFixed(1) : '2.5'} (SM-2)
+                          </span>
                         </div>
                       </div>
                     </button>

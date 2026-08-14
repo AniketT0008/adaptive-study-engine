@@ -1,4 +1,20 @@
 import { getLessonPack } from '../data/lessonBank.js';
+import { getTopicQuestions } from '../data/topicQuestions.js';
+
+export function conceptFamily(concept) {
+  const id = String(concept?.id || '').toLowerCase();
+  const unit = String(concept?.unit || '').toLowerCase();
+  const label = String(concept?.label || '').toLowerCase();
+  const blob = `${id} ${unit} ${label}`;
+  if (id.startsWith('ics4u') || /computer science|programming concepts|software development|algorithms and data/.test(blob)) return 'cs';
+  if (id.startsWith('sbi4u') || /biochemistry|metabolic|molecular genetics|homeostasis|population dynamics/.test(unit)) return 'bio';
+  if (id.startsWith('sch4u') || /organic chemistry|electrochemistry|thermochemistry/.test(unit)) return 'chem';
+  if (id.startsWith('sph4u') || /kinematics|dynamics|momentum|electromagnetism|modern physics/.test(unit)) return 'physics';
+  if (id.startsWith('mdm4u') || /counting and probability|probability distributions|statistics and data|culminating/.test(unit)) return 'data';
+  if (id.startsWith('mcv4u') || id.startsWith('mhf4u') || /calculus|vectors|polynomial|trigonometric|exponential and logarithmic/.test(unit)) return 'math';
+  if (id.startsWith('uw-') || id.startsWith('laurier-') || id.startsWith('uoft-')) return 'uni';
+  return 'generic';
+}
 
 function hash(value) {
   return [...String(value)].reduce((total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0, 0);
@@ -38,7 +54,7 @@ export function getTextbookDefinition({ label, unit, summary = '', example = '',
     `${definition} ${mechanism}`,
     `${workedMethod} The method is complete only when every symbol, structure, state, or input has been identified and the conditions that justify the governing relationship have been checked.`,
     concreteExample
-      ? `Worked example: ${concreteExample} Follow the example from the givens through the governing step to the conclusion, then verify it using conservation, units, charge, limiting behaviour, a boundary case, or an independent test appropriate to ${label}.`
+      ? `Worked example: ${concreteExample} Follow the example from the givens through the governing step to the conclusion, then verify it with units, a boundary case, substitution back into the original relation, or another independent check that fits ${label}.`
       : `Worked application: begin with a small explicit case, apply ${label} one step at a time, and state what each step changes or preserves. Finish with an independent check and predict how the result changes when one input or condition is altered.`,
   ]);
 
@@ -349,11 +365,55 @@ export function getTeachingSupport(label, snippet = '', example = '') {
   };
 }
 
+function lessonFallbackQuestions(concept) {
+  const example = String(concept.example || '').trim();
+  const definition = String(concept.shortDefinition || '').trim() || `${concept.label} is applied from the stated givens.`;
+  const label = concept.label;
+  const easyAnswer = example || definition;
+  return {
+    easy: {
+      prompt: `Which statement is the worked claim in the ${label} lesson?`,
+      answer: easyAnswer,
+      distractors: [
+        `${label} can be applied without using any given values or conditions.`,
+        `The lesson shows that ${label} never produces a definite result.`,
+        `Ignore the example and treat ${label} as an unrelated definition to memorize.`,
+      ],
+      explanation: example
+        ? `The lesson’s worked example is: ${example}`
+        : `The lesson definition is: ${definition}`,
+    },
+    medium: {
+      prompt: `What does the ${label} lesson actually require you to do with a new problem?`,
+      answer: definition,
+      distractors: [
+        `Quote the name ${label} and skip the givens.`,
+        `Pick any familiar formula even if its assumptions fail.`,
+        `Average all numbers in the problem and ignore ${label}.`,
+      ],
+      explanation: definition,
+    },
+    hard: {
+      prompt: `A student skipped this lesson example: “${example || definition}” and guessed the opposite conclusion. What failed?`,
+      answer: `They did not use the governing step shown for ${label}.`,
+      distractors: [
+        `Nothing failed; the opposite of the example is equally valid.`,
+        `The example is decorative and should be ignored on assessments.`,
+        `The correct move is to delete units, signs, and conditions.`,
+      ],
+      explanation: `The example is the check: ${example || definition}`,
+    },
+  };
+}
+
 export function getAppliedQuestionSpec(concept) {
+  const topic = getTopicQuestions(concept.label);
+  if (topic?.easy) return topic.easy;
   const pack = getLessonPack(concept.label);
   if (pack?.easy) return pack.easy;
 
-  const text = `${concept.label} ${concept.sourceSnippet}`.toLowerCase();
+  const family = conceptFamily(concept);
+  const text = `${concept.label} ${concept.shortDefinition || ''} ${concept.example || ''}`.toLowerCase();
   if (/average and instantaneous rate/.test(text)) {
     return {
       prompt: 'For f(x) = x^2, what is the average rate of change from x = 1 to x = 3?',
@@ -391,7 +451,7 @@ export function getAppliedQuestionSpec(concept) {
   if (/cross product/.test(text)) {
     return { prompt: 'What geometric quantity is |u x v| for two vectors u and v?', answer: 'The area of the parallelogram spanned by u and v', distractors: ['The length of the projection of u onto v', 'The angle between u and v', 'The volume of the parallelepiped spanned by u and v'], explanation: '|u x v| = |u||v|sin(theta), the base-times-height area of the parallelogram.' };
   }
-  if (/galvanic cells? and cell potential/.test(text)) {
+  if (family === 'chem' && /galvanic cells? and cell potential/.test(text)) {
     return {
       prompt: 'A galvanic cell has Ecathode = +0.34 V and Eanode = -0.76 V (both listed as reduction potentials). What is Ecell and what does its sign mean?',
       answer: '+1.10 V; the cell reaction is spontaneous.',
@@ -399,7 +459,7 @@ export function getAppliedQuestionSpec(concept) {
       explanation: 'Ecell = Ecathode - Eanode = +0.34 - (-0.76) = +1.10 V. A positive cell potential indicates a spontaneous galvanic-cell reaction.',
     };
   }
-  if (/periodic trends/.test(text)) {
+  if (family === 'chem' && /periodic trends/.test(text)) {
     return {
       prompt: 'Which explanation best accounts for atomic radius decreasing from left to right across a period?',
       answer: 'Effective nuclear charge increases while electrons are added to the same principal shell.',
@@ -407,7 +467,7 @@ export function getAppliedQuestionSpec(concept) {
       explanation: 'Across a period, protons are added but electrons enter the same shell, so the nucleus pulls the electron cloud inward more strongly.',
     };
   }
-  if (/organic reactions/.test(text)) {
+  if (family === 'chem' && /organic reactions/.test(text)) {
     return {
       prompt: 'Ethanoic acid reacts with ethanol under acidic conditions. What organic product is expected?',
       answer: 'Ethyl ethanoate and water',
@@ -415,43 +475,43 @@ export function getAppliedQuestionSpec(concept) {
       explanation: 'A carboxylic acid plus an alcohol undergoes esterification to form an ester and water.',
     };
   }
-  if (/hydrocarbons|isomerism/.test(text)) {
+  if (family === 'chem' && /hydrocarbons|isomerism/.test(text)) {
     return { prompt: 'How many structural isomers does C4H10 have?', answer: '2: butane and 2-methylpropane', distractors: ['1: butane only', '3: butane, but-1-ene, and but-2-ene', '4: one for each carbon atom'], explanation: 'C4H10 forms either a straight four-carbon chain or a branched skeleton. Rotations of one connectivity are not new isomers.' };
   }
-  if (/functional groups|naming/.test(text)) {
+  if (family === 'chem' && /functional groups|naming/.test(text)) {
     return { prompt: 'Which name correctly identifies CH3CH2COOH?', answer: 'Propanoic acid', distractors: ['Propanal', 'Propanone', 'Propyl ethanoate'], explanation: 'The molecule has three carbons and a terminal carboxyl group, so it uses the -oic acid suffix.' };
   }
-  if (/vsepr|intermolecular force/.test(text)) {
+  if (family === 'chem' && /vsepr|intermolecular force/.test(text)) {
     return { prompt: 'The displayed model has two bonds and two lone pairs around its central atom. What shape and strongest intermolecular force describe H2O?', answer: 'Bent; hydrogen bonding', distractors: ['Linear; London dispersion only', 'Tetrahedral; ionic bonding', 'Trigonal planar; dipole-induced dipole only'], explanation: 'Four electron domains give tetrahedral electron geometry, but two bonded atoms give a bent molecular shape. O−H bonds enable hydrogen bonding.' };
   }
-  if (/chemical bonding|molecular polarity/.test(text)) {
+  if (family === 'chem' && /chemical bonding|molecular polarity/.test(text)) {
     return { prompt: 'CO2 contains polar C=O bonds. Why is the molecule nonpolar overall?', answer: 'Its linear geometry makes the equal bond dipoles cancel.', distractors: ['Carbon and oxygen have identical electronegativities.', 'Double bonds cannot possess dipoles.', 'The molecule alternates between unrelated polar structures.'], explanation: 'Molecular polarity is the vector sum of bond dipoles. The two equal dipoles oppose one another in linear CO2.' };
   }
-  if (/enthalpy|calorimetry/.test(text)) {
-    return { prompt: 'A reaction warms 100.0 g of water by 5.0 °C. Using c = 4.18 J g−1 °C−1, how much heat does the water absorb?', answer: '2.09 kJ', distractors: ['0.0836 kJ', '20.9 kJ', '−2.09 kJ'], explanation: 'qwater = mcΔT = (100.0)(4.18)(5.0) = 2090 J = 2.09 kJ. The reaction has the opposite sign.' };
-  }
-  if (/hess|formation enthalpy/.test(text)) {
+  if (family === 'chem' && /hess|formation enthalpy/.test(text)) {
     return { prompt: 'If a thermochemical equation is reversed and then multiplied by 2, what happens to ΔH?', answer: 'Its sign reverses and its magnitude doubles.', distractors: ['Only its sign reverses.', 'Only its magnitude doubles.', 'It remains unchanged because enthalpy is a state function.'], explanation: 'Reversing swaps initial and final states; scaling the reaction scales the amount of energy.' };
   }
-  if (/collision theory|activation energy|catalyst/.test(text)) {
+  if (family === 'chem' && /enthalpy|calorimetry/.test(text)) {
+    return { prompt: 'A reaction warms 100.0 g of water by 5.0 °C. Using c = 4.18 J g−1 °C−1, how much heat does the water absorb?', answer: '2.09 kJ', distractors: ['0.0836 kJ', '20.9 kJ', '−2.09 kJ'], explanation: 'qwater = mcΔT = (100.0)(4.18)(5.0) = 2090 J = 2.09 kJ. The reaction has the opposite sign.' };
+  }
+  if (family === 'chem' && /collision theory|activation energy|catalyst/.test(text)) {
     return { prompt: 'On an energy-profile diagram, what changes when a catalyst is introduced?', answer: 'The activation-energy peak is lower, but reactant and product energies are unchanged.', distractors: ['The product energy falls, making ΔH more negative.', 'Only the forward barrier falls; the reverse barrier rises.', 'The reactant energy rises above the original peak.'], explanation: 'A catalyst provides a lower-energy pathway for both directions without changing ΔH or K.' };
   }
-  if (/rate law|reaction mechanism/.test(text)) {
+  if (family === 'chem' && /rate law|reaction mechanism/.test(text)) {
     return { prompt: 'For rate = k[A]^2[B], what happens when [A] doubles and [B] stays constant?', answer: 'The rate becomes four times as large.', distractors: ['The rate doubles.', 'The rate becomes eight times as large.', 'The rate does not change.'], explanation: 'The [A] factor changes by 2² = 4; the [B] factor is unchanged.' };
   }
-  if (/dynamic equilibrium|\bkc\b|equilibrium constant/.test(text)) {
+  if (family === 'chem' && /dynamic equilibrium|\bkc\b|equilibrium constant/.test(text)) {
     return { prompt: 'For N2(g) + 3H2(g) ⇌ 2NH3(g), which Kc expression is correct?', answer: '[NH3]^2 / ([N2][H2]^3)', distractors: ['[N2][H2]^3 / [NH3]^2', '2[NH3] / ([N2] + 3[H2])', '[NH3] / ([N2][H2])'], explanation: 'Equilibrium concentrations are raised to stoichiometric powers, with products over reactants.' };
   }
-  if (/le chatelier/.test(text)) {
+  if (family === 'chem' && /le chatelier/.test(text)) {
     return { prompt: 'For N2(g) + 3H2(g) ⇌ 2NH3(g), what happens when volume decreases at constant temperature?', answer: 'The system shifts right, toward fewer moles of gas.', distractors: ['It shifts left, toward more gas particles.', 'Kc increases and forces a shift right.', 'No shift occurs because all species are gases.'], explanation: 'Compression favours two product moles over four reactant moles. Kc is unchanged at constant temperature.' };
   }
-  if (/acid-base|\bph\b|\bpoh\b/.test(text)) {
+  if (family === 'chem' && /acid-base|\bph\b|\bpoh\b/.test(text)) {
     return { prompt: 'What is the pH when [H3O+] = 1.0 × 10−3 mol L−1?', answer: '3.00', distractors: ['−3.00', '11.00', '0.001'], explanation: 'pH = −log(1.0 × 10−3) = 3.00.' };
   }
-  if (/buffer|titration/.test(text)) {
+  if (family === 'chem' && /buffer|titration/.test(text)) {
     return { prompt: 'At half-equivalence in a weak-acid/strong-base titration, which relationship is true?', answer: 'pH = pKa because [A−] = [HA].', distractors: ['pH = 7 because acid and base moles are equal.', 'pOH = pKa because all HA has reacted.', 'pH = Ka because concentrations cancel.'], explanation: 'Half the weak acid has become conjugate base, so Henderson–Hasselbalch gives pH = pKa.' };
   }
-  if (/electrolytic|faraday|electrolysis/.test(text)) {
+  if (family === 'chem' && /electrolytic|faraday|electrolysis/.test(text)) {
     return { prompt: 'A current of 2.00 A flows for 965 s. How many moles of electrons pass? Use F = 96 500 C mol−1.', answer: '0.0200 mol e−', distractors: ['0.0100 mol e−', '0.200 mol e−', '1930 mol e−'], explanation: 'Q = It = 1930 C, and Q/F = 0.0200 mol e−.' };
   }
   if (/circular motion|centripetal/.test(text)) {
@@ -466,7 +526,10 @@ export function getAppliedQuestionSpec(concept) {
   if (/momentum|impulse|collision/.test(text)) {
     return { prompt: 'A 2.0 kg cart at 3.0 m/s sticks to a stationary 1.0 kg cart. What is their final speed?', answer: '2.0 m/s', distractors: ['1.0 m/s', '3.0 m/s', '6.0 m/s'], explanation: '(2.0)(3.0) = (3.0)vf, so vf = 2.0 m/s.' };
   }
-  if (/electric force|electric field/.test(text)) {
+  if (/electric potential/.test(concept.label.toLowerCase()) || (/electric potential/.test(text) && !/electric field/.test(concept.label.toLowerCase()))) {
+    return { prompt: 'A +2.0 μC charge moves through a potential difference of 12 V. What is the change in electric potential energy?', answer: '2.4 × 10−5 J', distractors: ['24 J', '6.0 × 10^6 J', '0 J because potential is not energy'], explanation: 'ΔU = qΔV = (2.0 × 10−6)(12) = 2.4 × 10−5 J.' };
+  }
+  if ((/electric force|electric field/.test(concept.label.toLowerCase()) || /electric force|electric field/.test(text)) && !/potential/.test(concept.label.toLowerCase())) {
     return { prompt: 'A +2.0 μC charge experiences 0.060 N east. What is the electric field?', answer: '3.0 × 10^4 N/C east', distractors: ['1.2 × 10−7 N/C east', '3.0 × 10^4 N/C west', '1.2 × 10−4 N/C east'], explanation: 'E = F/q = 0.060/(2.0 × 10−6) = 3.0 × 10^4 N/C east.' };
   }
   if (/magnetic force/.test(text)) {
@@ -487,49 +550,26 @@ export function getAppliedQuestionSpec(concept) {
   if (/linear regression|residual/.test(text)) {
     return { prompt: 'A model predicts 18 and the observed value is 21. What is the residual?', answer: '+3', distractors: ['−3', '+39', '0.86'], explanation: 'Residual = observed − predicted = 21 − 18 = +3.' };
   }
-  const example = concept.example || concept.sourceSnippet || '';
-  const numericMatch = example.match(/(?:=|equals|is)\s*(-?\d+(?:\.\d+)?)/i);
-  if (numericMatch) {
-    const value = Number(numericMatch[1]);
-    const direction = value >= 0 ? 'positive' : 'negative';
-    return {
-      prompt: `Which statement best applies ${concept.label} to the worked example in this lesson?`,
-      answer: `The result is ${value}, so the quantity is ${direction}.`,
-      distractors: [
-        'The calculation should be ignored because the example has no numerical result.',
-        'The result must be zero because the concept is defined by a change.',
-        'The sign can be removed before interpreting the physical or mathematical meaning.',
-      ],
-      explanation: `Use the worked example as evidence: keep the numerical value and its sign, then interpret what that result means for ${concept.label}.`,
-    };
-  }
-
-  return {
-    prompt: `Which approach best demonstrates ${concept.label} in a new problem?`,
-    answer: `State the given information, apply ${concept.label}, and check the result against the problem conditions.`,
-    distractors: [
-      'State the definition only and skip the given information.',
-      'Choose a formula first and ignore whether its assumptions match the problem.',
-      'Give a final answer without showing the key reasoning step.',
-    ],
-    explanation: `A strong application of ${concept.label} starts from the givens, uses the appropriate method, and checks the result against the conditions of the problem.`,
-  };
+  return lessonFallbackQuestions(concept).easy;
 }
 
 function getTransferQuestionSpec(concept) {
+  const topic = getTopicQuestions(concept.label);
+  if (topic?.medium) return topic.medium;
   const pack = getLessonPack(concept.label);
   if (pack?.medium) return pack.medium;
 
+  const family = conceptFamily(concept);
   const text = `${concept.label} ${concept.shortDefinition || concept.sourceSnippet}`.toLowerCase();
   const method = concept.workedExplanation || `Apply ${concept.label} from the stated givens and verify the result.`;
 
-  if (/galvanic cells? and cell potential/.test(text)) {
+  if (family === 'chem' && /galvanic cells? and cell potential/.test(text)) {
     return { prompt: 'Given E°red(Cu2+/Cu) = +0.34 V and E°red(Zn2+/Zn) = −0.76 V, which complete interpretation is correct for a Zn–Cu galvanic cell?', answer: 'Zn is the anode, Cu is the cathode, and E°cell = +1.10 V.', distractors: ['Cu is the anode, Zn is the cathode, and E°cell = +1.10 V.', 'Zn is the anode, Cu is the cathode, and E°cell = −0.42 V.', 'Zn is the cathode, Cu is the anode, and E°cell = −1.10 V.'], explanation: 'The more positive reduction occurs at Cu. Zinc is oxidized, and E°cell = 0.34 − (−0.76) = +1.10 V.' };
   }
-  if (/periodic trends/.test(text)) {
+  if (family === 'chem' && /periodic trends/.test(text)) {
     return { prompt: 'Which comparison and explanation are both correct?', answer: 'Mg has a smaller radius than Na because its greater effective nuclear charge pulls electrons in the same shell more strongly.', distractors: ['Mg has a larger radius than Na because it has more protons.', 'Na has a higher first ionization energy because its radius is larger.', 'Na and Mg have equal radii because their valence electrons occupy n = 3.'], explanation: 'Across Period 3, shielding changes little while nuclear charge rises. Magnesium therefore pulls its n = 3 electrons closer and generally has the higher ionization energy.' };
   }
-  if (/newton|force|kinematic|projectile|energy|momentum|electric|magnetic|wave|relativity/.test(text)) {
+  if (family === 'physics' && /newton|force|kinematic|projectile|energy|momentum|electric|magnetic|wave|relativity/.test(text)) {
     return { prompt: `A student starts a ${concept.label} problem by substituting numbers before drawing the system or choosing signs. What is the strongest correction?`, answer: 'Define the system and positive direction, write the governing equation symbolically, then substitute values with units.', distractors: ['Keep the substitution but remove negative signs to avoid direction errors.', 'Choose whichever equation contains the most given numbers.', 'Average all given values before selecting a physical model.'], explanation: method };
   }
   if (/\b(algorithm|recursion|loop|array|pointer|parameter|racket|scheme|lambda|debugging|unit test)\b/.test(text)
@@ -540,17 +580,20 @@ function getTransferQuestionSpec(concept) {
     return { prompt: `Which setup is essential before calculating a result with ${concept.label}?`, answer: 'Define the random variable or population, identify the conditioning information, and verify the model assumptions.', distractors: ['Choose the formula with the most parameters and infer the random variable afterward.', 'Treat observed association as proof of causation.', 'Discard units and context so only the numerical answer remains.'], explanation: method };
   }
 
-  return { prompt: `A student must transfer ${concept.label} to a new problem. Which plan is most defensible?`, answer: `Identify the givens and assumptions, apply the governing mechanism for ${concept.label}, and check the result independently.`, distractors: [`Repeat the definition of ${concept.label} without using the new givens.`, 'Substitute into the first familiar formula and ignore its conditions.', 'Choose the answer that matches the worked example even if the inputs differ.'], explanation: method };
+  return lessonFallbackQuestions(concept).medium;
 }
 
 function getErrorAnalysisQuestionSpec(concept) {
+  const topic = getTopicQuestions(concept.label);
+  if (topic?.hard) return topic.hard;
   const pack = getLessonPack(concept.label);
   if (pack?.hard) return pack.hard;
 
+  const family = conceptFamily(concept);
   const text = `${concept.label} ${concept.shortDefinition || ''}`.toLowerCase();
   const mistake = concept.commonMistake || `applying ${concept.label} without checking its assumptions`;
 
-  if (/galvanic|electrolytic|redox|equilibrium|acid|buffer|enthalpy|rate|bond|vsepr|organic|periodic/.test(text)) {
+  if (family === 'chem' && /galvanic|electrolytic|redox|equilibrium|acid|buffer|enthalpy|rate|bond|vsepr|organic|periodic/.test(text)) {
     return {
       prompt: `Two students obtain different results for ${concept.label}. Which audit is most likely to locate a chemically meaningful error?`,
       answer: 'Check the balanced species and states, mole or electron ratios, governing expression, sign convention, and whether equilibrium or reaction conditions match the calculation.',
@@ -562,7 +605,7 @@ function getErrorAnalysisQuestionSpec(concept) {
       explanation: `Chemical errors usually arise from species bookkeeping, stoichiometric ratios, signs, states, or inappropriate assumptions. ${concept.workedExplanation || ''}`.trim(),
     };
   }
-  if (/derivative|limit|vector|function|optimization|probability|distribution|regression|statistics/.test(text)) {
+  if ((family === 'math' || family === 'data') && /derivative|limit|vector|function|optimization|probability|distribution|regression|statistics/.test(text)) {
     return {
       prompt: `A solution to ${concept.label} has correct arithmetic but an unjustified setup. Which revision is strongest?`,
       answer: 'Restate the domain and assumptions, derive the required expression from the definition or model, and test it with an endpoint, sign, unit, or special case.',
@@ -574,7 +617,7 @@ function getErrorAnalysisQuestionSpec(concept) {
       explanation: `Correct arithmetic cannot repair a model that does not apply. ${concept.workedExplanation || ''}`.trim(),
     };
   }
-  if (/force|motion|energy|momentum|field|wave|orbit|fluid|dynamics|vibration/.test(text)) {
+  if (family === 'physics' && /force|motion|energy|momentum|field|wave|orbit|fluid|dynamics|vibration/.test(text)) {
     return {
       prompt: `A ${concept.label} calculation gives a plausible magnitude but the wrong physical conclusion. What should be checked first?`,
       answer: 'Recheck the system boundary, vector directions, sign convention, units, and assumptions before repeating the symbolic calculation.',
@@ -613,6 +656,20 @@ function getErrorAnalysisQuestionSpec(concept) {
 }
 
 export function getQuestionSet(concept) {
+  const topic = getTopicQuestions(concept.label);
+  const pack = getLessonPack(concept.label);
+  const sourced = topic?.easy && topic?.medium && topic?.hard
+    ? topic
+    : pack?.easy && pack?.medium && pack?.hard
+      ? pack
+      : null;
+  if (sourced) {
+    return [
+      { difficulty: 'easy', ...sourced.easy },
+      { difficulty: 'medium', visual: true, ...sourced.medium },
+      { difficulty: 'hard', ...sourced.hard },
+    ];
+  }
   return [
     { difficulty: 'easy', ...getAppliedQuestionSpec(concept) },
     { difficulty: 'medium', visual: true, ...getTransferQuestionSpec(concept) },

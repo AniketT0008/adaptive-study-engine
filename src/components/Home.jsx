@@ -36,8 +36,8 @@ export default function Home() {
       const deckCopy = JSON.parse(JSON.stringify(exampleDeck));
       const now = new Date().toISOString();
       deckCopy.createdAt = now;
-      deckCopy.concepts.forEach(c => {
-        c.nextReviewDate = now;
+      deckCopy.concepts.forEach((c) => {
+        if (!c.nextReviewDate) c.nextReviewDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
       });
       saveDeck(deckCopy);
     }
@@ -52,7 +52,9 @@ export default function Home() {
       const deckCopy = JSON.parse(JSON.stringify(buildDeckFromCatalogCourse(course)));
       const now = new Date().toISOString();
       deckCopy.createdAt = now;
-      deckCopy.concepts.forEach((c) => { c.nextReviewDate = now; });
+      deckCopy.concepts.forEach((c) => {
+        if (!c.nextReviewDate) c.nextReviewDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      });
       saveDeck(deckCopy);
     }
     navigate(`/deck/${deckId}`);

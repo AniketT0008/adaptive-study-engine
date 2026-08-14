@@ -82,11 +82,13 @@ function labelFromSnippet(snippet, index) {
  */
 export function generateLocalDeckFromText(text) {
   const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 30);
-  const rawBlocks = paragraphs.length >= 3 ? paragraphs : text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 20);
+  const rawBlocks = paragraphs.length >= 3
+    ? paragraphs
+    : text.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter((s) => s.length >= 10);
 
   const concepts = [];
   const questions = [];
-  const count = Math.min(12, Math.max(3, Math.floor(rawBlocks.length / 2)));
+  const count = Math.min(12, Math.max(1, rawBlocks.length));
 
   for (let i = 0; i < count; i++) {
     const snippet = rawBlocks[i] || rawBlocks[i % rawBlocks.length] || 'Key concept from course notes.';
@@ -106,7 +108,7 @@ export function generateLocalDeckFromText(text) {
       easinessFactor: 2.5,
       interval: 1,
       repetitions: 0,
-      nextReviewDate: new Date().toISOString(),
+      nextReviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       history: [],
     });
 

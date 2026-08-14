@@ -39,7 +39,7 @@ export function createConcept({ id, label, sourceSnippet, example, unit, topics,
     easinessFactor: 2.5,  // SM-2 default
     interval: 1,          // days
     repetitions: 0,
-    nextReviewDate: new Date().toISOString(),
+    nextReviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
     history: []           // array of { timestamp, correct, difficulty }
   };
 }

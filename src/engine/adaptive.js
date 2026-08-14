@@ -1,39 +1,43 @@
 import { computeSM2, getQuality } from './sm2.js';
 
+export const SESSION_NEW_CAP = 3;
+export const SESSION_CAP = 8;
+
+function hasHistory(concept) {
+  return (concept.history?.length || 0) > 0;
+}
+
+function sortByMasteryThenDue(a, b) {
+  const masteryDifference = (a.mastery || 0) - (b.mastery || 0);
+  if (masteryDifference !== 0) return masteryDifference;
+  return new Date(a.nextReviewDate || 0) - new Date(b.nextReviewDate || 0);
+}
+
 /**
- * Gets concepts that are due for review (nextReviewDate <= now).
- * Sorted by mastery ascending (weakest first).
- * If focusMode is true, only returns the bottom 25% mastery concepts.
+ * Gets concepts for a review session.
+ * Due reviewed cards first, then up to 3 new cards, session capped at 8.
+ * Focus mode uses only cards with real quiz history (weakest 25%).
  */
 export function getDueConcepts(concepts, focusMode = false) {
   if (!concepts || !Array.isArray(concepts)) return [];
-  
+
   const now = new Date().toISOString();
-  let due = concepts.filter((concept) => !concept.nextReviewDate || concept.nextReviewDate <= now);
-  due.sort((a, b) => {
-    const masteryDifference = (a.mastery || 0) - (b.mastery || 0);
-    if (masteryDifference !== 0) return masteryDifference;
-    return new Date(a.nextReviewDate || 0) - new Date(b.nextReviewDate || 0);
-  });
-  
-  if (focusMode && concepts.length > 0) {
-    const allSorted = [...concepts].sort((a, b) => {
-      const masteryDifference = (a.mastery || 0) - (b.mastery || 0);
-      if (masteryDifference !== 0) return masteryDifference;
-      const historyDifference = (a.history?.length || 0) - (b.history?.length || 0);
-      if (historyDifference !== 0) return historyDifference;
-      return String(a.id).localeCompare(String(b.id));
-    });
-    const focusCount = Math.max(1, Math.ceil(allSorted.length * 0.25));
-    const focusIds = new Set(allSorted.slice(0, focusCount).map((concept) => concept.id));
-    let focusDue = due.filter((concept) => focusIds.has(concept.id));
-    if (focusDue.length === 0) {
-      focusDue = allSorted.slice(0, focusCount);
-    }
-    due = focusDue;
+
+  if (focusMode) {
+    const practiced = concepts.filter(hasHistory).sort(sortByMasteryThenDue);
+    if (practiced.length === 0) return [];
+    const focusCount = Math.max(1, Math.ceil(practiced.length * 0.25));
+    return practiced.slice(0, Math.min(focusCount, SESSION_CAP));
   }
-  
-  return due;
+
+  const dueReviewed = concepts
+    .filter((concept) => hasHistory(concept) && (!concept.nextReviewDate || concept.nextReviewDate <= now))
+    .sort(sortByMasteryThenDue);
+  const learnedUnquizzed = concepts.filter((concept) => !hasHistory(concept) && concept.learnedAt);
+  const brandNew = concepts.filter((concept) => !hasHistory(concept) && !concept.learnedAt);
+  const newToIntro = [...learnedUnquizzed, ...brandNew].slice(0, SESSION_NEW_CAP);
+
+  return [...dueReviewed, ...newToIntro].slice(0, SESSION_CAP);
 }
 
 /**
@@ -56,12 +60,26 @@ export function selectNextQuestion(questions, concept) {
   if ((concept.mastery || 0) < 0.33 || (recentAccuracy !== null && recentAccuracy < 0.5)) targetDifficulty = 'easy';
   else if ((concept.mastery || 0) >= 0.7 && recentAccuracy !== null && recentAccuracy >= 0.75) targetDifficulty = 'hard';
 
-  const targetPool = conceptQs.filter((question) => question.difficulty === targetDifficulty);
-  const pool = targetPool.length > 0 ? targetPool : conceptQs;
   const attemptByQuestion = new Map();
   for (const attempt of concept.history || []) {
     if (attempt.questionId) attemptByQuestion.set(attempt.questionId, attempt.timestamp || '');
   }
+
+  const ladder = ['easy', 'medium', 'hard'];
+  let chosenDifficulty = targetDifficulty;
+  const unseenAt = (difficulty) => conceptQs.filter((question) => question.difficulty === difficulty && !attemptByQuestion.has(question.id));
+  if (unseenAt(chosenDifficulty).length === 0) {
+    const start = Math.max(0, ladder.indexOf(chosenDifficulty));
+    for (let i = start + 1; i < ladder.length; i += 1) {
+      if (unseenAt(ladder[i]).length > 0) {
+        chosenDifficulty = ladder[i];
+        break;
+      }
+    }
+  }
+
+  const targetPool = conceptQs.filter((question) => question.difficulty === chosenDifficulty);
+  const pool = targetPool.length > 0 ? targetPool : conceptQs;
 
   // Prefer questions not seen in this concept's recent history, then the least recently seen.
   return [...pool].sort((a, b) => {

@@ -43,9 +43,9 @@ export default function Layout({ children }) {
               <span className="hidden sm:inline">{soundOn ? 'Sound On' : 'Muted'}</span>
             </button>
 
-            <div className="flex items-center gap-1.5" title="Reviews run in this browser with SM-2. Gemini is optional.">
-              <span className="inline-block h-2 w-2 rounded-full bg-[#8b8da3]" />
-              <span className="text-xs font-medium text-[#8b8da3]">Local SM-2</span>
+            <div className="flex items-center gap-1.5" title="Reviews run in this browser with SM-2. Gemini is optional for import.">
+              <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-text-muted)]" />
+              <span className="text-xs font-medium text-[var(--color-text-muted)]">Local SM-2</span>
             </div>
           </div>
         </div>
@@ -55,8 +55,8 @@ export default function Layout({ children }) {
         {children}
       </main>
       
-      <footer className="border-t border-white/[0.04] py-4 text-center text-xs text-[#8b8da3]">
-        CUTC Transform Hackathon 2026 • Synapse — Powered by SM-2 Spaced Repetition & Gemini AI
+      <footer className="border-t border-white/[0.04] py-4 text-center text-xs text-[var(--color-text-muted)]">
+        CUTC Transform Hackathon 2026 • Synapse — SM-2 spaced repetition (Gemini optional)
       </footer>
     </div>
   );

@@ -6,6 +6,7 @@ import { callGeminiText } from '../api/gemini.js';
 import { stripMarkdown, toParagraphs, isCasualMessage, dedupeLines, formatMath } from '../utils/formatText.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
 import { getQuestionSet } from '../engine/teaching.js';
+import { updateConceptAfterAnswer } from '../engine/adaptive.js';
 
 function MissingDeck({ onHome }) {
   return (
@@ -183,7 +184,7 @@ export default function LearnMode() {
 
     if (qLower.includes('walk') || qLower.includes('step') || qLower.includes('example')) {
       const requestedStep = query.match(/(?:step|through)\s*[:#-]?\s*(.+)$/i)?.[1]?.trim();
-      return `Worked walkthrough for ${currentConcept?.label}:\n\n1. Identify the exact target. ${requestedStep ? `You asked about “${requestedStep},” so connect that phrase to the quantities, structures, or reaction shown in the lesson.` : `State what must be calculated, predicted, named, or explained.`}\n\n2. List the givens and conditions. Do not calculate yet; include units, signs, states of matter, data types, or assumptions that determine whether the method applies.\n\n3. Apply the mechanism. ${stripMarkdown(explanation)}\n\n4. Work the concrete example. ${example || stripMarkdown(currentConcept?.sourceSnippet || '')}\n\n5. Verify and interpret. Check conservation, units, charge, limiting behaviour, a boundary test, or an alternative representation. Then state what the result means in the language of ${currentConcept?.label}.`;
+      return `Worked walkthrough for ${currentConcept?.label}:\n\n1. Identify the exact target. ${requestedStep ? `You asked about “${requestedStep},” so connect that phrase to the quantities, structures, or reaction shown in the lesson.` : `State what must be calculated, predicted, named, or explained.`}\n\n2. List the givens and conditions. Do not calculate yet; include units, signs, states of matter, data types, or assumptions that determine whether the method applies.\n\n3. Apply the mechanism. ${stripMarkdown(explanation)}\n\n4. Work the concrete example. ${example || stripMarkdown(currentConcept?.sourceSnippet || '')}\n\n5. Verify and interpret. Check units, a boundary case, substitution back into the original relation, or another independent check that fits this lesson. Then state what the result means in the language of ${currentConcept?.label}.`;
     }
 
     if (qLower.includes('practice') || qLower.includes('another problem') || qLower.includes('try one')) {
@@ -191,7 +192,7 @@ export default function LearnMode() {
     }
 
     if (qLower.includes('why') || qLower.includes('formula') || qLower.includes('work')) {
-      return `Why it works:\n\n${stripMarkdown(currentConcept?.intuition || currentConcept?.sourceSnippet || '')}\n\nThe formula or rule is valid only when its assumptions match the situation. In this lesson, the important check is: ${stripMarkdown(currentConcept?.commonMistake || 'verify the conditions before substituting values.')}`;
+      return `Why it works:\n\n${stripMarkdown(currentConcept?.intuition || currentConcept?.sourceSnippet || '')}\n\nThe formula or rule is valid only when its assumptions match the situation. The important check is: ${stripMarkdown(currentConcept?.learningGoal || 'verify the conditions before substituting values.')}\n\nWatch out for: ${stripMarkdown(currentConcept?.commonMistake || 'skipping those conditions.')}`;
     }
 
     if (qLower.includes('engineering') || qLower.includes('real world') || qLower.includes('application')) {
@@ -284,6 +285,20 @@ Rules:
     const correct = String(option).trim().toLowerCase() === String(selfCheckQuestion?.answer).trim().toLowerCase();
     setIsSelfCheckCorrect(correct);
     playSound(correct ? 'correct' : 'wrong');
+    if (selfCheckQuestion && currentConcept && deck) {
+      const updatedConcept = updateConceptAfterAnswer(
+        currentConcept,
+        correct,
+        selfCheckQuestion.difficulty || 'easy',
+        selfCheckQuestion.id,
+      );
+      const updatedDeck = {
+        ...deck,
+        concepts: deck.concepts.map((concept) => (concept.id === currentConcept.id ? updatedConcept : concept)),
+      };
+      saveDeck(updatedDeck);
+      setDeck(updatedDeck);
+    }
   };
 
   const exampleSteps = (currentConcept?.example || '')

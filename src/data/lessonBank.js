@@ -42,8 +42,8 @@ function add(rows) {
         `${fact} Therefore the worked result is ${answer}.`,
       ),
       medium: E(
-        `Given this ${label} setup: ${stem}. Which reasoning produces ${answer} rather than ${d1}?`,
-        `${fact} Therefore the result is ${answer}.`,
+        `Given this ${label} setup: ${stem}. Why is ${answer} the result rather than ${d1}?`,
+        fact,
         `The result must be ${d1} because the given values can be ignored.`,
         `Average the givens and report ${d2} without using ${label}.`,
         `${answer} and ${d1} are interchangeable if the arithmetic looks neat.`,
@@ -51,7 +51,7 @@ function add(rows) {
       ),
       hard: E(
         `A student used this ${label} setup: ${stem}. They reported ${d1} instead of ${answer}. What failed?`,
-        `They used ${d1} instead of applying ${label} to obtain ${answer}.`,
+        `They skipped the evaluation that produces ${answer} from the given setup.`,
         `Nothing failed; ${d1} is interchangeable with ${answer}.`,
         `Keep ${d1} and round until it matches ${d3}.`,
         `Drop units, signs, or regularity conditions, then keep ${d1}.`,

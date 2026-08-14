@@ -72,7 +72,7 @@ export default function StudySprintPlanner({ deck, onReview, onFocus, onLearn })
           {sprint.actions.map((action, index) => (
             <div key={action} className="glass p-4 rounded-xl border border-white/[0.08]">
               <div className="text-[10px] uppercase tracking-wider text-[var(--color-accent-light)] font-bold mb-2">
-                Step {index + 1}
+                {index === 0 ? 'Review' : index === 1 ? 'Learn' : 'Repair'}
               </div>
               <p className="text-sm font-bold text-[var(--color-text)]">{action}</p>
             </div>
