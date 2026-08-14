@@ -1,5 +1,5 @@
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from 'recharts';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -13,9 +13,8 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const AccuracyTrend = ({ sessionLogs = [], streak = 0 }) => {
+function buildAccuracyTrendData(sessionLogs = []) {
   let data = [];
-  
   if (sessionLogs.length > 0) {
     if (sessionLogs.length < 5) {
       data = sessionLogs.map((log, i) => ({
@@ -36,6 +35,14 @@ const AccuracyTrend = ({ sessionLogs = [], streak = 0 }) => {
       }
     }
   }
+  return data;
+}
+
+const AccuracyTrend = ({ sessionLogs = [], streak = 0 }) => {
+  const data = buildAccuracyTrendData(sessionLogs);
+  const chartSummary = data.length === 0
+    ? 'No review accuracy data yet.'
+    : `Accuracy by review block, from ${data[0].accuracy}% to ${data[data.length - 1].accuracy}%, on a scale from 0% to 100%.`;
 
   return (
     <div className="bg-[#161623] bg-opacity-60 backdrop-blur-md border border-[#2e3245] rounded-2xl p-6 shadow-xl h-full flex flex-col relative overflow-hidden">
@@ -52,9 +59,9 @@ const AccuracyTrend = ({ sessionLogs = [], streak = 0 }) => {
         </div>
       </div>
       
-      <div className="flex-1 w-full min-h-[250px] z-10 relative">
+      <div className="flex-1 w-full min-h-[250px] z-10 relative" role="img" aria-label={chartSummary}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 30, left: 8, bottom: 28 }}>
             <defs>
               <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#6c5ce7" stopOpacity={0.6} />
@@ -62,10 +69,14 @@ const AccuracyTrend = ({ sessionLogs = [], streak = 0 }) => {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#2e3245" vertical={false} />
-            <XAxis dataKey="review" stroke="#8b8da3" tick={{ fill: '#8b8da3' }} tickMargin={10} />
-            <YAxis domain={[0, 100]} tickFormatter={(val) => `${val}%`} stroke="#8b8da3" tick={{ fill: '#8b8da3' }} />
+            <XAxis dataKey="review" stroke="#8b8da3" tick={{ fill: '#8b8da3' }} tickMargin={10}>
+              <Label value="Review number or 5-review block" offset={-2} position="insideBottom" fill="#8b8da3" />
+            </XAxis>
+            <YAxis domain={[0, 100]} tickFormatter={(val) => `${val}%`} stroke="#8b8da3" tick={{ fill: '#8b8da3' }}>
+              <Label value="Accuracy (%)" angle={-90} position="insideLeft" fill="#8b8da3" style={{ textAnchor: 'middle' }} />
+            </YAxis>
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#4a4e69', strokeWidth: 1, strokeDasharray: '4 4' }} />
-            <Area type="monotone" dataKey="accuracy" stroke="#a29bfe" strokeWidth={3} fillOpacity={1} fill="url(#colorAccuracy)" />
+            <Area type="linear" dataKey="accuracy" stroke="#a29bfe" strokeWidth={3} fillOpacity={1} fill="url(#colorAccuracy)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

@@ -35,6 +35,9 @@ const MasteryChart = ({ concepts = [] }) => {
   };
 
   const chartHeight = Math.max(data.length * 48 + 40, 240);
+  const chartSummary = data.length === 0
+    ? 'No lesson mastery data yet.'
+    : `Lowest mastery chart for ${data.length} lessons. Values range from ${Math.min(...data.map((entry) => entry.mastery))}% to ${Math.max(...data.map((entry) => entry.mastery))}%.`;
 
   return (
     <div className="bg-[#161623] bg-opacity-60 backdrop-blur-md border border-[#2e3245] rounded-2xl p-6 shadow-xl h-full flex flex-col">
@@ -44,7 +47,7 @@ const MasteryChart = ({ concepts = [] }) => {
       <p className="text-xs text-[#8b8da3] mb-4">
         Showing up to 12 lessons that need the most work{hiddenCount > 0 ? ` (${hiddenCount} more not plotted)` : ''}.
       </p>
-      <div className="flex-1 w-full" style={{ minHeight: `${chartHeight}px` }}>
+      <div className="flex-1 w-full" style={{ minHeight: `${chartHeight}px` }} role="img" aria-label={chartSummary}>
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#2e3245" horizontal={true} vertical={false} />

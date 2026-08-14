@@ -103,3 +103,33 @@ test('mobile layout remains usable', async ({ page }) => {
   expect(overflow).toBe(false);
 });
 
+test('lesson diagrams are topic-specific, labelled, and responsive', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#/learn/sch4u-chemistry-12');
+  await expect(page.getByRole('heading', { name: 'Hydrocarbons and Isomerism' })).toBeVisible();
+  await expect(page.locator('.concept-visual')).toHaveCount(0);
+
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('heading', { name: 'Organic Reactions' })).toBeVisible();
+  const esterification = page.getByRole('img', {
+    name: 'Esterification combines a carboxylic acid and an alcohol to form an ester and water.',
+  });
+  await expect(esterification).toBeVisible();
+
+  const fitsViewport = await esterification.evaluate((svg) => {
+    const bounds = svg.getBoundingClientRect();
+    return bounds.left >= 0 && bounds.right <= document.documentElement.clientWidth && bounds.width > 0;
+  });
+  expect(fitsViewport).toBe(true);
+
+  await page.goto('/#/learn/uoft-mat307');
+  await expect(page.getByRole('heading', { name: 'Parametrized curves' })).toBeVisible();
+  await expect(page.getByRole('img', {
+    name: 'The tangent and principal normal vectors form part of the Frenet frame along a regular curve.',
+  })).toBeVisible();
+  await expect(page.getByRole('img', {
+    name: 'The tangent line represents instantaneous rate at one point.',
+  })).toHaveCount(0);
+});
+

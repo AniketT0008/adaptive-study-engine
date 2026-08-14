@@ -16,10 +16,6 @@ export default function SM2Sandbox() {
 
     for (let i = 0; i < 8; i++) {
       const q = qualityPattern[i % qualityPattern.length];
-      
-      // Update EF
-      ef = ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
-      if (ef < 1.3) ef = 1.3;
 
       if (q < 3) {
         repetitions = 0;
@@ -30,6 +26,9 @@ export default function SM2Sandbox() {
         else interval = Math.round(interval * ef);
         repetitions += 1;
       }
+
+      ef += 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02);
+      if (ef < 1.3) ef = 1.3;
 
       totalDays += interval;
 
@@ -55,13 +54,14 @@ export default function SM2Sandbox() {
             <span>🔬</span> SM-2 Algorithm Interactive Simulator
           </h3>
           <p className="text-xs text-[var(--color-text-muted)] mt-1">
-            See how the SuperMemo-2 mathematical formula expands review intervals exponentially over time
+            See how the SM-2 recurrence changes discrete review intervals after successful recalls
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="text-xs text-[var(--color-text-muted)] font-medium">Initial Ease Factor:</label>
+          <label htmlFor="sm2-initial-ease" className="text-xs text-[var(--color-text-muted)] font-medium">Initial ease factor:</label>
           <input
+            id="sm2-initial-ease"
             type="range"
             min="1.3"
             max="3.0"
@@ -78,12 +78,16 @@ export default function SM2Sandbox() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart */}
-        <div className="lg:col-span-2 h-[240px]">
+        <div
+          className="lg:col-span-2 h-[240px]"
+          role="img"
+          aria-label={`SM-2 projection for eight successful reviews. Intervals range from ${data[0].intervalDays} to ${data[data.length - 1].intervalDays} days; cumulative elapsed time reaches ${data[data.length - 1].cumulativeDays} days.`}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#2e3245" />
               <XAxis dataKey="review" stroke="#8b8da3" tick={{ fill: '#8b8da3' }} />
-              <YAxis stroke="#8b8da3" tick={{ fill: '#8b8da3' }} label={{ value: 'Days to Next Review', angle: -90, position: 'insideLeft', fill: '#8b8da3', style: { fontSize: 12 } }} />
+              <YAxis stroke="#8b8da3" tick={{ fill: '#8b8da3' }} label={{ value: 'Days', angle: -90, position: 'insideLeft', fill: '#8b8da3', style: { fontSize: 12 } }} />
               <Tooltip
                 contentStyle={{ backgroundColor: '#1f2330', borderColor: '#2e3245', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
               />

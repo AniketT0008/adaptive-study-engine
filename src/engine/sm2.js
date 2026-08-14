@@ -7,21 +7,21 @@
 export function computeSM2(concept, quality) {
   let { easinessFactor, interval, repetitions } = concept;
 
-  // Update ease factor
-  easinessFactor = easinessFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-  if (easinessFactor < 1.3) easinessFactor = 1.3;
-
   if (quality < 3) {
     // Failed: reset
     repetitions = 0;
     interval = 1;
   } else {
-    // Success
+    // Classic SM-2 schedules from the ease factor that was in effect for the
+    // completed repetition, then updates that factor for the next repetition.
     if (repetitions === 0) interval = 1;
     else if (repetitions === 1) interval = 6;
     else interval = Math.round(interval * easinessFactor);
     repetitions += 1;
   }
+
+  easinessFactor += 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02);
+  if (easinessFactor < 1.3) easinessFactor = 1.3;
 
   const nextReviewDate = new Date(Date.now() + interval * 24 * 60 * 60 * 1000).toISOString();
 

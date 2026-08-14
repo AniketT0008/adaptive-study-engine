@@ -4,7 +4,12 @@ import { simulateComparison } from '../../engine/adaptive.js';
 
 const ComparisonChart = ({ concepts = [] }) => {
   const [data, setData] = useState([]);
-  const [metrics, setMetrics] = useState({ adaptiveTarget: 0, randomTarget: 0, diffPercent: 0, informative: false });
+  const [metrics, setMetrics] = useState({
+    adaptiveTarget: null,
+    randomTarget: null,
+    diffPercent: 0,
+    informative: false,
+  });
 
   useEffect(() => {
     if (concepts && concepts.length > 0) {
@@ -31,21 +36,28 @@ const ComparisonChart = ({ concepts = [] }) => {
         
         setData(chartData);
         
-        const finalAdaptCross = adaptCross || chartData.length;
-        const finalRandCross = randCross || chartData.length;
-        const diff = Math.round(((finalRandCross - finalAdaptCross) / finalRandCross) * 100);
+        const diff = adaptCross && randCross
+          ? Math.round(((randCross - adaptCross) / randCross) * 100)
+          : 0;
         
         setMetrics({
-          adaptiveTarget: finalAdaptCross,
-          randomTarget: finalRandCross,
+          adaptiveTarget: adaptCross || null,
+          randomTarget: randCross || null,
           diffPercent: diff > 0 ? diff : 0,
           informative,
         });
       } catch (err) {
         console.error("Simulation error", err);
       }
+    } else {
+      setData([]);
+      setMetrics({ adaptiveTarget: null, randomTarget: null, diffPercent: 0, informative: false });
     }
   }, [concepts]);
+
+  const chartSummary = data.length === 0
+    ? 'No mastery projection data.'
+    : `Toy simulation over ${data.length} reviews. Weak-first ends at ${data[data.length - 1].targeted}% average mastery and random order ends at ${data[data.length - 1].random}%.`;
 
   return (
     <div className="bg-[#1a1a2e] bg-opacity-80 backdrop-blur-xl border border-[#55efc4] border-opacity-30 rounded-2xl p-6 shadow-[0_0_30px_rgba(85,239,196,0.1)] relative overflow-hidden flex flex-col">
@@ -56,7 +68,7 @@ const ComparisonChart = ({ concepts = [] }) => {
       </h3>
       <p className="text-[#a29bfe] text-sm mb-6">Simulated mastery projection based on your current knowledge state</p>
       
-      <div className="flex-1 w-full min-h-[300px] mb-8">
+      <div className="flex-1 w-full min-h-[300px] mb-8" role="img" aria-label={chartSummary}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid stroke="#2e3245" strokeDasharray="3 3" />
@@ -97,7 +109,16 @@ const ComparisonChart = ({ concepts = [] }) => {
       </div>
 
       <div className="bg-[#161623] rounded-xl p-5 border border-[#2e3245]">
-        {metrics.informative && metrics.diffPercent > 0 ? (
+        {metrics.informative && metrics.adaptiveTarget && !metrics.randomTarget ? (
+          <>
+            <h4 className="text-xl text-white font-bold mb-2">
+              In this projection, weak-first review reaches 80% average mastery in about {metrics.adaptiveTarget} reviews; random order does not reach 80% within the 50-review horizon.
+            </h4>
+            <p className="text-gray-400 text-sm leading-relaxed mt-3">
+              This is a toy simulation from your current mastery values, not a measured result from your sessions.
+            </p>
+          </>
+        ) : metrics.informative && metrics.diffPercent > 0 ? (
           <>
             <h4 className="text-xl text-white font-bold mb-2">
               In this projection, weak-first review hits 80% average mastery in ~{metrics.adaptiveTarget} reviews vs ~{metrics.randomTarget} for random order ({metrics.diffPercent}% fewer reviews).

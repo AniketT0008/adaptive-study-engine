@@ -31,5 +31,16 @@ describe('QuestionCard', () => {
     const { container } = render(<QuestionCard question={question} concept={{ label: 'Functions' }} />);
     expect(container.querySelector('.katex')).toBeTruthy();
   });
+
+  it('does not reserve space for an unsupported visual fallback', () => {
+    const { container } = render(
+      <QuestionCard
+        question={{ ...question, visual: true }}
+        concept={{ label: 'Electric Potential and Energy', shortDefinition: 'Voltage is energy per charge.' }}
+        courseCode="sph4u-physics-12"
+      />,
+    );
+    expect(container.querySelector('.concept-visual')).toBeNull();
+  });
 });
 
