@@ -413,7 +413,7 @@ function buildDeckFromCurriculum(curriculum) {
     }),
     createdAt: BUILT_IN_CREATED_AT,
     source: curriculum.source,
-    curriculumVersion: 9,
+    curriculumVersion: 10,
   };
 }
 

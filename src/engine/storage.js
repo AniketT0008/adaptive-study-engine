@@ -3,6 +3,7 @@ import { UNIVERSITY_DECKS } from '../data/universityCatalog.js';
 
 const DECKS_KEY = 'adaptive-study-engine-decks';
 const API_KEY_KEY = 'adaptive-study-engine-api-key';
+const API_KEY_SESSION = 'adaptive-study-engine-api-key-session';
 
 const ALL_BUILTIN_DECKS = [...EXAMPLE_DECKS, ...UNIVERSITY_DECKS];
 
@@ -107,9 +108,13 @@ export function deleteDeck(id) {
   saveDecks(decks);
 }
 
-export function saveApiKey(key) {
+export function saveApiKey(key, persist = false) {
+  const trimmed = String(key || '').trim();
   try {
-    localStorage.setItem(API_KEY_KEY, key);
+    if (trimmed) sessionStorage.setItem(API_KEY_SESSION, trimmed);
+    else sessionStorage.removeItem(API_KEY_SESSION);
+    if (persist && trimmed) localStorage.setItem(API_KEY_KEY, trimmed);
+    else localStorage.removeItem(API_KEY_KEY);
   } catch (e) {
     console.error('Failed to save API key:', e);
   }
@@ -117,8 +122,16 @@ export function saveApiKey(key) {
 
 export function getApiKey() {
   try {
-    return localStorage.getItem(API_KEY_KEY) || '';
+    return sessionStorage.getItem(API_KEY_SESSION) || localStorage.getItem(API_KEY_KEY) || '';
   } catch {
     return '';
+  }
+}
+
+export function hasPersistedApiKey() {
+  try {
+    return Boolean(localStorage.getItem(API_KEY_KEY));
+  } catch {
+    return false;
   }
 }

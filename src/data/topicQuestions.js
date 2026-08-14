@@ -1,3 +1,5 @@
+import { GRADE12_STEM_QUESTIONS } from './grade12StemQuestions.js';
+
 function E(prompt, answer, d1, d2, d3, explanation) {
   return { prompt, answer, distractors: [d1, d2, d3], explanation };
 }
@@ -8,6 +10,7 @@ function pack(easy, medium, hard) {
 
 /** Topic-specific MCQs keyed by exact lesson label. */
 export const TOPIC_QUESTIONS = {
+  ...GRADE12_STEM_QUESTIONS,
   'Data Types, Expressions, and Control Flow': pack(
     E('A loop should keep asking until the user enters a value in 1..10. Which structure is correct?', 'Repeat the prompt while the value is outside 1..10, then continue.', 'Ask once and crash if the value is invalid.', 'Use a for-loop that always runs exactly 10 times regardless of input.', 'Store the prompt in a float because validation is numeric.', 'Validation belongs in a loop whose condition is “input is still invalid.”'),
     E('Which expression is evaluated first in 2 + 3 * 4, and what is the result?', 'Multiplication first, result 14.', 'Addition first, result 20.', 'Left to right, result 24.', 'The compiler chooses randomly, result 11.', 'Multiplicative operators bind tighter than additive ones unless parentheses override them.'),

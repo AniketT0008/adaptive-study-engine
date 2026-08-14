@@ -15,7 +15,10 @@ function stemFromExample(example, answer) {
   }
   const last = text.lastIndexOf(String(answer));
   if (last >= Math.max(0, text.length - String(answer).length - 8)) {
-    return `${text.slice(0, last).replace(/[.,;:=]+$/, '').trim()} ___`.trim();
+    const stem = `${text.slice(0, last).replace(/[.,;:=]+$/, '').trim()} ___`.trim();
+    if (stem.length >= 28 && !/(?:the expression|the result|gives|so the)$/i.test(stem.replace(/_+/g, '').trim())) {
+      return stem;
+    }
   }
   return text;
 }
@@ -42,7 +45,7 @@ function add(rows) {
         `${fact} Therefore the worked result is ${answer}.`,
       ),
       medium: E(
-        `Given this ${label} setup: ${stem}. Why is ${answer} the result rather than ${d1}?`,
+        `Given this ${label} setup: ${example} Why is ${answer} the result rather than ${d1}?`,
         fact,
         `The result must be ${d1} because the given values can be ignored.`,
         `Average the givens and report ${d2} without using ${label}.`,
@@ -50,7 +53,7 @@ function add(rows) {
         `${fact} Therefore the worked result is ${answer}.`,
       ),
       hard: E(
-        `A student used this ${label} setup: ${stem}. They reported ${d1} instead of ${answer}. What failed?`,
+        `In this ${label} example: ${example} A student reported ${d1} instead of ${answer}. What failed?`,
         `They skipped the evaluation that produces ${answer} from the given setup.`,
         `Nothing failed; ${d1} is interchangeable with ${answer}.`,
         `Keep ${d1} and round until it matches ${d3}.`,

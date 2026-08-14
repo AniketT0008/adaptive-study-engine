@@ -23,8 +23,10 @@ export function createConcept({ id, label, sourceSnippet, example, unit, topics,
     example: example || null,
     intuition: support.intuition,
     workedExplanation: support.workedExplanation,
-    learningGoal: learningGoal || `Explain ${label} and apply it to a new problem with an appropriate check.`,
-    commonMistake: commonMistake || `Applying ${label} without first checking the conditions and assumptions.`,
+    learningGoal: learningGoal || (example
+      ? `Use ${label} the way the worked example does, then check the result against units, signs, or given conditions.`
+      : `Explain ${label} and apply it to a new problem with an appropriate check.`),
+    commonMistake: commonMistake || `Skipping the conditions that make ${label} valid, then forcing the formula anyway.`,
     unit: unit || null,
     topics: topics || [],
     topicDefinition: getTextbookDefinition({

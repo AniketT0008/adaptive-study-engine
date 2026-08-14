@@ -49,10 +49,15 @@ export function buildStudySprint(deck, minutes = 45) {
     }))
     .sort((a, b) => b.priority - a.priority);
 
-  const dueCount = sorted.filter((concept) => concept.due).length;
-  const weakCount = sorted.filter((concept) => (concept.mastery || 0) < 0.45).length;
-  const avgMastery = concepts.reduce((sum, concept) => sum + (concept.mastery || 0), 0) / concepts.length;
-  const readiness = Math.max(0, Math.min(100, Math.round(avgMastery * 78 + (1 - weakCount / concepts.length) * 16 + (1 - dueCount / concepts.length) * 6)));
+  const practicedCount = sorted.filter((concept) => concept.history?.length).length;
+  const dueCount = sorted.filter((concept) => concept.history?.length && concept.due).length;
+  const weakCount = sorted.filter((concept) => concept.history?.length && (concept.mastery || 0) < 0.45).length;
+  const avgMastery = practicedCount === 0
+    ? 0
+    : concepts.filter((concept) => concept.history?.length).reduce((sum, concept) => sum + (concept.mastery || 0), 0) / practicedCount;
+  const readiness = practicedCount === 0
+    ? 0
+    : Math.max(0, Math.min(100, Math.round(avgMastery * 78 + (1 - weakCount / practicedCount) * 16 + (1 - dueCount / practicedCount) * 6)));
   const reviewSlots = Math.max(3, Math.min(sorted.length, Math.floor(minutes / 7)));
   const learnSlots = Math.max(1, Math.min(4, Math.floor(minutes / 18)));
   const priorities = sorted.slice(0, reviewSlots);
@@ -65,8 +70,8 @@ export function buildStudySprint(deck, minutes = 45) {
     const existing = unitMap.get(unitName) || { name: unitName, total: 0, mastery: 0, due: 0, weak: 0 };
     existing.total += 1;
     existing.mastery += concept.mastery || 0;
-    existing.due += daysUntil(concept.nextReviewDate) <= 0 ? 1 : 0;
-    existing.weak += (concept.mastery || 0) < 0.45 ? 1 : 0;
+    existing.due += concept.history?.length && daysUntil(concept.nextReviewDate) <= 0 ? 1 : 0;
+    existing.weak += concept.history?.length && (concept.mastery || 0) < 0.45 ? 1 : 0;
     unitMap.set(unitName, existing);
   }
 
@@ -78,13 +83,15 @@ export function buildStudySprint(deck, minutes = 45) {
     }))
     .sort((a, b) => b.risk - a.risk);
 
-  const headline = readiness >= 80
-    ? 'Exam-ready momentum'
-    : readiness >= 60
-      ? 'Solid base, targeted polish'
-      : readiness >= 35
-        ? 'Focus sprint recommended'
-        : 'Build foundation first';
+  const headline = practicedCount === 0
+    ? 'Not started — learn then quiz'
+    : readiness >= 80
+      ? 'Exam-ready momentum'
+      : readiness >= 60
+        ? 'Solid base, targeted polish'
+        : readiness >= 35
+          ? 'Focus sprint recommended'
+          : 'Build foundation first';
 
   const actions = [
     priorities.slice(0, 3).map((concept) => concept.label).join('; ') || 'No review lessons queued yet',

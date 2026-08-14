@@ -3,9 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { EXAMPLE_DECKS } from '../data/exampleDeck.js';
 import { getUniversityDecksBySchool, buildDeckFromCatalogCourse } from '../data/universityCatalog.js';
 import { createConcept, createDeck } from '../data/models.js';
-import { saveDeck, loadDecks, getApiKey, saveApiKey, saveDecks, mergeDeckCollections } from '../engine/storage.js';
+import { saveDeck, loadDecks, getApiKey, saveApiKey, saveDecks, mergeDeckCollections, hasPersistedApiKey } from '../engine/storage.js';
 import { extractConcepts, generateQuestions, extractTextFromFile, testGeminiConnection } from '../api/gemini.js';
 import { playSound } from '../utils/audio.js';
+
+function titleFromNotes(material, concepts, fileName) {
+  const named = String(material || '')
+    .split(/\n/)
+    .map((line) => line.trim().replace(/^#+\s*/, ''))
+    .find((line) => line.length >= 4 && line.length <= 72 && !/^https?:/i.test(line));
+  if (named && named.split(/\s+/).length <= 12) {
+    return named.replace(/[.!?]+$/, '');
+  }
+  if (fileName) return fileName.replace(/\.[^.]+$/, '');
+  const count = concepts.length;
+  const first = concepts[0]?.label;
+  if (first && count === 1) return first;
+  if (first) return `${first} · ${count} lessons`;
+  return 'Custom study deck';
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -19,13 +35,16 @@ export default function Home() {
   const [error, setError] = useState('');
   const [showCreateDeck, setShowCreateDeck] = useState(false);
   const [apiStatus, setApiStatus] = useState({ state: 'idle', message: 'Local fallback ready' });
+  const [customDeckTitle, setCustomDeckTitle] = useState('');
+  const [rememberApiKey, setRememberApiKey] = useState(false);
 
   useEffect(() => {
     setDecks(loadDecks());
     const savedKey = getApiKey();
     if (savedKey) {
       setApiKey(savedKey);
-      setApiStatus({ state: 'idle', message: 'Saved key not verified' });
+      setRememberApiKey(hasPersistedApiKey());
+      setApiStatus({ state: 'idle', message: hasPersistedApiKey() ? 'Saved on this device' : 'Key in this tab only' });
     }
   }, []);
 
@@ -65,7 +84,7 @@ export default function Home() {
     if (!file) return;
     setError('');
     setSelectedMaterialName(file.name);
-    if (apiKey.trim()) saveApiKey(apiKey);
+    if (apiKey.trim()) saveApiKey(apiKey, rememberApiKey);
     
     setLoadingStep('extracting-file');
     try {
@@ -93,7 +112,7 @@ export default function Home() {
       return;
     }
     setError('');
-    if (apiKey.trim()) saveApiKey(apiKey);
+    if (apiKey.trim()) saveApiKey(apiKey, rememberApiKey);
 
     try {
       setLoadingStep('extracting');
@@ -116,7 +135,7 @@ export default function Home() {
       const rawQuestions = await generateQuestions(concepts, apiKey);
 
       const deckId = `deck-${Date.now()}`;
-      const titleSnippet = concepts[0]?.label ? `${concepts[0].label} & more` : 'Custom Generated Deck';
+      const titleSnippet = customDeckTitle.trim() || titleFromNotes(materialInput, concepts, selectedMaterialName);
       const newDeck = createDeck({
         id: deckId,
         title: titleSnippet,
@@ -148,7 +167,7 @@ export default function Home() {
     }
 
     setApiStatus({ state: 'checking', message: 'Checking Gemini...' });
-    saveApiKey(apiKey);
+    saveApiKey(apiKey, rememberApiKey);
     const result = await testGeminiConnection(apiKey);
     if (result.ok) {
       setApiStatus({ state: 'ok', message: `Connected (${result.model})` });
@@ -304,6 +323,7 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {courses.map((course) => {
                 const saved = decks.find((d) => d.id === course.id);
+                const lessonCount = course.units.reduce((sum, [, lessons]) => sum + lessons.length, 0);
                 return (
                   <button
                     key={course.id}
@@ -318,7 +338,10 @@ export default function Home() {
                     </div>
                     <h4 className="font-bold text-[var(--color-text)] text-sm">{course.title}</h4>
                     <p className="text-xs text-[var(--color-text-muted)] leading-relaxed mt-1 line-clamp-2">{course.description}</p>
-                    <div className="text-[11px] font-semibold text-[var(--color-accent-light)] mt-2">
+                    <div className="text-[11px] text-[var(--color-text-muted)] mt-2">
+                      {lessonCount} lessons · {lessonCount * 3} questions
+                    </div>
+                    <div className="text-[11px] font-semibold text-[var(--color-accent-light)] mt-1">
                       {saved ? 'Continue →' : 'Load course deck →'}
                     </div>
                   </button>
@@ -361,6 +384,17 @@ export default function Home() {
               rows={5}
               className="w-full text-sm"
             />
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-[var(--color-text-muted)] font-medium">Deck title (optional)</label>
+              <input
+                type="text"
+                value={customDeckTitle}
+                onChange={(e) => setCustomDeckTitle(e.target.value)}
+                placeholder="e.g. ECE 150 Midterm Review"
+                className="w-full text-sm"
+              />
+            </div>
 
             {/* File upload row */}
             <div className="flex flex-wrap items-center gap-3">
@@ -427,6 +461,17 @@ export default function Home() {
               <p className="text-[11px] text-[var(--color-text-muted)]">
                 Text and markdown files work offline. Gemini powers AI deck generation, tutor replies, and image/PDF text extraction.
               </p>
+              <label className="flex items-start gap-2 text-[11px] text-[var(--color-text-muted)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rememberApiKey}
+                  onChange={(e) => setRememberApiKey(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  Remember this key on this device. Keys stay in the browser only; leave unchecked to keep the key in this tab session.
+                </span>
+              </label>
             </div>
 
             {error && (
@@ -476,6 +521,9 @@ export default function Home() {
                 >
                   {!d.id.startsWith('example-') && (
                     <button
+                      type="button"
+                      aria-label={`Delete ${d.title}`}
+                      title="Delete deck"
                       onClick={(e) => handleDeleteDeck(e, d.id)}
                       className="absolute top-3 right-3 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] opacity-0 group-hover:opacity-100 transition-all text-xs bg-white/[0.04] px-2 py-1 rounded"
                     >

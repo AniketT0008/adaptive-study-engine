@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toggleSound, isSoundEnabled } from '../utils/audio.js';
 import logoImg from '../assets/logo.png';
@@ -19,6 +19,10 @@ export default function Layout({ children }) {
     toggleSound(nextState);
     setSoundOn(nextState);
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname, location.search, location.hash]);
 
   return (
     <div className={subjectTheme}>
@@ -51,7 +55,7 @@ export default function Layout({ children }) {
         </div>
       </nav>
       
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+      <main key={location.pathname} className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
         {children}
       </main>
       

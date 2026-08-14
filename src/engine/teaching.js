@@ -52,10 +52,10 @@ export function getTextbookDefinition({ label, unit, summary = '', example = '',
 
   const paragraphs = uniqueParagraphs([
     `${definition} ${mechanism}`,
-    `${workedMethod} The method is complete only when every symbol, structure, state, or input has been identified and the conditions that justify the governing relationship have been checked.`,
+    `${workedMethod}`,
     concreteExample
-      ? `Worked example: ${concreteExample} Follow the example from the givens through the governing step to the conclusion, then verify it with units, a boundary case, substitution back into the original relation, or another independent check that fits ${label}.`
-      : `Worked application: begin with a small explicit case, apply ${label} one step at a time, and state what each step changes or preserves. Finish with an independent check and predict how the result changes when one input or condition is altered.`,
+      ? `Worked example: ${concreteExample}`
+      : `Worked application: start with a small explicit case, apply ${label} one step at a time, and finish with an independent check.`,
   ]);
 
   return paragraphs.slice(0, paragraphCount).join('\n\n');
@@ -92,7 +92,9 @@ export function getTeachingSupport(label, snippet = '', example = '') {
     return { intuition: pack.intuition, workedExplanation: pack.worked };
   }
 
-  const text = `${label} ${snippet}`.toLowerCase();
+  // Route support from the lesson title only. Snippets like "orbital speed"
+  // or "Faraday's law" of induction used to steal chemistry/electrolysis copy.
+  const text = String(label || '').toLowerCase();
   const defaultSupport = {
     intuition: `${label} is useful because it turns the general idea in this unit into a decision you can defend. First identify what is given and what conditions apply; then use the rule to explain the result, not merely name it.`,
     workedExplanation: `Read the worked example as a chain of decisions: identify the target, state the governing idea, carry out the key operation, and check that the conclusion fits the assumptions.`,
@@ -182,7 +184,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
       workedExplanation: 'For ethene, open the C=C bond, connect many -CH2-CH2- units, place the repeat inside brackets, and write n outside. For a polyester, identify a diol and a dicarboxylic acid, form ester links at both ends, and account for the water removed. Check that every atom from the monomers is conserved across the repeat unit and the eliminated molecules.',
     };
   }
-  if (/quantum model|electron configuration|orbital/.test(text)) {
+  if (/quantum model|electron configuration|\borbitals\b/.test(text)) {
     return {
       intuition: 'The quantum model describes electrons with orbitals: probability distributions characterized by principal level, subshell, orientation, and spin. Electrons fill lower-energy orbitals first, occupy equal-energy orbitals singly before pairing, and no two electrons in one atom share all four quantum numbers. Electron configuration explains valence structure and therefore periodic trends and bonding behaviour.',
       workedExplanation: 'Use the Aufbau order, place at most two opposite-spin electrons in each orbital, and apply Hund’s rule across p, d, or f orbitals. Oxygen has eight electrons: 1s2 2s2 2p4. Its three 2p orbitals receive one electron each before the fourth pairs, leaving two unpaired electrons; writing 2p4 without an orbital diagram can hide this chemically important detail.',
@@ -266,7 +268,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
       workedExplanation: 'Write the two reduction half-reactions, identify the more positive reduction potential as the cathode, reverse the other half-reaction for oxidation, then calculate Ecell = Ecathode - Eanode. Never multiply voltage values by balancing coefficients.',
     };
   }
-  if (/electrolytic|faraday|electrolysis/.test(text)) {
+  if (/electrolytic|\bfaraday|\belectrolysis\b/.test(text) && !/induction|magnetic flux/.test(text)) {
     return {
       intuition: 'An electrolytic cell uses external electrical energy to force a non-spontaneous redox reaction. Oxidation still occurs at the anode and reduction at the cathode, but the electrode signs reverse relative to a galvanic cell. Faraday’s law connects circuit charge to chemical amount because one mole of electrons carries approximately 96 485 C.',
       workedExplanation: 'Calculate charge with Q = It, convert to moles of electrons using ne− = Q/F, use the balanced half-reaction to convert electrons to moles of product, then convert to mass or gas volume. For Cu2+ + 2e− → Cu, two moles of electrons deposit one mole of copper. Ignoring that 2:1 ratio doubles the predicted mass.',
@@ -365,27 +367,66 @@ export function getTeachingSupport(label, snippet = '', example = '') {
   };
 }
 
+function extractResult(example) {
+  const text = String(example || '');
+  const afterEquals = text.match(/=\s*([^\s,;]+(?:\s+[A-Za-zµ°/%]+)?)(?:\.|$)/);
+  if (afterEquals?.[1] && afterEquals[1].length < 40) return afterEquals[1].trim();
+  const so = text.match(/\bso\s+([^.]+)\.\s*$/i);
+  if (so?.[1] && so[1].length < 80) return so[1].trim();
+  return '';
+}
+
 function lessonFallbackQuestions(concept) {
   const example = String(concept.example || '').trim();
   const definition = String(concept.shortDefinition || '').trim() || `${concept.label} is applied from the stated givens.`;
   const label = concept.label;
-  const easyAnswer = example || definition;
+  const result = extractResult(example);
+
+  if (result && example) {
+    return {
+      easy: {
+        prompt: `From this ${label} example: ${example} What is the result?`,
+        answer: result,
+        distractors: [`Twice ${result}`, `The opposite of ${result}`, 'The result cannot be determined from the givens.'],
+        explanation: example,
+      },
+      medium: {
+        prompt: `A new problem uses the same method as this ${label} example: ${example} Which first step is required?`,
+        answer: definition,
+        distractors: [
+          `Skip the givens and quote the name ${label}.`,
+          'Average every number in the problem, then stop.',
+          'Pick any familiar formula even if its assumptions fail.',
+        ],
+        explanation: `${definition} The example shows the method: ${example}`,
+      },
+      hard: {
+        prompt: `A student kept the numbers from “${example}” but ignored the conditions for ${label}. What failed?`,
+        answer: `The method for ${label} only applies after its assumptions and setup match the new problem.`,
+        distractors: [
+          `Numbers from a worked example can be reused on any later question.`,
+          `Conditions do not matter if the arithmetic is neat.`,
+          `The opposite of the example result is always equally valid.`,
+        ],
+        explanation: `Worked numbers are not transferable. Re-identify givens and conditions, then recompute.`,
+      },
+    };
+  }
+
   return {
     easy: {
-      prompt: `Which statement is the worked claim in the ${label} lesson?`,
-      answer: easyAnswer,
+      prompt: `Which description of ${label} is accurate?`,
+      answer: definition,
       distractors: [
-        `${label} can be applied without using any given values or conditions.`,
-        `The lesson shows that ${label} never produces a definite result.`,
-        `Ignore the example and treat ${label} as an unrelated definition to memorize.`,
+        `${label} can be used without checking givens or conditions.`,
+        `${label} never produces a definite, checkable result.`,
+        `${label} is only a name to memorize, not a method.`,
       ],
-      explanation: example
-        ? `The lesson’s worked example is: ${example}`
-        : `The lesson definition is: ${definition}`,
+      explanation: definition,
     },
     medium: {
-      prompt: `What does the ${label} lesson actually require you to do with a new problem?`,
-      answer: definition,
+      prompt: `You meet a new problem involving ${label}. What should you do first?`,
+      answer: `Identify the givens, check that the conditions for ${label} apply, then carry out the method.`,
       distractors: [
         `Quote the name ${label} and skip the givens.`,
         `Pick any familiar formula even if its assumptions fail.`,
@@ -394,14 +435,14 @@ function lessonFallbackQuestions(concept) {
       explanation: definition,
     },
     hard: {
-      prompt: `A student skipped this lesson example: “${example || definition}” and guessed the opposite conclusion. What failed?`,
-      answer: `They did not use the governing step shown for ${label}.`,
+      prompt: `Two students get different answers for ${label}. Which audit is most likely to find a real error?`,
+      answer: `Check assumptions, the governing relationship, units or signs, and whether the conclusion was verified.`,
       distractors: [
-        `Nothing failed; the opposite of the example is equally valid.`,
-        `The example is decorative and should be ignored on assessments.`,
-        `The correct move is to delete units, signs, and conditions.`,
+        `Average the two answers; the mean is usually correct.`,
+        `Keep the setup and add more decimal places.`,
+        `Delete units and boundary conditions so comparison is easier.`,
       ],
-      explanation: `The example is the check: ${example || definition}`,
+      explanation: `Wrong answers usually come from a mismatched model, not from rounding.`,
     },
   };
 }

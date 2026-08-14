@@ -40,6 +40,13 @@ export function getDueConcepts(concepts, focusMode = false) {
   return [...dueReviewed, ...newToIntro].slice(0, SESSION_CAP);
 }
 
+/** Cards with quiz history whose SM-2 date is due. Does not include brand-new lessons. */
+export function getDueReviewedConcepts(concepts) {
+  if (!concepts || !Array.isArray(concepts)) return [];
+  const now = new Date().toISOString();
+  return concepts.filter((concept) => hasHistory(concept) && (!concept.nextReviewDate || concept.nextReviewDate <= now));
+}
+
 /**
  * Selects the best question for a concept based on current mastery.
  * Low mastery → easy question, medium → medium, high → hard.

@@ -242,12 +242,16 @@ export default function ReviewSession() {
     return (
       <div className="flex items-center justify-center py-20 animate-fade-in">
         <div className="glass-strong p-8 rounded-2xl text-center max-w-md border border-white/[0.08]">
-          <div className="text-5xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold text-[var(--color-text)] mb-2">{focusMode ? 'No weak spots yet' : 'All caught up!'}</h2>
+          <div className="text-5xl mb-4">{focusMode || midtermMode ? '🎯' : '🎉'}</div>
+          <h2 className="text-2xl font-bold text-[var(--color-text)] mb-2">
+            {focusMode ? 'No weak spots yet' : midtermMode ? 'No midterm questions' : 'All caught up!'}
+          </h2>
           <p className="text-[var(--color-text-muted)] mb-6">
             {focusMode
-              ? 'Focus Mode only targets lessons you have already quizzed. Complete a regular quiz or Teacher Mode check first so the weakest 25% is real, not an arbitrary slice of the course.'
-              : 'No concepts are due for review right now. Use Teacher Mode to learn new lessons, then quiz a small batch.'}
+              ? 'Focus Mode only targets lessons you have already quizzed. Complete a regular quiz first so the weakest 25% is real, not an arbitrary slice of the course.'
+              : midtermMode
+                ? 'This deck does not have saved questions yet, so a practice midterm cannot be built.'
+                : 'No reviewed lessons are due right now. Use Teacher Mode to learn, then start a quiz — new cards are introduced a few at a time.'}
           </p>
           <div className="flex justify-center gap-3">
             {focusMode && (

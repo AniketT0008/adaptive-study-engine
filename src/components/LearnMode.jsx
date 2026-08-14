@@ -6,7 +6,6 @@ import { callGeminiText } from '../api/gemini.js';
 import { stripMarkdown, toParagraphs, isCasualMessage, dedupeLines, formatMath } from '../utils/formatText.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
 import { getQuestionSet } from '../engine/teaching.js';
-import { updateConceptAfterAnswer } from '../engine/adaptive.js';
 
 function MissingDeck({ onHome }) {
   return (
@@ -285,20 +284,6 @@ Rules:
     const correct = String(option).trim().toLowerCase() === String(selfCheckQuestion?.answer).trim().toLowerCase();
     setIsSelfCheckCorrect(correct);
     playSound(correct ? 'correct' : 'wrong');
-    if (selfCheckQuestion && currentConcept && deck) {
-      const updatedConcept = updateConceptAfterAnswer(
-        currentConcept,
-        correct,
-        selfCheckQuestion.difficulty || 'easy',
-        selfCheckQuestion.id,
-      );
-      const updatedDeck = {
-        ...deck,
-        concepts: deck.concepts.map((concept) => (concept.id === currentConcept.id ? updatedConcept : concept)),
-      };
-      saveDeck(updatedDeck);
-      setDeck(updatedDeck);
-    }
   };
 
   const exampleSteps = (currentConcept?.example || '')

@@ -66,15 +66,24 @@ function labelFromSnippet(snippet, index) {
     return named[1].replace(/\s+/g, ' ').trim().replace(/^\w/, (c) => c.toUpperCase());
   }
 
-  const beforeVerb = sentence.match(/^([A-Z][A-Za-z0-9\s-]{1,40}?)(?:\s+(?:describe|require|connect|measure|use|mean|equal|represent)s?\b)/i);
-  if (beforeVerb?.[1] && beforeVerb[1].split(/\s+/).length <= 4) {
-    return beforeVerb[1].trim();
-  }
+  const heading = sentence.match(/^([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,4})\s*[:—-]/);
+  if (heading?.[1] && heading[1].length <= 42) return heading[1];
 
-  const stop = new Set(['the', 'a', 'an', 'is', 'are', 'of', 'and', 'to', 'for', 'with', 'that', 'this', 'as', 'from']);
-  const words = sentence.replace(/[^a-zA-Z0-9\s-]/g, '').split(/\s+/).filter((word) => word.length > 2 && !stop.has(word.toLowerCase()));
+  const stop = new Set([
+    'the', 'a', 'an', 'is', 'are', 'of', 'and', 'to', 'for', 'with', 'that', 'this', 'as', 'from',
+    'says', 'said', 'means', 'equals', 'using', 'when', 'then', 'than', 'into', 'over', 'also',
+  ]);
+  const words = sentence
+    .replace(/[^a-zA-Z0-9\s-]/g, '')
+    .split(/\s+/)
+    .filter((word) => {
+      if (word.length < 3) return false;
+      if (stop.has(word.toLowerCase())) return false;
+      if (/\d/.test(word) && !/^[A-Z][a-z]?\d+[A-Za-z0-9-]*$/.test(word)) return false;
+      return true;
+    });
   if (words.length === 0) return `Topic ${index + 1}`;
-  return words.slice(0, 3).map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  return words.slice(0, 4).map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 }
 
 /**

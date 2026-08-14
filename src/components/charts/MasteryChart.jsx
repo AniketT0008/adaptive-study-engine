@@ -14,10 +14,18 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 const MasteryChart = ({ concepts = [] }) => {
-  const data = concepts.map(c => ({
-    name: c.label,
-    mastery: Math.round(c.mastery * 100)
-  }));
+  const ranked = [...concepts]
+    .map((concept) => ({
+      name: concept.label,
+      mastery: Math.round((concept.mastery || 0) * 100),
+      practiced: (concept.history?.length || 0) > 0,
+    }))
+    .sort((a, b) => {
+      if (a.practiced !== b.practiced) return a.practiced ? -1 : 1;
+      return a.mastery - b.mastery;
+    });
+  const data = ranked.slice(0, 12);
+  const hiddenCount = Math.max(0, concepts.length - data.length);
 
   const getColor = (value) => {
     if (value < 30) return '#ff7675';
@@ -26,13 +34,16 @@ const MasteryChart = ({ concepts = [] }) => {
     return '#55efc4';
   };
 
-  const chartHeight = Math.max(concepts.length * 48 + 40, 300);
+  const chartHeight = Math.max(data.length * 48 + 40, 240);
 
   return (
     <div className="bg-[#161623] bg-opacity-60 backdrop-blur-md border border-[#2e3245] rounded-2xl p-6 shadow-xl h-full flex flex-col">
-      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <span>🧠</span> Mastery by Concept
+      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+        <span>🧠</span> Lowest mastery
       </h3>
+      <p className="text-xs text-[#8b8da3] mb-4">
+        Showing up to 12 lessons that need the most work{hiddenCount > 0 ? ` (${hiddenCount} more not plotted)` : ''}.
+      </p>
       <div className="flex-1 w-full" style={{ minHeight: `${chartHeight}px` }}>
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>

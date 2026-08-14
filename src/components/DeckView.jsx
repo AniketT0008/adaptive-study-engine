@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getDeck } from '../engine/storage.js';
-import { getDueConcepts } from '../engine/adaptive.js';
+import { getDueReviewedConcepts } from '../engine/adaptive.js';
 import { playSound } from '../utils/audio.js';
 import StudySprintPlanner from './StudySprintPlanner.jsx';
 
@@ -45,7 +45,7 @@ export default function DeckView() {
       if (loadedDeck) {
         setMissing(false);
         setDeck(loadedDeck);
-        setDueConcepts(getDueConcepts(loadedDeck.concepts));
+        setDueConcepts(getDueReviewedConcepts(loadedDeck.concepts));
       } else {
         setMissing(true);
         setDeck(null);
@@ -171,7 +171,7 @@ export default function DeckView() {
               Choose Mode:
             </div>
 
-            <div className={`grid grid-cols-1 sm:grid-cols-2 ${deck.university ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Mode 1: Learn / Teach */}
               <button
                 onClick={() => { playSound('click'); navigate(`/learn/${deck.id}`); }}
@@ -268,31 +268,28 @@ export default function DeckView() {
                 </div>
               </button>
 
-              {/* Mode 5: Practice Midterm (university courses only) */}
-              {deck.university && (
-                <button
-                  onClick={() => { playSound('click'); navigate(`/review/${deck.id}?midterm=true`); }}
-                  className="glass p-5 rounded-2xl border-2 border-[var(--color-danger)]/40 hover:border-[var(--color-danger)] hover:scale-[1.02] transition-all text-left group flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-2xl">📝</span>
-                      <span className="text-[10px] font-bold uppercase bg-[var(--color-danger)] text-white px-2 py-0.5 rounded-full">
-                        Exam Prep
-                      </span>
-                    </div>
-                    <h3 className="font-extrabold text-[var(--color-text)] text-base group-hover:text-[var(--color-danger)] transition-colors">
-                      Practice Midterm
-                    </h3>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed">
-                      Full-course hard-difficulty question set covering every unit, regardless of review schedule.
-                    </p>
+              <button
+                onClick={() => { playSound('click'); navigate(`/review/${deck.id}?midterm=true`); }}
+                className="glass p-5 rounded-2xl border-2 border-[var(--color-danger)]/40 hover:border-[var(--color-danger)] hover:scale-[1.02] transition-all text-left group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl">📝</span>
+                    <span className="text-[10px] font-bold uppercase bg-[var(--color-danger)] text-white px-2 py-0.5 rounded-full">
+                      Exam Prep
+                    </span>
                   </div>
-                  <div className="mt-4 text-xs font-bold text-[var(--color-danger)] flex items-center gap-1">
-                    <span>Start Practice Midterm</span> →
-                  </div>
-                </button>
-              )}
+                  <h3 className="font-extrabold text-[var(--color-text)] text-base group-hover:text-[var(--color-danger)] transition-colors">
+                    Practice Midterm
+                  </h3>
+                  <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed">
+                    Full-course hard-difficulty question set covering every unit, regardless of review schedule.
+                  </p>
+                </div>
+                <div className="mt-4 text-xs font-bold text-[var(--color-danger)] flex items-center gap-1">
+                  <span>Start Practice Midterm</span> →
+                </div>
+              </button>
             </div>
           </div>
         </div>

@@ -11,16 +11,23 @@ export default function Dashboard() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
+  const [missing, setMissing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'history' | 'sandbox'
 
   useEffect(() => {
     if (id) {
       const data = getDeck(id);
-      setDeck(data);
+      if (data) {
+        setMissing(false);
+        setDeck(data);
+      } else {
+        setMissing(true);
+        setDeck(null);
+      }
     }
   }, [id]);
 
-  if (!deck) {
+  if (missing) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="glass p-8 rounded-2xl text-center">
@@ -31,10 +38,25 @@ export default function Dashboard() {
     );
   }
 
+  if (!deck) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-[var(--color-text-muted)]">Loading dashboard...</div>
+      </div>
+    );
+  }
+
   const totalReviews = deck.concepts.reduce((sum, c) => sum + (c.history?.length || 0), 0);
   const sessionLogs = deck.sessionLogs || [];
-  const totalCorrect = sessionLogs.filter(l => l.correct).length;
-  const accuracy = sessionLogs.length > 0 ? Math.round((totalCorrect / sessionLogs.length) * 100) : 0;
+  const historyLogs = deck.concepts.flatMap((concept) =>
+    (concept.history || []).map((attempt) => ({
+      correct: attempt.correct,
+      timestamp: attempt.timestamp,
+    })),
+  );
+  const accuracySource = sessionLogs.length > 0 ? sessionLogs : historyLogs;
+  const totalCorrect = accuracySource.filter((log) => log.correct).length;
+  const accuracy = accuracySource.length > 0 ? Math.round((totalCorrect / accuracySource.length) * 100) : 0;
   const avgMastery = deck.concepts.length > 0
     ? Math.round((deck.concepts.reduce((s, c) => s + (c.mastery || 0), 0) / deck.concepts.length) * 100)
     : 0;
@@ -137,7 +159,7 @@ export default function Dashboard() {
               <MasteryChart concepts={deck.concepts} />
             </div>
             <div className="animate-slide-up" style={{ animationDelay: '400ms' }}>
-              <AccuracyTrend sessionLogs={sessionLogs} streak={deck.streak || 0} />
+              <AccuracyTrend sessionLogs={accuracySource} streak={deck.streak || 0} />
             </div>
             <div className="lg:col-span-2 animate-slide-up" style={{ animationDelay: '480ms' }}>
               <ComparisonChart concepts={deck.concepts} />
