@@ -351,7 +351,7 @@ export const TOPIC_QUESTIONS = {
   ),
   'Analysis Plan and Communication': pack(
     E('Two quantitative variables should usually be shown how?', 'A scatter plot, with residual patterns discussed.', 'A pie chart of means.', 'A stack trace.', 'A unit circle.', 'Match plot type to variable types.'),
-    E('A good report includes what?', 'Methods, calculations, limitations, visuals, and justified conclusions.', 'Only the final number.', 'Only screenshots of chatGPT.', 'Only the title.', 'Communicate the whole argument, including limits.'),
+    E('A good report includes what?', 'Methods, calculations, limitations, visuals, and justified conclusions.', 'Only the final number.', 'Only screenshots of an answer key.', 'Only the title.', 'Communicate the whole argument, including limits.'),
     E('A student hides limitations because the result “looks significant.” What failed?', 'Limitations are required; hiding them overclaims the data.', 'Visuals are forbidden.', 'Methods cannot be written.', 'Residuals must be deleted.', 'Honest communication includes what the study cannot say.'),
   ),
 };
