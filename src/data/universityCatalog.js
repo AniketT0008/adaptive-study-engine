@@ -244,7 +244,7 @@ export function buildDeckFromCatalogCourse(course) {
     concepts,
     questions: concepts.flatMap(createCatalogQuestions),
     }),
-    curriculumVersion: 12,
+    curriculumVersion: 15,
   };
 }
 
