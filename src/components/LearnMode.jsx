@@ -5,9 +5,10 @@ import { playSound } from '../utils/audio.js';
 import { callGeminiText } from '../api/gemini.js';
 import { stripMarkdown, toParagraphs, isCasualMessage, dedupeLines } from '../utils/formatText.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
-import { getQuestionSet } from '../engine/teaching.js';
+import { buildExampleSteps, buildWorkedWalkthrough, getQuestionSet } from '../engine/teaching.js';
 import { updateConceptAfterAnswer } from '../engine/adaptive.js';
 import MathText from './MathText.jsx';
+import IntersectionCases from './IntersectionCases.jsx';
 
 function MissingDeck({ onHome }) {
   return (
@@ -34,6 +35,8 @@ export default function LearnMode() {
   const [aiQuestion, setAiQuestion] = useState('');
   const [aiAnswer, setAiAnswer] = useState(null);
   const [isAskingAi, setIsAskingAi] = useState(false);
+  const [practiceProblem, setPracticeProblem] = useState(null);
+  const [practiceVariantIndex, setPracticeVariantIndex] = useState(0);
 
   const [selfCheckAnswered, setSelfCheckAnswered] = useState(false);
   const [selfCheckSelected, setSelfCheckSelected] = useState(null);
@@ -62,6 +65,8 @@ export default function LearnMode() {
   useEffect(() => {
     setActiveTab('lesson');
     setAiAnswer(null);
+    setPracticeProblem(null);
+    setPracticeVariantIndex(0);
     setAiQuestion('');
     setSelfCheckAnswered(false);
     setSelfCheckSelected(null);
@@ -185,11 +190,11 @@ export default function LearnMode() {
 
     if (qLower.includes('walk') || qLower.includes('step') || qLower.includes('example')) {
       const requestedStep = query.match(/(?:step|through)\s*[:#-]?\s*(.+)$/i)?.[1]?.trim();
-      return `Worked walkthrough for ${currentConcept?.label}:\n\n1. Identify the exact target. ${requestedStep ? `You asked about “${requestedStep},” so connect that phrase to the quantities, structures, or reaction shown in the lesson.` : `State what must be calculated, predicted, named, or explained.`}\n\n2. List the givens and conditions. Do not calculate yet; include units, signs, states of matter, data types, or assumptions that determine whether the method applies.\n\n3. Apply the mechanism. ${stripMarkdown(explanation)}\n\n4. Work the concrete example. ${example || stripMarkdown(currentConcept?.sourceSnippet || '')}\n\n5. Verify and interpret. Check units, a boundary case, substitution back into the original relation, or another independent check that fits this lesson. Then state what the result means in the language of ${currentConcept?.label}.`;
+      return buildWorkedWalkthrough(currentConcept, requestedStep);
     }
 
     if (qLower.includes('practice') || qLower.includes('another problem') || qLower.includes('try one')) {
-      return `New practice problem — ${currentConcept?.label}:\n\n${practiceSpec.prompt}\n\nTry it before opening the answer below.\n\nAnswer: ${practiceSpec.answer}\n\nSolution: ${practiceSpec.explanation}\n\nWhy the other approaches fail: they either use the wrong condition, reverse the governing relationship, or skip the check described in this lesson.`;
+      return `New practice problem — ${currentConcept?.label}:\n\n${practiceSpec.prompt}\n\nTry it first, then use the separate reveal button when you are ready to check the answer and solution.`;
     }
 
     if (qLower.includes('why') || qLower.includes('formula') || qLower.includes('work')) {
@@ -217,7 +222,30 @@ export default function LearnMode() {
     playSound('click');
     setIsAskingAi(true);
     setAiAnswer(null);
+    setPracticeProblem(null);
     setAiQuestion('');
+
+    if (/practice|another problem|try one/i.test(query)) {
+      const variants = getQuestionSet(currentConcept);
+      const spec = variants[practiceVariantIndex % variants.length];
+      setPracticeProblem({
+        prompt: spec.prompt,
+        answer: spec.answer,
+        explanation: spec.explanation,
+        revealed: false,
+      });
+      setPracticeVariantIndex((index) => index + 1);
+      setIsAskingAi(false);
+      playSound('correct');
+      return;
+    }
+
+    if (/walk|step|example/i.test(query)) {
+      setAiAnswer(buildLocalTutorReply(query));
+      setIsAskingAi(false);
+      playSound('correct');
+      return;
+    }
 
     if (isCasualMessage(query)) {
       setAiAnswer(buildLocalTutorReply(query));
@@ -292,10 +320,7 @@ Rules:
     }
   };
 
-  const exampleSteps = (currentConcept?.example || '')
-    .split(/\n/)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const exampleSteps = buildExampleSteps(currentConcept);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
@@ -438,7 +463,7 @@ Rules:
         <div className="min-h-[160px] animate-fade-in">
           {activeTab === 'lesson' && (
             <div className="space-y-4">
-              <ConceptDiagram courseCode={deck.courseCode} label={currentConcept?.label} snippet={currentConcept?.sourceSnippet} />
+              <ConceptDiagram courseCode={deck.courseCode} label={currentConcept?.label} snippet={currentConcept?.sourceSnippet} example={currentConcept?.example} />
 
               <div className="bg-[var(--color-surface-2)] p-5 rounded-xl border border-white/[0.08] space-y-3">
                 {lessonLines.map((line, idx) => (
@@ -447,12 +472,13 @@ Rules:
                   </p>
                 ))}
               </div>
+              <IntersectionCases label={currentConcept?.label} />
             </div>
           )}
 
           {activeTab === 'analogy' && (
             <div className="space-y-4 animate-fade-in">
-              <ConceptDiagram courseCode={deck.courseCode} label={currentConcept?.label} snippet={currentConcept?.sourceSnippet} />
+              <ConceptDiagram courseCode={deck.courseCode} label={currentConcept?.label} snippet={currentConcept?.sourceSnippet} example={currentConcept?.example} />
               <div className="bg-[rgba(0,206,201,0.08)] p-5 rounded-xl border border-[var(--color-success)]/30 space-y-3">
                 <p className="text-base text-white leading-relaxed"><MathText>{currentConcept?.intuition || currentConcept?.sourceSnippet}</MathText></p>
                 <div className="p-4 bg-[#0f1117] rounded-lg border border-[var(--color-success)]/20 text-sm text-[var(--color-text-muted)]">
@@ -464,7 +490,7 @@ Rules:
 
           {activeTab === 'example' && (
             <div className="space-y-4 animate-fade-in">
-              <ConceptDiagram courseCode={deck.courseCode} label={currentConcept?.label} snippet={currentConcept?.example || currentConcept?.sourceSnippet} />
+              <ConceptDiagram courseCode={deck.courseCode} label={currentConcept?.label} snippet={currentConcept?.sourceSnippet} example={currentConcept?.example} />
               <div className="bg-[#0b0d13] p-5 rounded-xl border border-[var(--color-warning)]/30 space-y-3">
                 <h4 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-warning)]">
                   Worked Examples
@@ -474,7 +500,10 @@ Rules:
                   {exampleSteps.length > 0 ? exampleSteps.map((step, idx) => (
                     <div key={idx} className="flex gap-3 text-sm font-mono text-[var(--color-text)] bg-[var(--color-surface-2)] p-3 rounded-lg border border-white/[0.06]">
                       <span className="text-[var(--color-warning)] font-bold shrink-0">{idx + 1}.</span>
-                      <MathText className="whitespace-pre-wrap">{stripMarkdown(step)}</MathText>
+                      <div className="space-y-1">
+                        <p className="font-sans font-bold text-white">{step.title}</p>
+                        <MathText className="whitespace-pre-wrap">{stripMarkdown(step.detail)}</MathText>
+                      </div>
                     </div>
                   )) : (
                     <p className="text-sm text-[var(--color-text-muted)]">No worked example yet — ask the AI tutor below for a practice problem.</p>
@@ -563,6 +592,27 @@ Rules:
               {isAskingAi ? 'Thinking...' : 'Ask'}
             </button>
           </div>
+
+          {practiceProblem && (
+            <div className="rounded-xl border border-[var(--color-warning)]/40 bg-[var(--color-surface-2)] p-4 animate-slide-up space-y-3">
+              <div className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--color-warning)]">Practice problem — answer hidden</div>
+              <p className="text-sm font-semibold leading-relaxed text-white"><MathText>{practiceProblem.prompt}</MathText></p>
+              {!practiceProblem.revealed ? (
+                <button
+                  type="button"
+                  onClick={() => setPracticeProblem((problem) => ({ ...problem, revealed: true }))}
+                  className="btn-secondary text-xs font-bold"
+                >
+                  Show answer and solution
+                </button>
+              ) : (
+                <div className="space-y-2 rounded-lg border border-[var(--color-success)]/25 bg-[rgba(0,206,201,0.07)] p-3">
+                  <p className="text-sm font-bold text-[var(--color-success)]">Answer: <MathText>{practiceProblem.answer}</MathText></p>
+                  <p className="text-sm leading-relaxed text-[var(--color-text)]"><span className="font-bold text-white">Solution:</span> <MathText>{practiceProblem.explanation}</MathText></p>
+                </div>
+              )}
+            </div>
+          )}
 
           {aiAnswer && (
             <div className="bg-[var(--color-surface-2)] p-4 rounded-xl border border-[var(--color-accent)]/40 text-sm text-[var(--color-text)] animate-slide-up">
