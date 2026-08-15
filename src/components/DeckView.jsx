@@ -285,7 +285,7 @@ export default function DeckView() {
                     Practice Midterm
                   </h3>
                   <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed">
-                    Full-course hard-difficulty question set covering every unit, regardless of review schedule.
+                    Full-course application, calculation, and visual-reasoning set with no “What failed?” questions.
                   </p>
                 </div>
                 <div className="mt-4 text-xs font-bold text-[var(--color-danger)] flex items-center gap-1">
