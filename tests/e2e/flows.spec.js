@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => {
     localStorage.clear();
     sessionStorage.clear();
@@ -107,13 +107,15 @@ test('lesson diagrams are topic-specific, labelled, and responsive', async ({ pa
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/#/learn/sch4u-chemistry-12');
   await expect(page.getByRole('heading', { name: 'Hydrocarbons and Isomerism' })).toBeVisible();
-  await expect(page.locator('.concept-visual')).toHaveCount(0);
+  await expect(page.getByRole('img', {
+    name: 'Hydrocarbons and Isomerism: Structural formulas make conserved atoms and changed bonds explicit.',
+  })).toBeVisible();
 
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('heading', { name: 'Organic Reactions' })).toBeVisible();
   const esterification = page.getByRole('img', {
-    name: 'Esterification combines a carboxylic acid and an alcohol to form an ester and water.',
+    name: 'Organic Reactions: Structural formulas make conserved atoms and changed bonds explicit.',
   });
   await expect(esterification).toBeVisible();
 
@@ -126,10 +128,37 @@ test('lesson diagrams are topic-specific, labelled, and responsive', async ({ pa
   await page.goto('/#/learn/uoft-mat307');
   await expect(page.getByRole('heading', { name: 'Parametrized curves' })).toBeVisible();
   await expect(page.getByRole('img', {
-    name: 'The tangent and principal normal vectors form part of the Frenet frame along a regular curve.',
+    name: 'Parametrized curves: Tangent, normal, curvature, and arc length describe a curve locally.',
   })).toBeVisible();
   await expect(page.getByRole('img', {
     name: 'The tangent line represents instantaneous rate at one point.',
   })).toHaveCount(0);
 });
 
+test('teacher walkthroughs use the selected example and practice problems rotate with answers hidden', async ({ page }) => {
+  await page.goto('/#/learn/mcv4u-calculus-vectors');
+
+  await page.getByRole('button', { name: /Worked Examples/i }).click();
+  await expect(page.getByText('Identify the target')).toBeVisible();
+  await expect(page.getByText('Record the exact givens')).toBeVisible();
+  await expect(page.getByText(/Compute the average rate from x = 1 to x = 3/i).last()).toBeVisible();
+
+  await page.getByRole('button', { name: /Walk me through the example step-by-step/i }).click();
+  await expect(page.getByText(/Worked walkthrough for Average and Instantaneous Rate of Change/i)).toBeVisible();
+  await expect(page.getByText(/Compute the average rate from x = 1 to x = 3/i).last()).toBeVisible();
+
+  const practiceButton = page.getByRole('button', { name: /Give me another practice problem/i });
+  await practiceButton.click();
+  const practiceCard = page.getByText(/Practice problem .* answer hidden/i).locator('..');
+  const firstProblem = await practiceCard.textContent();
+  await expect(practiceCard.getByRole('button', { name: /Show answer and solution/i })).toBeVisible();
+  await expect(practiceCard.getByText(/^Answer:/i)).toHaveCount(0);
+
+  await practiceButton.click();
+  const secondProblem = await practiceCard.textContent();
+  expect(secondProblem).not.toBe(firstProblem);
+  await expect(practiceCard.getByText(/^Answer:/i)).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Why does this formula work/i }).click();
+  await expect(page.getByText(/Why it works:/i)).toBeVisible();
+});
