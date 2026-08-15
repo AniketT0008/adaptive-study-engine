@@ -25,8 +25,8 @@ describe('adaptive concept selection', () => {
   });
 
   it('introduces only the configured number of new lessons', () => {
-    const fresh = Array.from({ length: 7 }, (_, index) => concept({ id: `new-${index}` }));
-    expect(getDueConcepts(fresh)).toHaveLength(3);
+    const fresh = Array.from({ length: 11 }, (_, index) => concept({ id: `new-${index}` }));
+    expect(getDueConcepts(fresh)).toHaveLength(8);
   });
 
   it('summarizes states using one shared definition', () => {
@@ -44,4 +44,3 @@ describe('adaptive concept selection', () => {
     expect(simulateComparison(concepts)).toEqual(simulateComparison(concepts));
   });
 });
-
