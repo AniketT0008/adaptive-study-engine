@@ -62,8 +62,8 @@ const SUBJECT_CURRICULA = [
           ['Vector Operations and Linear Combinations', 'Vector addition, scalar multiplication, and linear combinations model displacement, force, and span.', '2<1,3,-1>-<4,0,2>=<-2,6,-4>.'],
           ['Dot Product, Projections, and Work', 'The dot product measures directional alignment and supports angle, projection, and work calculations.', 'If u dot v=0, the non-zero vectors are perpendicular.'],
           ['Cross Product, Area, and Torque', 'The cross product creates a vector perpendicular to two 3D vectors, with magnitude equal to parallelogram area.', '<1,2,3> x <4,5,6> = <-3,6,-3>.'],
-          ['Lines and Planes in 3D', 'Lines use a point and direction vector; planes use a point and normal vector or two spanning directions.', 'A plane through (1,2,3) with normal <2,-1,4> is 2(x-1)-(y-2)+4(z-3)=0.'],
-          ['Intersections and Distances', 'Vector equations solve intersections, skew lines, and distances between points, lines, and planes.', 'Distance from point P to plane Ax+By+Cz+D=0 is |APx+BPy+CPz+D|/sqrt(A^2+B^2+C^2).'],
+          ['Lines and Planes in 3D', 'A line uses a point and direction vector, r=r0+td, while a plane uses a point and normal vector, n dot (r-r0)=0, or two independent spanning directions. Two lines in 3D have exactly four geometric cases: coincident, distinct parallel, intersecting at one point, or skew. The direction vectors identify parallelism; a component-by-component parameter system distinguishes intersection from skewness.', 'A plane through (1,2,3) with normal <2,-1,4> is 2(x-1)-(y-2)+4(z-3)=0.'],
+          ['Intersections and Distances', 'Simultaneous vector or Cartesian equations classify intersections among lines and planes, while projection formulas calculate shortest distances. For three planes there are eight useful configurations: all coincident; two coincident with the third cutting them; two coincident with the third parallel; three distinct parallel planes; two parallel planes cut by a third; three planes sharing one line; three planes meeting at one point; or three pairwise-intersecting planes with no common point. Row reduction distinguishes these cases by comparing the ranks of the coefficient and augmented matrices.', 'Distance from point P to plane Ax+By+Cz+D=0 is |APx+BPy+CPz+D|/sqrt(A^2+B^2+C^2).'],
         ],
       },
     ],
@@ -420,7 +420,7 @@ function buildDeckFromCurriculum(curriculum) {
     }),
     createdAt: BUILT_IN_CREATED_AT,
     source: curriculum.source,
-    curriculumVersion: 10,
+    curriculumVersion: 13,
   };
 }
 
