@@ -1,8 +1,8 @@
 import { computeSM2, getQuality } from './sm2.js';
 import { hasReviewHistory, isDueForReview } from './selectors.js';
 
-export const SESSION_NEW_CAP = 3;
-export const SESSION_CAP = 8;
+export const SESSION_NEW_CAP = 8;
+export const SESSION_CAP = 12;
 
 function sortByMasteryThenDue(a, b) {
   const masteryDifference = (a.mastery || 0) - (b.mastery || 0);
@@ -12,7 +12,7 @@ function sortByMasteryThenDue(a, b) {
 
 /**
  * Gets concepts for a review session.
- * Due reviewed cards first, then up to 3 new cards, session capped at 8.
+ * Due reviewed cards first, then up to 8 new cards, session capped at 12.
  * Focus mode uses only cards with real quiz history (weakest 25%).
  */
 export function getDueConcepts(concepts, focusMode = false) {
@@ -222,3 +222,4 @@ export function simulateComparison(concepts, seed = null) {
   
   return { targeted, random, informative };
 }
+ 
