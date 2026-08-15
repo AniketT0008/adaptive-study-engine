@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { playSound } from '../utils/audio.js';
 import ConceptDiagram from './ConceptDiagram.jsx';
-import { getConceptDiagramType } from './conceptDiagramSelection.js';
 import { validateQuestion } from '../data/validation.js';
 import MathText from './MathText.jsx';
 
@@ -72,11 +71,6 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
     hard: 'badge-hard',
   }[question.difficulty] || 'badge-medium';
   const diagramSnippet = `${concept?.shortDefinition || ''} ${question.prompt}`;
-  const hasSpecificDiagram = Boolean(getConceptDiagramType({
-    courseCode,
-    label: concept?.label,
-    snippet: diagramSnippet,
-  }));
 
   return (
     <div className={`glass-strong p-6 sm:p-8 rounded-2xl transition-all duration-200 animate-card-advance ${
@@ -107,9 +101,9 @@ export default function QuestionCard({ question, concept, courseCode, onAnswer, 
         <MathText>{question.prompt}</MathText>
       </p>
 
-      {question.visual && hasSpecificDiagram && (
+      {question.visual && (
         <div className="mb-6">
-          <ConceptDiagram courseCode={courseCode} label={concept?.label} snippet={diagramSnippet} />
+          <ConceptDiagram courseCode={courseCode} label={concept?.label} snippet={diagramSnippet} example={concept?.example} />
         </div>
       )}
 
