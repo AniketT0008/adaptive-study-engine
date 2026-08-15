@@ -23,6 +23,21 @@ function hideWorkedAnswer(example, answer) {
   });
 }
 
+function buildWorkedExplanation(label, fact, example, answer) {
+  const text = `${label} ${fact}`.toLowerCase();
+  let method;
+  if (/\b(c\+\+|python|racket|scheme|algorithm|loop|array|pointer|function|recursion|code|program)/.test(text)) {
+    method = 'Trace the program in execution order: record the input state, apply one statement or function contract at a time, and write the new value after every mutation or return. A boundary case should produce the same behavior predicted by the contract.';
+  } else if (/\b(force|motion|energy|momentum|fluid|vibration|control|field|wave|mechanic)/.test(text)) {
+    method = 'Define the physical system, choose axes and a sign convention, and write the governing law symbolically before substituting values. The final result must agree with the diagram, dimensions, limiting behavior, and direction of the modeled quantity.';
+  } else if (/\b(probability|distribution|markov|poisson|statistics|regression|random|actuarial)/.test(text)) {
+    method = 'Define the event or random variable first, identify the model and its assumptions, and then substitute into the relevant probability or expectation rule. Check that probabilities stay between zero and one and that the result answers the stated population or time-scale question.';
+  } else {
+    method = 'Start from the stated definition, identify the quantities and conditions in the example, and apply the relationship without skipping intermediate reasoning. Then check the result against the original conditions, units, signs, or domain restrictions.';
+  }
+  return `${fact} ${method} In this exact case, ${example} This produces ${answer}; that conclusion follows from the governing relationship rather than from recognizing a memorized phrase.`;
+}
+
 function add(rows) {
   for (const line of rows.trim().split("\n")) {
     const [label, fact, example, answer, d1, d2, d3] = line.split("\t");
@@ -32,7 +47,7 @@ function add(rows) {
       snippet: fact,
       example,
       intuition: `The governing idea is ${withoutTerminalPunctuation(fact).replace(/^./, (character) => character.toLowerCase())}. In the worked case, that relationship distinguishes ${answer} from the tempting alternative ${d1}.`,
-      worked: example,
+      worked: buildWorkedExplanation(label, fact, example, answer),
       goal: `Apply ${label} to a new case, obtain the correct result, and justify the decisive step represented by “${answer}” in the worked example.`,
       mistake: `Concluding ${d1} instead of ${answer}, usually by misapplying or omitting the relationship stated in the definition.`,
       easy: E(
@@ -52,12 +67,12 @@ function add(rows) {
         `The principle must be applied to the stated values and conditions. ${correctClaim}`,
       ),
       hard: E(
-        `A student studying ${label} concludes ${d1} for this case: ${promptExample} Which diagnosis is correct?`,
-        `${d1} conflicts with the governing relationship; applying it gives ${answer}.`,
-        `${d2} is the required result because it uses the same quantities in a different order.`,
-        `${d3} is equally valid because the governing relationship does not determine one result.`,
-        `${answer} and ${d1} are equivalent descriptions of the same outcome.`,
-        `${fact} Applying that relationship to the given case produces ${answer}, so the reported ${d1} reveals a conceptual or evaluation error.`,
+        `A new ${label} case has the same governing conditions as this model: ${promptExample} Which conclusion is supported, and why?`,
+        `${answer}, because ${withoutTerminalPunctuation(fact).toLowerCase()}.`,
+        `${d1}, because changing the wording changes the governing relationship.`,
+        `${d2}, because the quantities may be combined in any order without checking conditions.`,
+        `${d3}, because a new case never needs the definition used in the model.`,
+        `${fact} Applying that relationship to the stated conditions supports ${answer}; the alternatives either ignore a condition or use an unrelated operation.`,
       ),
     };
   }
@@ -268,12 +283,12 @@ export function getLessonPack(label) {
     explanation: easy.explanation,
   };
   const hard = pack.hard || {
-    prompt: `A student working this ${label} example reported ${wrong} instead of ${easy.answer}: ${pack.example} What failed?`,
-    answer: pack.mistake,
+    prompt: `Which conclusion is supported when the ${label} method is applied to this case: ${pack.example}`,
+    answer: `${easy.answer}, using the conditions stated in the lesson definition.`,
     distractors: [
-      `Nothing failed; ${wrong} is interchangeable with ${easy.answer}.`,
-      `Keep ${wrong} and round until it matches ${extra}.`,
-      `Drop units, signs, or regularity conditions, then keep ${wrong}.`,
+      `${wrong}, because the lesson conditions can be ignored.`,
+      `${extra}, because rounding determines the governing model.`,
+      `${other}, after dropping units, signs, and boundary conditions.`,
     ],
     explanation: pack.worked,
   };
