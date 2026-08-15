@@ -32,7 +32,7 @@ describe('QuestionCard', () => {
     expect(container.querySelector('.katex')).toBeTruthy();
   });
 
-  it('does not reserve space for an unsupported visual fallback', () => {
+  it('renders a course-aware visual for a visual reasoning question', () => {
     const { container } = render(
       <QuestionCard
         question={{ ...question, visual: true }}
@@ -40,7 +40,7 @@ describe('QuestionCard', () => {
         courseCode="sph4u-physics-12"
       />,
     );
-    expect(container.querySelector('.concept-visual')).toBeNull();
+    expect(container.querySelector('.concept-visual')).not.toBeNull();
+    expect(screen.getByRole('img', { name: /Electric Potential and Energy/i })).toBeInTheDocument();
   });
 });
-
