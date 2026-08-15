@@ -21,6 +21,26 @@ function stableShuffle(items, seedText) {
   return shuffled;
 }
 
+const REMOVED_QUESTION_PATTERN = /what failed|which audit|which revision|fails? in production|different (?:answers|results)|wrong physical conclusion|locate a .*error/i;
+const APPLICATION_PATTERN = /\d|calculate|compute|solve|determine|predict|trace|diagram|graph|model|given|how many|what is|which expression|output|result/i;
+
+function isAllowedQuizQuestion(question) {
+  return !REMOVED_QUESTION_PATTERN.test(question?.prompt || '');
+}
+
+function applicationScore(question) {
+  const prompt = question?.prompt || '';
+  return (APPLICATION_PATTERN.test(prompt) ? 5 : 0)
+    + ((prompt.match(/\d/g) || []).length > 1 ? 3 : 0)
+    + (question?.visual ? 2 : 0)
+    + (question?.difficulty === 'medium' ? 1 : 0);
+}
+
+function strongestApplication(questions) {
+  return [...questions]
+    .sort((a, b) => applicationScore(b) - applicationScore(a))[0] || null;
+}
+
 export default function ReviewSession() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -47,22 +67,22 @@ export default function ReviewSession() {
   const initQueue = useCallback((loadedDeck) => {
     if (!loadedDeck || !loadedDeck.concepts) return;
     setQueueError('');
-    const validQuestions = (loadedDeck.questions || []).filter((question) => validateQuestion(question).length === 0);
+    const validQuestions = (loadedDeck.questions || []).filter((question) => (
+      validateQuestion(question).length === 0 && isAllowedQuizQuestion(question)
+    ));
     if ((loadedDeck.questions || []).length > 0 && validQuestions.length === 0) {
       setQueueError('This deck has no valid four-option questions. Re-import or regenerate it before starting a quiz.');
     }
 
     if (midtermMode) {
-      // Practice Midterm: every concept in the course, hardest question available
-      // for each one, in a random exam-style order — ignores review scheduling.
+      // One application-heavy item per concept. Diagnostic "what failed"
+      // questions are removed from both generated and previously saved decks.
       const shuffled = stableShuffle(loadedDeck.concepts, `${loadedDeck.id}:midterm`);
       const q = [];
       shuffled.forEach((concept) => {
         const conceptQs = validQuestions.filter((qq) => qq.conceptId === concept.id);
         if (conceptQs.length === 0) return;
-        const hard = conceptQs.filter((qq) => qq.difficulty === 'hard');
-        const pool = hard.length > 0 ? hard : conceptQs;
-        const question = stableShuffle(pool, `${loadedDeck.id}:${concept.id}`)[0];
+        const question = strongestApplication(conceptQs) || conceptQs[0];
         q.push({ question, concept: { ...concept } });
       });
       setQueue(q);
@@ -74,8 +94,8 @@ export default function ReviewSession() {
     // Get due concepts (pass the concepts array)
     const dueConcepts = getDueConcepts(loadedDeck.concepts, focusMode);
 
-    // Focus mode stays with each weak concept long enough to diagnose it:
-    // direct application, visual/scenario transfer, then error analysis.
+    // Focus mode stays with each weak concept for direct application,
+    // visual/scenario transfer, and an unfamiliar challenge.
     const q = [];
     dueConcepts.forEach(concept => {
       const conceptQuestions = validQuestions.filter((question) => question.conceptId === concept.id);
@@ -217,9 +237,10 @@ export default function ReviewSession() {
     // A correct retrieval earns an immediate, harder version of the same lesson.
     // An incorrect response remains at the current foundation level for the next due review.
     const queuedQuestionIds = new Set(queue.map((item) => item.question.id));
-    const followUp = !focusMode && !midtermMode
+    const followUpCandidate = !focusMode && !midtermMode
       ? getFollowUpQuestion(deck.questions, conceptId, question, queuedQuestionIds, isCorrect)
       : null;
+    const followUp = followUpCandidate && isAllowedQuizQuestion(followUpCandidate) ? followUpCandidate : null;
     const nextQueue = followUp
       ? [...queue.slice(0, currentIndex + 1), { question: followUp, concept: { ...updatedConcept } }, ...queue.slice(currentIndex + 1)]
       : queue;
@@ -394,7 +415,7 @@ export default function ReviewSession() {
       {midtermMode && (
         <div className="mb-4 p-3 rounded-xl bg-[rgba(255,118,117,0.1)] border border-[rgba(255,118,117,0.25)] flex items-center justify-between">
           <span className="text-sm font-semibold text-[var(--color-danger)] flex items-center gap-2">
-            📝 Practice Midterm — full-course, hard-difficulty questions
+            📝 Practice Midterm — application, calculation, and visual reasoning
           </span>
         </div>
       )}
