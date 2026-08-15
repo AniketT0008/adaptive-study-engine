@@ -12,6 +12,7 @@
     "dev": "vite",
     "build": "vite build",
     "content:validate": "node scripts/verify-stem.mjs",
+    "provenance:check": "node scripts/verify-provenance.mjs",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "lint": "oxlint",
@@ -19,7 +20,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:a11y": "playwright test --grep @a11y",
-    "verify": "npm run lint && npm run content:validate && npm run test && npm run build && npm run test:e2e"
+    "verify": "npm run lint && npm run provenance:check && npm run content:validate && npm run test && npm run build && npm run test:e2e"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
