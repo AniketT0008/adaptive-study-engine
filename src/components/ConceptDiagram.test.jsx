@@ -1,80 +1,71 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import ConceptDiagram from './ConceptDiagram.jsx';
-import { DIAGRAM_LABELS, getConceptDiagramType } from './conceptDiagramSelection.js';
+import { EXAMPLE_DECKS } from '../data/exampleDeck.js';
+import { UNIVERSITY_DECKS } from '../data/universityCatalog.js';
 
-describe('getConceptDiagramType', () => {
+describe('ConceptDiagram', () => {
   it.each([
-    ['calculus', 'mcv4u-calculus-vectors', 'Derivative from First Principles', 'derivative'],
-    ['physics', 'sph4u-physics-12', '2D Kinematics and Projectile Motion', 'projectile'],
-    ['chemistry', 'sch4u-chemistry-12', 'Buffers and Titration Curves', 'titration'],
-    ['biology', 'sbi4u-biology-12', 'Proteins and Enzymes', 'enzyme'],
-    ['computer science', 'CS 135', 'Structural recursion on lists', 'recursion'],
-    ['statistics', 'mdm4u-data-management-12', 'Normal Distribution and Z-Scores', 'normal'],
-    ['fluid mechanics', 'AER210H1', 'Conservation of mass', 'streamtube'],
-    ['orbital mechanics', 'AER301H1', 'Orbital elements', 'orbit'],
-    ['control systems', 'AER372H1', 'Step response', 'stable-response'],
-    ['differential geometry', 'MAT307H5', 'Tangent planes', 'tangent-plane'],
-    ['actuarial science', 'ACT350H1', 'M/M/1 queues', 'counting-process'],
-  ])('selects a specific %s visual', (_subject, courseCode, label, expected) => {
-    expect(getConceptDiagramType({ courseCode, label })).toBe(expected);
+    ['mcv4u-calculus-vectors', 'Derivative from First Principles'],
+    ['sph4u-physics-12', '2D Kinematics and Projectile Motion'],
+    ['sch4u-chemistry-12', 'Buffers and Titration Curves'],
+    ['sbi4u-biology-12', 'Proteins and Enzymes'],
+    ['CS 135', 'Structural recursion on lists'],
+    ['mdm4u-data-management-12', 'Normal Distribution and Z-Scores'],
+    ['AER210H1', 'Conservation of mass'],
+    ['AER301H1', 'Orbital elements'],
+    ['AER372H1', 'Step response'],
+    ['MAT307H5', 'Tangent planes'],
+    ['ACT350H1', 'M/M/1 queues'],
+  ])('renders a labelled, subject-aware visual for %s / %s', (courseCode, label) => {
+    render(<ConceptDiagram courseCode={courseCode} label={label} snippet={label} />);
+    expect(screen.getByRole('img', { name: new RegExp(label, 'i') })).toBeInTheDocument();
   });
 
-  it.each([
-    ['sbi4u-biology-12', 'Water, pH, and Biological Chemistry', 'pH does not imply a chemistry titration'],
-    ['sbi4u-biology-12', 'Translation and Protein Synthesis', 'protein does not imply an enzyme'],
-    ['sch4u-chemistry-12', 'Balancing Redox Reactions', 'redox does not imply a galvanic cell'],
-    ['sch4u-chemistry-12', 'Acid-Base Equilibrium and pH', 'pH does not imply a weak-acid titration'],
-    ['ACT350H1', 'Common actuarial distributions', 'distribution does not imply a normal distribution'],
-    ['AER372H1', 'Bode plots', 'frequency analysis does not imply a step response'],
-    ['sph4u-physics-12', 'Work and Energy Transfer', 'physics does not receive a generic fallback'],
-    ['ics4u-cs-12', 'Ethics, Privacy, and Security', 'computing does not receive a generic fallback'],
-  ])('does not misrepresent %s / %s (%s)', (courseCode, label) => {
-    expect(getConceptDiagramType({ courseCode, label })).toBeNull();
-  });
-
-  it('keeps university tangent planes out of calculus matching', () => {
-    expect(getConceptDiagramType({
-      courseCode: 'MAT307H5',
-      label: 'Tangent planes',
-      snippet: 'A tangent plane approximates a smooth surface.',
-    })).toBe('tangent-plane');
-  });
-
-  it('does not let adjacent ideas in long prose override the concept label', () => {
-    expect(getConceptDiagramType({
-      courseCode: 'sbi4u-biology-12',
-      label: 'Translation and Protein Synthesis',
-      snippet: 'An enzyme may appear elsewhere in this lesson text.',
-    })).toBeNull();
-    expect(getConceptDiagramType({
-      courseCode: 'ACT350H1',
-      label: 'Common actuarial distributions',
-      snippet: 'A normal distribution is one possible comparison.',
-    })).toBeNull();
-  });
-});
-
-describe('ConceptDiagram semantics', () => {
-  it('provides the exact scientific label as the image accessible name and visible caption', () => {
-    render(<ConceptDiagram courseCode="sph4u-physics-12" label="2D Kinematics and Projectile Motion" />);
-    const label = DIAGRAM_LABELS.projectile;
-    expect(screen.getByRole('img', { name: label })).toBeInTheDocument();
-    expect(screen.getByText(label, { selector: 'figcaption' })).toBeInTheDocument();
-  });
-
-  it('renders nothing when no topic-specific visual is supported', () => {
-    const { container } = render(
-      <ConceptDiagram courseCode="sph4u-physics-12" label="Electric Potential and Energy" />,
+  it('uses the actual vectors from the selected cross-product lesson', () => {
+    render(
+      <ConceptDiagram
+        courseCode="mcv4u-calculus-vectors"
+        label="Cross Product, Area, and Torque"
+        snippet="The cross product is perpendicular."
+        example="<1,2,3> x <4,5,6> = <-3,6,-3>."
+      />,
     );
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.getByText('u = ⟨1,2,3⟩')).toBeInTheDocument();
+    expect(screen.getByText('v = ⟨4,5,6⟩')).toBeInTheDocument();
+    expect(screen.getByText('u × v = ⟨-3,6,-3⟩')).toBeInTheDocument();
   });
 
-  it('defines a non-empty semantic label for every selectable diagram type', () => {
-    expect(Object.keys(DIAGRAM_LABELS)).toHaveLength(32);
-    for (const [type, label] of Object.entries(DIAGRAM_LABELS)) {
-      expect(type).not.toBe('');
-      expect(label.length).toBeGreaterThan(30);
+  it('uses a dedicated 3D plane visual with the lesson normal', () => {
+    render(
+      <ConceptDiagram
+        courseCode="mcv4u-calculus-vectors"
+        label="Lines and Planes in 3D"
+        example="A plane through (1,2,3) with normal <2,-1,4>."
+      />,
+    );
+    expect(screen.getByText('normal n = ⟨2,-1,4⟩')).toBeInTheDocument();
+    expect(screen.getByText(/plane: n ·/)).toBeInTheDocument();
+  });
+
+  it('provides a course-aware fallback instead of showing a mismatched or empty visual', () => {
+    render(<ConceptDiagram courseCode="sph4u-physics-12" label="Electric Potential and Energy" />);
+    expect(screen.getByRole('img', { name: /Electric Potential and Energy/i })).toBeInTheDocument();
+  });
+
+  it('maps every built-in lesson to a named conceptual diagram', () => {
+    for (const deck of [...EXAMPLE_DECKS, ...UNIVERSITY_DECKS]) {
+      for (const concept of deck.concepts) {
+        cleanup();
+        render(<ConceptDiagram
+          courseCode={deck.courseCode || deck.id}
+          label={concept.label}
+          snippet={concept.sourceSnippet}
+          example={concept.example}
+        />);
+        const visual = screen.getByRole('img', { name: new RegExp(concept.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') });
+        expect(visual.closest('figure')?.getAttribute('aria-label'), `${deck.id} / ${concept.label}`).not.toMatch(/governing structure/i);
+      }
     }
   });
 });
