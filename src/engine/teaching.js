@@ -37,7 +37,7 @@ function uniqueParagraphs(paragraphs) {
 }
 
 /** Build a durable, offline textbook entry instead of displaying a one-line catalog summary. */
-export function getTextbookDefinition({ label, unit, summary = '', example = '', support, paragraphCount = 3 }) {
+export function getTextbookDefinition({ label, unit, summary = '', support, paragraphCount = 3 }) {
   const existingParagraphs = String(summary).split(/\n\s*\n/).map(cleanSentence).filter(Boolean);
   if (existingParagraphs.length >= paragraphCount && String(summary).length >= 420) {
     return existingParagraphs.slice(0, paragraphCount).join('\n\n');
@@ -48,14 +48,10 @@ export function getTextbookDefinition({ label, unit, summary = '', example = '',
     || `${label} is understood by identifying the quantities or structures involved, the conditions under which the idea applies, and the relationship that connects cause to result.`;
   const workedMethod = cleanSentence(support?.workedExplanation)
     || `To use ${label}, name the givens and assumptions, carry out the governing step, and verify the conclusion against units, signs, boundary cases, or observable evidence.`;
-  const concreteExample = cleanSentence(example);
-
   const paragraphs = uniqueParagraphs([
     `${definition} ${mechanism}`,
     `${workedMethod}`,
-    concreteExample
-      ? `Worked example: ${concreteExample}`
-      : `Worked application: start with a small explicit case, apply ${label} one step at a time, and finish with an independent check.`,
+    `A complete application of ${label} identifies the target, labels every given quantity or structure, preserves relevant units and conditions, and interprets the result in the language of ${unit || 'the lesson'}. The separate Worked Examples tab applies this method to concrete values without duplicating the example inside the definition.`,
   ]);
 
   return paragraphs.slice(0, paragraphCount).join('\n\n');
@@ -86,7 +82,7 @@ export function rotateOptions(answer, distractors, seed) {
   ];
 }
 
-export function getTeachingSupport(label, snippet = '', example = '') {
+export function getTeachingSupport(label) {
   const pack = getLessonPack(label);
   if (pack?.intuition && pack?.worked) {
     return { intuition: pack.intuition, workedExplanation: pack.worked };
@@ -97,7 +93,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
   const text = String(label || '').toLowerCase();
   const defaultSupport = {
     intuition: `${label} is useful because it turns the general idea in this unit into a decision you can defend. First identify what is given and what conditions apply; then use the rule to explain the result, not merely name it.`,
-    workedExplanation: `Read the worked example as a chain of decisions: identify the target, state the governing idea, carry out the key operation, and check that the conclusion fits the assumptions.`,
+    workedExplanation: `Build the solution as a chain of decisions: identify the target, state the governing idea, carry out the key operation, and check that the conclusion fits the assumptions.`,
   };
 
   if (/average and instantaneous rate/.test(text)) {
@@ -115,13 +111,13 @@ export function getTeachingSupport(label, snippet = '', example = '') {
   if (/derivative from first principles/.test(text)) {
     return {
       intuition: 'First principles starts with a secant slope over a small horizontal change h. The limit as h approaches zero turns that secant slope into the exact tangent slope.',
-      workedExplanation: 'Substitute f(x+h), expand, subtract f(x), factor h from the numerator, cancel only after h is a factor, then take the limit h to zero.',
+      workedExplanation: 'Begin with the exact difference quotient [f(x+h)-f(x)]/h. Substitute f(x+h), expand, subtract f(x), and factor h from the numerator. Cancel h only after it is a factor, because the expression is undefined at h=0 before simplification. Finally take the limit as h approaches zero and compare the result with the tangent slope on the graph.',
     };
   }
   if (/power, constant, and sum rules/.test(text)) {
     return {
       intuition: 'Derivative rules are a fast summary of first principles: powers bring down their exponents, constants have no change, and independent terms can be differentiated separately.',
-      workedExplanation: 'Differentiate each term on its own, reduce every power by one, remove constants, then combine like terms only after differentiating.',
+      workedExplanation: 'Rewrite the function as a sum of explicit power terms. Differentiate each term on its own: multiply by the exponent, reduce the exponent by one, and replace every standalone constant with zero. Keep coefficients and signs attached to their terms, combine like terms only after differentiating, and verify the result by checking a simple input or comparing with a graph.',
     };
   }
   if (/product and quotient rules/.test(text)) {
@@ -145,7 +141,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
   if (/dot product/.test(text)) {
     return {
       intuition: 'The dot product measures alignment. It is positive for similar directions, negative for opposing directions, and zero when non-zero vectors are perpendicular.',
-      workedExplanation: 'Multiply matching components and add, or use |u||v|cos(theta). Then interpret the sign or use zero to test perpendicularity.',
+      workedExplanation: 'Write the vectors in matching component order, multiply corresponding components, and add the products. To find an angle, set that scalar equal to |u||v|cos(theta) and solve for theta; to find a projection, scale the target direction by the appropriate dot-product ratio. Interpret a positive, negative, or zero result as aligned, opposed, or perpendicular directions, and retain physical units when the dot product represents work.',
     };
   }
   if (/cross product/.test(text)) {
@@ -202,7 +198,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
       workedExplanation: 'Draw a complete Lewis structure, count each single, double, or triple bond as one electron domain, include lone pairs, and name both electron-domain geometry and molecular shape. Water has four domains around oxygen but only two bonded atoms, so its electron geometry is tetrahedral and its molecular shape is bent. Its O-H bonds and bent shape create a net dipole, enabling hydrogen bonding and an unusually high boiling point.',
     };
   }
-  if (/enthalpy|calorimetry/.test(text)) {
+  if (/calorimetry|^enthalpy and/.test(text)) {
     return {
       intuition: 'Enthalpy change is the heat transferred at constant pressure. In an insulated coffee-cup calorimeter, heat lost by the reacting system is gained by the solution, so qreaction = -qsolution. The relation q = mcΔT works because specific heat capacity measures energy required per unit mass per degree of temperature change.',
       workedExplanation: 'Record the sign of ΔT = Tfinal - Tinitial, calculate qsolution = mcΔT, reverse the sign for qreaction, and divide by moles reacted if molar enthalpy is requested. Heating 100.0 g of water by 5.0 °C requires q = (100.0 g)(4.18 J g−1 °C−1)(5.0 °C) = 2.09 kJ. If the water warmed, the reaction released that energy, so the reaction enthalpy is negative.',
@@ -238,7 +234,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
       workedExplanation: 'Write the balanced equilibrium and mark heat on the correct side. Adding a reactant lowers Q and drives the forward reaction; decreasing volume favours the side with fewer moles of gas. A catalyst changes neither Q nor K and therefore causes no shift—it merely speeds both directions equally.',
     };
   }
-  if (/acid-base|\bph\b|\bpoh\b/.test(text)) {
+  if (/acid-base|\bph\b|\bpoh\b/.test(text) && !/biological/.test(text)) {
     return {
       intuition: 'Brønsted acids donate protons and bases accept them. Strong acids ionize essentially completely, whereas weak acids establish equilibria quantified by Ka. Because pH = −log[H3O+], a one-unit pH change represents a tenfold concentration change, not a linear change.',
       workedExplanation: 'Write the ionization equation, decide whether dissociation is complete or requires an ICE table, solve for [H3O+], and then take −log. A solution with [H3O+] = 1.0×10−3 mol L−1 has pH 3.00. For weak acids, check the small-x approximation against the 5% rule and distinguish initial acid concentration from equilibrium hydronium concentration.',
@@ -250,7 +246,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
       workedExplanation: 'First perform mole stoichiometry between titrant and analyte; only then choose the equilibrium calculation appropriate to the region. Before equivalence in a weak-acid/strong-base titration, calculate remaining HA and produced A− and use their ratio. At equivalence, A− hydrolysis makes the solution basic, so assuming pH 7 is a common error.',
     };
   }
-  if (/oxidation number|\bredox\b/.test(text)) {
+  if (/oxidation number|\bredox\b/.test(text) && !/balancing/.test(text)) {
     return {
       intuition: 'Redox reactions transfer electrons. Oxidation is an increase in oxidation number and loss of electrons; reduction is a decrease and gain. The oxidizing agent is reduced because it accepts electrons, while the reducing agent is oxidized because it supplies them.',
       workedExplanation: 'Assign oxidation numbers using elemental values of zero, monatomic ion charges, and usual oxygen and hydrogen rules. In Zn + Cu2+ → Zn2+ + Cu, zinc changes 0 to +2 and loses two electrons, while copper changes +2 to 0 and gains them. Electron loss and gain must match after coefficients are applied.',
@@ -280,7 +276,37 @@ export function getTeachingSupport(label, snippet = '', example = '') {
       workedExplanation: 'Draw the Lewis structure, count electron domains around the central atom, predict the VSEPR shape, then add the bond dipoles as vectors. A symmetric arrangement can be nonpolar even when individual bonds are polar.',
     };
   }
-  if (/newton|force|motion|kinematic|projectile/.test(text)) {
+  if (/projectile|2d kinematics/.test(text)) {
+    return {
+      intuition: 'Projectile motion is two linked one-dimensional motions that share the same time. Horizontal velocity remains constant when air resistance is neglected, while vertical velocity changes under gravity; combining those components creates the parabolic path.',
+      workedExplanation: 'Resolve the launch velocity into horizontal and vertical components, choose the launch point and positive direction, and write separate kinematics equations for x and y using the same time variable. Solve the component with enough information first, transfer the time to the other component, and check that the trajectory, signs, and units agree with the sketch.',
+    };
+  }
+  if (/newton|free-body/.test(text)) {
+    return {
+      intuition: 'Newton’s laws connect interactions to changes in motion. A free-body diagram isolates one object and displays only the external forces acting on it, so the vector sum of those forces can be matched to the object’s acceleration.',
+      workedExplanation: 'Name the object, draw weight, normal force, tension, friction, or applied forces with directions, and choose coordinate axes that simplify the geometry. Write one net-force equation per axis, substitute constitutive rules such as fk=μkN only when their conditions apply, solve symbolically, and confirm that the acceleration direction matches the net force.',
+    };
+  }
+  if (/circular motion|centripetal/.test(text)) {
+    return {
+      intuition: 'An object moving at constant speed in a circle is still accelerating because its velocity direction changes. Centripetal acceleration points toward the centre; it is not an extra force, but the inward component of real forces such as tension, gravity, friction, or a normal force.',
+      workedExplanation: 'Draw the object and mark the inward radial direction, calculate ar=v²/r, and write the radial force sum as ΣFr=mv²/r. Identify which real forces contribute inward or outward, solve with a consistent sign convention, and test whether the required force is physically available in the stated situation.',
+    };
+  }
+  if (/electric force|electric field/.test(text)) {
+    return {
+      intuition: 'An electric field assigns a force-per-unit-positive-charge vector to every point in space. Coulomb’s inverse-square law determines the contribution from each source charge, while the sign of a test charge decides whether its force follows or opposes the field direction.',
+      workedExplanation: 'Draw source and field points, compute each field magnitude with E=k|q|/r², assign directions away from positive charges and toward negative charges, and add the vectors component by component. Multiply the net field by the test charge only at the end, then check units, symmetry, and the reversal caused by a negative test charge.',
+    };
+  }
+  if (/magnetic force|charged particles/.test(text)) {
+    return {
+      intuition: 'Magnetic force acts perpendicular to both a moving charge’s velocity and the magnetic field. Its magnitude qvB sin(theta) vanishes for parallel motion and is largest for perpendicular motion, so it changes direction rather than speed when it is the only force.',
+      workedExplanation: 'Mark velocity and field directions, evaluate the angle, and use the right-hand rule for v×B; reverse that direction for a negative charge. Calculate F=|q|vB sin(theta), then use F=mv²/r for perpendicular circular motion when appropriate. Verify that the force remains perpendicular to the instantaneous velocity.',
+    };
+  }
+  if (/force|motion|kinematic/.test(text)) {
     return {
       intuition: 'Physics equations are compressed models, not automatic calculators. A diagram makes the direction choices visible; the equation only works after its assumptions and coordinate signs match the situation.',
       workedExplanation: 'Draw and label the system, choose positive directions, list known quantities with units, select one governing equation, solve symbolically, and finally check that the sign and magnitude are physically sensible.',
@@ -363,7 +389,7 @@ export function getTeachingSupport(label, snippet = '', example = '') {
   const lens = lenses[hash(label) % lenses.length];
   return {
     intuition: `${lens} ${defaultSupport.intuition}`,
-    workedExplanation: `${defaultSupport.workedExplanation} Use the lesson example as evidence rather than decoration: ${example || snippet}`,
+    workedExplanation: `${defaultSupport.workedExplanation} Keep every transformation tied to the stated definition, preserve the relevant conditions, and verify the final claim independently.`,
   };
 }
 
@@ -394,21 +420,21 @@ function lessonFallbackQuestions(concept) {
         prompt: `A new problem uses the same method as this ${label} example: ${example} Which first step is required?`,
         answer: definition,
         distractors: [
-          `Skip the givens and quote the name ${label}.`,
-          'Average every number in the problem, then stop.',
-          'Pick any familiar formula even if its assumptions fail.',
+          `Classify the problem only by its title and leave the given evidence unused.`,
+          'Change one quantity at a time without checking how the variables are related.',
+          'Use the worked example unchanged without checking whether the new inputs satisfy the same conditions.',
         ],
         explanation: `${definition} The example shows the method: ${example}`,
       },
       hard: {
-        prompt: `A student kept the numbers from “${example}” but ignored the conditions for ${label}. What failed?`,
-        answer: `The method for ${label} only applies after its assumptions and setup match the new problem.`,
+        prompt: `A new ${label} problem changes the values from “${example}”. Which approach correctly transfers the method?`,
+        answer: `Identify the new givens, confirm the conditions for ${label}, apply the governing relationship, and verify the result.`,
         distractors: [
-          `Numbers from a worked example can be reused on any later question.`,
-          `Conditions do not matter if the arithmetic is neat.`,
-          `The opposite of the example result is always equally valid.`,
+          `Reuse every number from the example and change only the final unit.`,
+          `Choose the example's final result because the lesson title is unchanged.`,
+          `Average the old and new values without rebuilding the setup.`,
         ],
-        explanation: `Worked numbers are not transferable. Re-identify givens and conditions, then recompute.`,
+        explanation: `A method transfers, but worked numbers do not. Re-identify the givens and conditions, recompute, and check the new conclusion.`,
       },
     };
   }
@@ -428,30 +454,30 @@ function lessonFallbackQuestions(concept) {
       prompt: `You meet a new problem involving ${label}. What should you do first?`,
       answer: `Identify the givens, check that the conditions for ${label} apply, then carry out the method.`,
       distractors: [
-        `Quote the name ${label} and skip the givens.`,
-        `Pick any familiar formula even if its assumptions fail.`,
-        `Average all numbers in the problem and ignore ${label}.`,
+        `Classify the problem only by its title and leave the given evidence unused.`,
+        `Use a familiar method without checking whether its inputs and assumptions match ${label}.`,
+        `Assume the worked example's conditions automatically hold in every new ${label} problem.`,
       ],
       explanation: definition,
     },
     hard: {
-      prompt: `Two students get different answers for ${label}. Which audit is most likely to find a real error?`,
-      answer: `Check assumptions, the governing relationship, units or signs, and whether the conclusion was verified.`,
+      prompt: `Which plan gives the strongest complete solution to an unfamiliar ${label} problem?`,
+      answer: `Represent the givens, select the governing relationship, solve in a logical sequence, and verify the conclusion.`,
       distractors: [
-        `Average the two answers; the mean is usually correct.`,
-        `Keep the setup and add more decimal places.`,
-        `Delete units and boundary conditions so comparison is easier.`,
+        `Select the formula containing the most symbols and substitute immediately.`,
+        `Repeat the definition without connecting it to the problem's givens.`,
+        `Use the first numerical pattern that resembles the worked example.`,
       ],
-      explanation: `Wrong answers usually come from a mismatched model, not from rounding.`,
+      explanation: `${definition} A complete application connects the representation, method, calculation or reasoning, and an independent check.`,
     },
   };
 }
 
 export function getAppliedQuestionSpec(concept) {
   const topic = getTopicQuestions(concept.label);
-  if (topic?.easy) return topic.easy;
+  if (topic?.easy && !REMOVED_DIAGNOSTIC_PATTERN.test(topic.easy.prompt || '')) return topic.easy;
   const pack = getLessonPack(concept.label);
-  if (pack?.easy) return pack.easy;
+  if (pack?.easy && !REMOVED_DIAGNOSTIC_PATTERN.test(pack.easy.prompt || '')) return pack.easy;
 
   const family = conceptFamily(concept);
   const text = `${concept.label} ${concept.shortDefinition || ''} ${concept.example || ''}`.toLowerCase();
@@ -596,9 +622,9 @@ export function getAppliedQuestionSpec(concept) {
 
 function getTransferQuestionSpec(concept) {
   const topic = getTopicQuestions(concept.label);
-  if (topic?.medium) return topic.medium;
+  if (topic?.medium && !REMOVED_DIAGNOSTIC_PATTERN.test(topic.medium.prompt || '')) return topic.medium;
   const pack = getLessonPack(concept.label);
-  if (pack?.medium) return pack.medium;
+  if (pack?.medium && !REMOVED_DIAGNOSTIC_PATTERN.test(pack.medium.prompt || '')) return pack.medium;
 
   const family = conceptFamily(concept);
   const text = `${concept.label} ${concept.shortDefinition || concept.sourceSnippet}`.toLowerCase();
@@ -624,7 +650,17 @@ function getTransferQuestionSpec(concept) {
   return lessonFallbackQuestions(concept).medium;
 }
 
-function getErrorAnalysisQuestionSpec(concept) {
+const REMOVED_DIAGNOSTIC_PATTERN = /what failed|which (?:audit|diagnosis|revision)|diagnos(?:e|is)|fails? in production|different (?:answers|results)|wrong physical conclusion|locate a .*error/i;
+
+function getChallengeQuestionSpec(concept) {
+  const topic = getTopicQuestions(concept.label);
+  if (topic?.hard && !REMOVED_DIAGNOSTIC_PATTERN.test(topic.hard.prompt || '')) return topic.hard;
+  const pack = getLessonPack(concept.label);
+  if (pack?.hard && !REMOVED_DIAGNOSTIC_PATTERN.test(pack.hard.prompt || '')) return pack.hard;
+  return lessonFallbackQuestions(concept).hard;
+}
+
+export function getErrorAnalysisQuestionSpec(concept) {
   const topic = getTopicQuestions(concept.label);
   if (topic?.hard) return topic.hard;
   const pack = getLessonPack(concept.label);
@@ -697,23 +733,60 @@ function getErrorAnalysisQuestionSpec(concept) {
 }
 
 export function getQuestionSet(concept) {
-  const topic = getTopicQuestions(concept.label);
-  const pack = getLessonPack(concept.label);
-  const sourced = topic?.easy && topic?.medium && topic?.hard
-    ? topic
-    : pack?.easy && pack?.medium && pack?.hard
-      ? pack
-      : null;
-  if (sourced) {
-    return [
-      { difficulty: 'easy', ...sourced.easy },
-      { difficulty: 'medium', visual: true, ...sourced.medium },
-      { difficulty: 'hard', ...sourced.hard },
-    ];
-  }
   return [
     { difficulty: 'easy', ...getAppliedQuestionSpec(concept) },
     { difficulty: 'medium', visual: true, ...getTransferQuestionSpec(concept) },
-    { difficulty: 'hard', ...getErrorAnalysisQuestionSpec(concept) },
+    { difficulty: 'hard', ...getChallengeQuestionSpec(concept) },
   ];
+}
+
+function exampleClauses(example) {
+  const normalized = String(example || '')
+    .replace(/\s+/g, ' ')
+    .replace(/\bthen\b/gi, '|Then')
+    .replace(/\bso\b/gi, '|Therefore')
+    .replace(/;\s*/g, '|')
+    .replace(/(?<=[.!?])\s+(?=[A-Z(])/g, '|')
+    .trim();
+  const clauses = normalized.split('|').map((part) => part.trim()).filter((part) => part.length > 8);
+  return clauses.length ? clauses : [normalized].filter(Boolean);
+}
+
+/** Convert the selected lesson's stored example into a concrete classroom walkthrough. */
+export function buildExampleSteps(concept) {
+  if (!concept?.example) return [];
+  const label = cleanSentence(concept.label || 'this lesson');
+  const example = cleanSentence(concept.example);
+  const clauses = exampleClauses(example);
+  const definition = cleanSentence(concept.shortDefinition || concept.sourceSnippet || 'Use the governing definition for this lesson.');
+  const mechanism = cleanSentence(concept.workedExplanation || concept.intuition || definition);
+  const warning = cleanSentence(concept.commonMistake || `Check that the assumptions for ${label} are satisfied.`);
+  const execution = clauses.map((clause, index) => ({
+    title: clauses.length === 1 ? 'Carry out the calculation or reasoning' : `Execute part ${index + 1}`,
+    detail: clause,
+  }));
+
+  return [
+    { title: 'Identify the target', detail: cleanSentence(concept.learningGoal || `Determine the requested result using ${label}.`) },
+    { title: 'Record the exact givens', detail: example },
+    { title: 'Choose the governing relationship', detail: definition },
+    ...execution,
+    { title: 'Explain the decisive step', detail: mechanism },
+    { title: 'Verify and interpret', detail: `Check units, signs, domain restrictions, species, data types, or vector directions as appropriate. ${warning}` },
+  ].filter((step, index, steps) => steps.findIndex((candidate) => candidate.detail === step.detail) === index);
+}
+
+/** Build a walkthrough from the selected lesson's actual stored example. */
+export function buildWorkedWalkthrough(concept, requestedStep = '') {
+  if (!concept) return 'Select a lesson before requesting a walkthrough.';
+  const label = cleanSentence(concept.label || 'this lesson');
+  const example = cleanSentence(concept.example || '');
+  const mechanism = cleanSentence(concept.workedExplanation || concept.intuition || concept.shortDefinition || '');
+  const definition = cleanSentence(concept.shortDefinition || concept.sourceSnippet || '');
+  const target = cleanSentence(concept.learningGoal || `Apply ${label} to the stated example.`);
+  const warning = cleanSentence(concept.commonMistake || `Check the assumptions used in ${label}.`);
+  if (!example) return `Worked walkthrough for ${label}:\n\nThis lesson does not yet contain a worked example. Governing idea: ${definition}\n\nMethod: ${mechanism}\n\nCheck: ${warning}`;
+  const execution = buildExampleSteps(concept).map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n');
+  const requested = requestedStep ? `\n\nRequested step — “${cleanSentence(requestedStep)}”: find that phrase, symbol, or operation in the execution below; the next section explains why it is valid.` : '';
+  return `Worked walkthrough for ${label}\n\nExact example\n${example}\n\nWhat the example is asking\n${target}${requested}\n\nSet-up and governing idea\n${definition}\n\nActual execution\n${execution}\n\nWhy those steps follow\n${mechanism}\n\nVerification and interpretation\nPreserve the original units, signs, chemical species, data types, vector directions, or conditions, then compare the result with the stated target.\n\nCommon error to avoid\n${warning}`;
 }
