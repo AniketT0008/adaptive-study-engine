@@ -319,10 +319,11 @@ Requirements:
 - Do not generate fill-in-the-blank, cloze, short-answer, self-assessment, confidence-rating, or vague reflection questions.
 - Questions must be concrete and course-like: use numerical values, equations, data, code traces, chemical equations, diagrams described in text, or realistic scenarios whenever the subject supports them.
 - Avoid asking students to simply define a term. Test application, interpretation, calculation, prediction, or comparison.
+- Never ask “What failed?”, error-audit, mistake-diagnosis, or find-the-error questions. Replace them with a fresh application, numerical, visual, or transfer problem.
 - Difficulty must progress from easy to medium to hard.
 - Distractors should reflect plausible mistakes, not jokes or obviously unrelated answers.
 - Place the correct answer at a varied option index. Do not consistently put it first.
-- At least one question per concept must require calculation, code tracing, diagram interpretation, mechanism prediction, data interpretation, or error analysis when the subject allows it.
+- At least one question per concept must require calculation, code tracing, diagram interpretation, mechanism prediction, or data interpretation when the subject allows it.
 - The explanation must show the key reasoning or calculation.
 
 For each question return:
@@ -338,7 +339,12 @@ Return only a JSON array.`;
     const result = await callGemini(prompt, apiKey);
     if (result && Array.isArray(result) && result.length > 0) {
       return result
-        .filter((q) => q && q.type === 'mcq' && Array.isArray(q.options) && q.options.length === 4 && q.options.includes(q.answer))
+        .filter((q) => q
+          && q.type === 'mcq'
+          && Array.isArray(q.options)
+          && q.options.length === 4
+          && q.options.includes(q.answer)
+          && !/what failed|which audit|which revision|find (?:the|an) error|locate a .*error/i.test(q.prompt || ''))
         .map((q, i) => ({
           id: `q-gen-${q.conceptId}-${q.difficulty || 'medium'}-${i}`,
           ...q,
@@ -408,4 +414,3 @@ export async function extractTextFromFile(file, apiKey) {
   }
   return extracted;
 }
-
